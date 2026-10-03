@@ -1,30 +1,28 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-REGISTRY_DIR = PROJECT_ROOT / "registry"
-README_FILE = PROJECT_ROOT / "README.md"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+REGISTRY_DIR = ROOT_DIR / "registry"
+README_FILE = ROOT_DIR / "README.md"
 
 
-def load_experiments() -> list[dict[str, Any]]:
+def load_experiments() -> list[dict]:
     experiments = []
 
-    if not REGISTRY_DIR.exists():
-        return experiments
-
     for file_path in sorted(REGISTRY_DIR.rglob("*.json")):
+
         with file_path.open("r", encoding="utf-8") as file:
-            data = json.load(file)
+            record = json.load(file)
 
-        data["_registry_file"] = file_path.relative_to(
-            PROJECT_ROOT
-        ).as_posix()
+        record["_registry_file"] = str(
+            file_path.relative_to(ROOT_DIR)
+        ).replace("\\", "/")
 
-        experiments.append(data)
+        experiments.append(record)
 
     experiments.sort(
         key=lambda item: item.get("created_at", ""),
@@ -34,160 +32,319 @@ def load_experiments() -> list[dict[str, Any]]:
     return experiments
 
 
-def format_metric(value: Any) -> str:
-    if isinstance(value, (int, float)):
+def format_metric_value(value) -> str:
+    if isinstance(value, float):
         return f"{value:.4f}"
 
     return str(value)
 
 
-def generate_dashboard(experiments: list[dict[str, Any]]) -> str:
-    successful = [
+def get_primary_metric(metrics: dict) -> tuple[str, object]:
+    preferred = [
+        "f1",
+        "accuracy",
+        "rmse",
+        "mae",
+        "r2",
+    ]
+
+    for metric_name in preferred:
+        if metric_name in metrics:
+            return metric_name, metrics[metric_name]
+
+    if metrics:
+        first_name = next(iter(metrics))
+        return first_name, metrics[first_name]
+
+    return "-", "-"
+
+
+def generate_recent_experiments_section(
+    experiments: list[dict],
+) -> list[str]:
+
+    lines = [
+        "## Recent Experiments",
+        "",
+    ]
+
+    if not experiments:
+        lines.extend(
+            [
+                "No experiments have been registered yet.",
+                "",
+            ]
+        )
+        return lines
+
+    lines.extend(
+        [
+            "| Experiment ID | Topic | Model | Primary Metric | Value | Status |",
+            "|---|---|---|---|---:|---|",
+        ]
+    )
+
+    for experiment in experiments[:10]:
+
+        metrics = experiment.get("metrics", {})
+        metric_name, metric_value = get_primary_metric(metrics)
+
+        lines.append(
+            f"| `{experiment.get('experiment_id', '-')}` "
+            f"| {experiment.get('topic', '-')} "
+            f"| {experiment.get('model', '-')} "
+            f"| {metric_name} "
+            f"| {format_metric_value(metric_value)} "
+            f"| {experiment.get('status', '-')} |"
+        )
+
+    lines.append("")
+
+    return lines
+
+
+def generate_topic_section(
+    topic: str,
+    experiments: list[dict],
+) -> list[str]:
+
+    topic_experiments = [
         experiment
         for experiment in experiments
-        if experiment.get("status") == "SUCCESS"
+        if experiment.get("topic") == topic
     ]
 
-    topic_a = [
-        experiment
-        for experiment in successful
-        if experiment.get("topic") == "topic-a"
+    lines = [
+        f"## {topic}",
+        "",
+        f"**Experiments:** {len(topic_experiments)}",
+        "",
     ]
 
-    topic_b = [
-        experiment
-        for experiment in successful
-        if experiment.get("topic") == "topic-b"
+    if not topic_experiments:
+        lines.extend(
+            [
+                "No experiments registered for this topic.",
+                "",
+            ]
+        )
+        return lines
+
+    owners = {
+        experiment.get("owner")
+        for experiment in topic_experiments
+        if experiment.get("owner")
+    }
+
+    if owners:
+        lines.append(
+            f"**Owner:** {', '.join(sorted(owners))}"
+        )
+        lines.append("")
+
+    lines.extend(
+        [
+            "| Experiment ID | Model | Metric | Value | Date |",
+            "|---|---|---|---:|---|",
+        ]
+    )
+
+    for experiment in topic_experiments:
+
+        metrics = experiment.get("metrics", {})
+        metric_name, metric_value = get_primary_metric(metrics)
+
+        created_at = experiment.get("created_at", "-")
+
+        lines.append(
+            f"| `{experiment.get('experiment_id', '-')}` "
+            f"| {experiment.get('model', '-')} "
+            f"| {metric_name} "
+            f"| {format_metric_value(metric_value)} "
+            f"| {created_at} |"
+        )
+
+    lines.append("")
+
+    return lines
+
+
+def generate_selection_section(
+    experiments: list[dict],
+) -> list[str]:
+
+    lines = [
+        "## Model Selection",
+        "",
+        "> Selection status is recorded separately from experiment execution.",
+        "",
     ]
+
+    selection_groups = {
+        "CANDIDATE": [],
+        "VALIDATED": [],
+        "PROMOTED": [],
+    }
+
+    for experiment in experiments:
+
+        selection_status = experiment.get(
+            "selection_status"
+        )
+
+        if selection_status in selection_groups:
+            selection_groups[selection_status].append(
+                experiment
+            )
+
+    for status, items in selection_groups.items():
+
+        lines.append(f"### {status.title()}")
+        lines.append("")
+
+        if not items:
+            lines.append("None.")
+            lines.append("")
+            continue
+
+        for experiment in items:
+            lines.append(
+                f"- `{experiment.get('experiment_id', '-')}` "
+                f"— {experiment.get('model', '-')}"
+            )
+
+        lines.append("")
+
+    return lines
+
+
+def generate_repository_structure() -> list[str]:
+
+    return [
+        "## Repository Structure",
+        "",
+        "```text",
+        "model-lab/",
+        "├── experiments/",
+        "│   ├── topic-a/",
+        "│   └── topic-b/",
+        "├── registry/",
+        "│   ├── topic-a/",
+        "│   └── topic-b/",
+        "├── scripts/",
+        "│   ├── register_experiment.py",
+        "│   ├── validate_registry.py",
+        "│   ├── generate_readme.py",
+        "│   └── generate_research_log.py",
+        "├── README.md",
+        "└── research_log.md",
+        "```",
+        "",
+    ]
+
+
+def main() -> None:
+
+    experiments = load_experiments()
+
+    now = datetime.now().astimezone()
+    generated_at = now.strftime(
+        "%Y-%m-%d %H:%M:%S %Z"
+    )
+
+    topics = sorted(
+        {
+            experiment.get("topic")
+            for experiment in experiments
+            if experiment.get("topic")
+        }
+    )
 
     lines = [
         "# model-lab",
         "",
-        "Automated experiment tracking and modelling registry",
-        "for Glowmatch Platform.",
+        "Automated experiment tracking and modelling registry "
+        "for Glowmatch Platform Modelling.",
+        "",
+        "> **This README is automatically generated. "
+        "Do not edit manually.**",
         "",
         "---",
         "",
         "## Project Status",
         "",
-        "| Item | Status |",
-        "|---|---|",
-        "| Repository | Active |",
-        "| Experiment tracking | Active |",
-        "| Kaggle integration | Planned |",
-        "| GitHub automation | Planned |",
-        "| Platform integration | Planned |",
-        "",
-        "---",
-        "",
-        "## Experiment Statistics",
-        "",
-        "| Metric | Value |",
+        "| Item | Value |",
         "|---|---:|",
-        f"| Total successful experiments | {len(successful)} |",
-        f"| Topic A experiments | {len(topic_a)} |",
-        f"| Topic B experiments | {len(topic_b)} |",
-        "",
-        "---",
-        "",
-        "## Recent Successful Experiments",
-        "",
+        f"| Total experiments | {len(experiments)} |",
     ]
 
-    if not successful:
-        lines.append("No successful experiments yet.")
-    else:
-        lines.extend(
-            [
-                "| Experiment ID | Topic | Model | Created At |",
-                "|---|---|---|---|",
-            ]
+    for topic in topics:
+
+        count = sum(
+            1
+            for experiment in experiments
+            if experiment.get("topic") == topic
         )
 
-        for experiment in successful[:10]:
-            lines.append(
-                f"| `{experiment['experiment_id']}` "
-                f"| {experiment['topic']} "
-                f"| {experiment['model']} "
-                f"| {experiment['created_at']} |"
-            )
+        lines.append(
+            f"| {topic} | {count} |"
+        )
+
+    if experiments:
+        latest = experiments[0]
+
+        lines.append(
+            f"| Latest experiment | "
+            f"`{latest.get('experiment_id', '-')}` |"
+        )
 
     lines.extend(
         [
+            f"| README generated | {generated_at} |",
             "",
             "---",
-            "",
-            "## Repository Structure",
-            "",
-            "```text",
-            "model-lab/",
-            "├── README.md",
-            "├── research_log.md",
-            "│",
-            "├── registry/",
-            "│   ├── topic-a/",
-            "│   └── topic-b/",
-            "│",
-            "├── experiments/",
-            "│   ├── topic-a/",
-            "│   └── topic-b/",
-            "│",
-            "└── scripts/",
-            "    ├── register_experiment.py",
-            "    ├── generate_readme.py",
-            "    ├── generate_research_log.py",
-            "    └── validate_registry.py",
-            "```",
-            "",
-            "---",
-            "",
-            "## Workflow",
-            "",
-            "```text",
-            "Kaggle",
-            "   ↓",
-            "Experiment",
-            "   ↓",
-            "Validation",
-            "   ↓",
-            "Experiment Registry",
-            "   ↓",
-            "README + Research Log",
-            "   ↓",
-            "Candidate",
-            "   ↓",
-            "Validated",
-            "   ↓",
-            "Promoted",
-            "   ↓",
-            "Final Platform",
-            "```",
-            "",
-            "---",
-            "",
-            "> This README is generated automatically from the experiment registry.",
-            "> Do not edit the generated sections manually.",
             "",
         ]
     )
 
-    return "\n".join(lines)
+    lines.extend(
+        generate_recent_experiments_section(experiments)
+    )
 
+    lines.append("---")
+    lines.append("")
 
-def main() -> int:
-    experiments = load_experiments()
-    content = generate_dashboard(experiments)
+    for topic in topics:
+        lines.extend(
+            generate_topic_section(
+                topic,
+                experiments,
+            )
+        )
+
+    lines.append("---")
+    lines.append("")
+
+    lines.extend(
+        generate_selection_section(experiments)
+    )
+
+    lines.append("---")
+    lines.append("")
+
+    lines.extend(
+        generate_repository_structure()
+    )
 
     README_FILE.write_text(
-        content,
+        "\n".join(lines),
         encoding="utf-8",
     )
 
-    print(f"README generated: {README_FILE}")
-    print(f"Experiments found: {len(experiments)}")
-
-    return 0
+    print(
+        f"README generated successfully: {README_FILE}"
+    )
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import json
+import math
+import re
 import sys
 from pathlib import Path
-from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-REGISTRY_DIR = PROJECT_ROOT / "registry"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+REGISTRY_DIR = ROOT_DIR / "registry"
 
-VALID_TOPICS = {"topic-a", "topic-b"}
+EXPERIMENT_ID_PATTERN = re.compile(
+    r"^EXP-\d{8}-\d{6}-[a-zA-Z0-9]{4}$"
+)
+
 REQUIRED_FIELDS = {
     "experiment_id",
     "topic",
@@ -20,103 +24,235 @@ REQUIRED_FIELDS = {
     "metrics",
     "status",
     "owner",
-    "kaggle",
-    "notebook",
-    "previous_experiment",
 }
 
 
-def validate_file(file_path: Path) -> list[str]:
+def fail(message: str) -> None:
+    print(f"[ERROR] {message}")
+    sys.exit(1)
+
+
+def validate_experiment(record: dict, file_path: Path) -> list[str]:
     errors: list[str] = []
 
-    try:
-        with file_path.open("r", encoding="utf-8") as file:
-            data: dict[str, Any] = json.load(file)
-    except json.JSONDecodeError as error:
-        return [f"Invalid JSON: {error}"]
-    except OSError as error:
-        return [f"Cannot read file: {error}"]
-
-    missing_fields = REQUIRED_FIELDS - data.keys()
+    # ---------------------------------------------------------
+    # Required fields
+    # ---------------------------------------------------------
+    missing_fields = REQUIRED_FIELDS - record.keys()
 
     if missing_fields:
         errors.append(
-            "Missing fields: "
-            + ", ".join(sorted(missing_fields))
+            f"missing fields: {', '.join(sorted(missing_fields))}"
         )
 
-    if "experiment_id" in data:
-        experiment_id = data["experiment_id"]
+    # ---------------------------------------------------------
+    # Experiment ID
+    # ---------------------------------------------------------
+    experiment_id = record.get("experiment_id")
 
-        if not isinstance(experiment_id, str):
-            errors.append("experiment_id must be a string.")
+    if not isinstance(experiment_id, str):
+        errors.append("experiment_id must be a string")
 
-        elif not experiment_id.startswith("EXP-"):
-            errors.append("experiment_id must start with 'EXP-'.")
-
-    if "topic" in data and data["topic"] not in VALID_TOPICS:
+    elif not EXPERIMENT_ID_PATTERN.match(experiment_id):
         errors.append(
-            f"Invalid topic: {data['topic']}"
+            "experiment_id has invalid format "
+            "(expected EXP-YYYYMMDD-HHMMSS-XXXX)"
         )
 
-    if "status" in data and data["status"] != "SUCCESS":
+    # ---------------------------------------------------------
+    # Topic
+    # ---------------------------------------------------------
+    topic = record.get("topic")
+
+    if not isinstance(topic, str) or not topic.strip():
+        errors.append("topic must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Model
+    # ---------------------------------------------------------
+    model = record.get("model")
+
+    if not isinstance(model, str) or not model.strip():
+        errors.append("model must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Objective
+    # ---------------------------------------------------------
+    objective = record.get("objective")
+
+    if not isinstance(objective, str) or not objective.strip():
+        errors.append("objective must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Dataset
+    # ---------------------------------------------------------
+    dataset = record.get("dataset")
+
+    if not isinstance(dataset, str) or not dataset.strip():
+        errors.append("dataset must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Created at
+    # ---------------------------------------------------------
+    created_at = record.get("created_at")
+
+    if not isinstance(created_at, str) or not created_at.strip():
+        errors.append("created_at must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Metrics
+    # ---------------------------------------------------------
+    metrics = record.get("metrics")
+
+    if not isinstance(metrics, dict):
+        errors.append("metrics must be an object/dictionary")
+
+    else:
+        if not metrics:
+            errors.append("metrics must not be empty")
+
+        for metric_name, metric_value in metrics.items():
+
+            if not isinstance(metric_name, str):
+                errors.append("metric names must be strings")
+                continue
+
+            if isinstance(metric_value, bool):
+                errors.append(
+                    f"metric '{metric_name}' must be numeric"
+                )
+                continue
+
+            if not isinstance(metric_value, (int, float)):
+                errors.append(
+                    f"metric '{metric_name}' must be numeric"
+                )
+                continue
+
+            if not math.isfinite(float(metric_value)):
+                errors.append(
+                    f"metric '{metric_name}' must be finite"
+                )
+
+    # ---------------------------------------------------------
+    # Status
+    # ---------------------------------------------------------
+    status = record.get("status")
+
+    if status != "SUCCESS":
         errors.append(
-            f"Invalid status: {data['status']}"
+            f"status must be SUCCESS for registry records, "
+            f"got {status!r}"
         )
 
-    if "metrics" in data:
-        metrics = data["metrics"]
+    # ---------------------------------------------------------
+    # Owner
+    # ---------------------------------------------------------
+    owner = record.get("owner")
 
-        if not isinstance(metrics, dict):
-            errors.append("metrics must be an object.")
-        else:
-            for name, value in metrics.items():
-                if isinstance(value, bool) or not isinstance(
-                    value, (int, float)
-                ):
-                    errors.append(
-                        f"Metric '{name}' must be numeric."
-                    )
+    if not isinstance(owner, str) or not owner.strip():
+        errors.append("owner must be a non-empty string")
+
+    # ---------------------------------------------------------
+    # Topic directory consistency
+    # ---------------------------------------------------------
+    if isinstance(topic, str):
+        parent_topic = file_path.parent.name
+
+        if parent_topic != topic:
+            errors.append(
+                f"topic mismatch: JSON says '{topic}', "
+                f"but file is inside '{parent_topic}'"
+            )
 
     return errors
 
 
-def main() -> int:
+def main() -> None:
+    print("Validating experiment registry...")
+    print()
+
     if not REGISTRY_DIR.exists():
-        print("Registry directory does not exist.")
-        return 0
+        fail(f"Registry directory not found: {REGISTRY_DIR}")
 
     json_files = sorted(REGISTRY_DIR.rglob("*.json"))
 
     if not json_files:
-        print("No registry files found.")
-        return 0
+        print("[WARNING] No experiment records found.")
+        print("Registry structure is valid, but there are no experiments yet.")
+        return
 
-    total_errors = 0
+    all_errors: list[str] = []
+    experiment_ids: dict[str, Path] = {}
 
     for file_path in json_files:
-        errors = validate_file(file_path)
+
+        relative_path = file_path.relative_to(ROOT_DIR)
+
+        try:
+            with file_path.open("r", encoding="utf-8") as file:
+                record = json.load(file)
+
+        except json.JSONDecodeError as exc:
+            all_errors.append(
+                f"{relative_path}: invalid JSON ({exc})"
+            )
+            continue
+
+        except OSError as exc:
+            all_errors.append(
+                f"{relative_path}: cannot read file ({exc})"
+            )
+            continue
+
+        if not isinstance(record, dict):
+            all_errors.append(
+                f"{relative_path}: root JSON value must be an object"
+            )
+            continue
+
+        errors = validate_experiment(record, file_path)
 
         if errors:
-            total_errors += len(errors)
-
-            print(f"\nINVALID: {file_path}")
-
             for error in errors:
-                print(f"  - {error}")
-        else:
-            print(f"VALID:   {file_path}")
+                all_errors.append(
+                    f"{relative_path}: {error}"
+                )
 
+        experiment_id = record.get("experiment_id")
+
+        if isinstance(experiment_id, str):
+
+            if experiment_id in experiment_ids:
+                previous_file = experiment_ids[experiment_id]
+
+                all_errors.append(
+                    f"duplicate experiment_id '{experiment_id}': "
+                    f"{previous_file} and {relative_path}"
+                )
+
+            else:
+                experiment_ids[experiment_id] = relative_path
+
+    # ---------------------------------------------------------
+    # Final result
+    # ---------------------------------------------------------
+    print(f"Records checked : {len(json_files)}")
+    print(f"Unique IDs      : {len(experiment_ids)}")
     print()
-    print(f"Files checked : {len(json_files)}")
-    print(f"Errors        : {total_errors}")
 
-    if total_errors > 0:
-        return 1
+    if all_errors:
+        print("Registry validation FAILED.")
+        print()
 
-    print("Registry validation passed.")
-    return 0
+        for error in all_errors:
+            print(f"- {error}")
+
+        sys.exit(1)
+
+    print("Registry validation PASSED.")
+    print("All experiment records are structurally valid.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

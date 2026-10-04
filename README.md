@@ -1,35 +1,57 @@
 # model-lab
 
-Automated experiment tracking and modelling registry
-for Glowmatch Platform.
+Automated experiment tracking and modelling registry for Glowmatch Platform Modelling.
+
+> **This README is automatically generated. Do not edit manually.**
 
 ---
 
 ## Project Status
 
-| Item | Status |
-|---|---|
-| Repository | Active |
-| Experiment tracking | Active |
-| Kaggle integration | Planned |
-| GitHub automation | Planned |
-| Platform integration | Planned |
-
----
-
-## Experiment Statistics
-
-| Metric | Value |
+| Item | Value |
 |---|---:|
-| Total successful experiments | 0 |
-| Topic A experiments | 0 |
-| Topic B experiments | 0 |
+| Total experiments | 1 |
+| topic-a | 1 |
+| Latest experiment | `EXP-20261004-999999-test` |
+| README generated | 2026-10-04 05:30:59 UTC |
 
 ---
 
-## Recent Successful Experiments
+## Recent Experiments
 
-No successful experiments yet.
+| Experiment ID | Topic | Model | Primary Metric | Value | Status |
+|---|---|---|---|---:|---|
+| `EXP-20261004-999999-test` | topic-a | TEST-MODEL | f1 | 0.9000 | SUCCESS |
+
+---
+
+## topic-a
+
+**Experiments:** 1
+
+**Owner:** test
+
+| Experiment ID | Model | Metric | Value | Date |
+|---|---|---|---:|---|
+| `EXP-20261004-999999-test` | TEST-MODEL | f1 | 0.9000 | 2026-10-04T00:00:00+07:00 |
+
+---
+
+## Model Selection
+
+> Selection status is recorded separately from experiment execution.
+
+### Candidate
+
+None.
+
+### Validated
+
+None.
+
+### Promoted
+
+None.
 
 ---
 
@@ -37,49 +59,17 @@ No successful experiments yet.
 
 ```text
 model-lab/
-├── README.md
-├── research_log.md
-│
-├── registry/
-│   ├── topic-a/
-│   └── topic-b/
-│
 ├── experiments/
 │   ├── topic-a/
 │   └── topic-b/
-│
-└── scripts/
-    ├── register_experiment.py
-    ├── generate_readme.py
-    ├── generate_research_log.py
-    └── validate_registry.py
+├── registry/
+│   ├── topic-a/
+│   └── topic-b/
+├── scripts/
+│   ├── register_experiment.py
+│   ├── validate_registry.py
+│   ├── generate_readme.py
+│   └── generate_research_log.py
+├── README.md
+└── research_log.md
 ```
-
----
-
-## Workflow
-
-```text
-Kaggle
-   ↓
-Experiment
-   ↓
-Validation
-   ↓
-Experiment Registry
-   ↓
-README + Research Log
-   ↓
-Candidate
-   ↓
-Validated
-   ↓
-Promoted
-   ↓
-Final Platform
-```
-
----
-
-> This README is generated automatically from the experiment registry.
-> Do not edit the generated sections manually.

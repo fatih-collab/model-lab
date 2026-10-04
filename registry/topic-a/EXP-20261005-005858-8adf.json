@@ -1,0 +1,20 @@
+{
+  "experiment_id": "EXP-20261005-005858-8adf",
+  "topic": "topic-a",
+  "model": "XGBoost-Test-E2E",
+  "objective": "Verifikasi pipeline Kaggle ke GitHub Actions",
+  "dataset": "dataset-v1",
+  "created_at": "2026-10-04T17:58:58.399111+00:00",
+  "metrics": {
+    "accuracy": 0.99,
+    "f1": 0.98
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": "1",
+    "url": "https://kaggle.com/fatih/model-lab-test"
+  },
+  "notebook": "EXP-test-notebook.ipynb",
+  "previous_experiment": null
+}

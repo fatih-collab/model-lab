@@ -3,8 +3,9 @@ name: Update Experiment Registry
 on:
   push:
     paths:
-      - "registry/**/*.json"
-      - "scripts/**"
+      - 'registry/**/*.json'
+      - 'experiments/**/*.ipynb'  # Tambahkan baris ini
+      - 'scripts/**'
 
 permissions:
   contents: write
@@ -28,10 +29,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Validate registry
-        run: |
-          python scripts/validate_registry.py
+      - name: Extract Registry from incoming Notebooks
+        run: python scripts/extract_registry.py
 
+      - name: Validate registry
+        run: python scripts/validate_registry.py
+        
       - name: Generate README
         run: |
           python scripts/generate_readme.py

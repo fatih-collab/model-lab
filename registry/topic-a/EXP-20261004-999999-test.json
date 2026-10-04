@@ -2,7 +2,7 @@
   "experiment_id": "EXP-20261004-999999-test",
   "topic": "topic-a",
   "model": "TEST-MODEL",
-  "objective": "Test GitHub upload",
+  "objective": "Test GitHub upload and Actions",
   "dataset": "test-dataset",
   "created_at": "2026-10-04T00:00:00+07:00",
   "metrics": {

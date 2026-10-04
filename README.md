@@ -10,16 +10,30 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 0 |
-| README generated | 2026-10-04 05:35:13 UTC |
+| Total experiments | 1 |
+| topic-a | 1 |
+| Latest experiment | `EXP-20261004-141919-111f` |
+| README generated | 2026-10-04 14:19:28 UTC |
 
 ---
 
 ## Recent Experiments
 
-No experiments have been registered yet.
+| Experiment ID | Topic | Model | Primary Metric | Value | Status |
+|---|---|---|---|---:|---|
+| `EXP-20261004-141919-111f` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 
 ---
+
+## topic-a
+
+**Experiments:** 1
+
+**Owner:** Fatih Itsbatul Haq
+
+| Experiment ID | Model | Metric | Value | Date |
+|---|---|---|---:|---|
+| `EXP-20261004-141919-111f` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-04T14:19:19.639323+00:00 |
 
 ---
 

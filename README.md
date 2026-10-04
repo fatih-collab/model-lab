@@ -10,30 +10,16 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 1 |
-| topic-a | 1 |
-| Latest experiment | `EXP-20261004-999999-test` |
-| README generated | 2026-10-04 05:30:59 UTC |
+| Total experiments | 0 |
+| README generated | 2026-10-04 05:35:13 UTC |
 
 ---
 
 ## Recent Experiments
 
-| Experiment ID | Topic | Model | Primary Metric | Value | Status |
-|---|---|---|---|---:|---|
-| `EXP-20261004-999999-test` | topic-a | TEST-MODEL | f1 | 0.9000 | SUCCESS |
+No experiments have been registered yet.
 
 ---
-
-## topic-a
-
-**Experiments:** 1
-
-**Owner:** test
-
-| Experiment ID | Model | Metric | Value | Date |
-|---|---|---|---:|---|
-| `EXP-20261004-999999-test` | TEST-MODEL | f1 | 0.9000 | 2026-10-04T00:00:00+07:00 |
 
 ---
 

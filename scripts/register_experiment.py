@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -17,17 +18,9 @@ VALID_STATUSES = {"SUCCESS"}
 
 
 def generate_experiment_id() -> str:
-    """
-    Generate a unique experiment ID.
-
-    Format:
-        EXP-YYYYMMDD-HHMMSS-XXXX
-    """
-    now = datetime.now().astimezone()
-
+    now = datetime.now(ZoneInfo("Asia/Jakarta"))
     timestamp = now.strftime("%Y%m%d-%H%M%S")
     random_part = uuid.uuid4().hex[:4]
-
     return f"EXP-{timestamp}-{random_part}"
 
 
@@ -117,7 +110,7 @@ def build_experiment(args: argparse.Namespace) -> dict[str, Any]:
         "model": args.model,
         "objective": args.objective,
         "dataset": args.dataset,
-        "created_at": datetime.now().astimezone().isoformat(),
+        "created_at": datetime.now(ZoneInfo("Asia/Jakarta")).isoformat(),
         "metrics": metrics,
         "status": "SUCCESS",
         "owner": args.owner,

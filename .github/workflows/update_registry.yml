@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'registry/**/*.json'
-      - 'experiments/**/*.ipynb'  # Tambahkan baris ini
+      - '*.ipynb'           # Trigger menyala jika file notebook masuk ke root
       - 'scripts/**'
 
 permissions:
@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Extract Registry from incoming Notebooks
+      - name: Extract Registry and Move Notebooks
         run: python scripts/extract_registry.py
 
       - name: Validate registry

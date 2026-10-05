@@ -12,8 +12,8 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 |---|---:|
 | Total experiments | 5 |
 | topic-a | 5 |
-| Latest experiment | `EXP-20261005-152645-9a9b` |
-| README generated | 2026-10-05 08:26:45 UTC |
+| Latest experiment | `EXP-20261005-152700-1d44` |
+| README generated | 2026-10-05 08:27:01 UTC |
 
 ---
 
@@ -21,7 +21,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
-| `EXP-20261005-152645-9a9b` | topic-a | XGBoost-Tuning | f1 | 0.8730 | SUCCESS |
+| `EXP-20261005-152700-1d44` | topic-a | XGBoost-Tuning | f1 | 0.8730 | SUCCESS |
 | `EXP-20261005-152636-b650` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 | `EXP-20261005-014055-afc1` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 | `EXP-20261005-005858-8adf` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
@@ -37,7 +37,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
-| `EXP-20261005-152645-9a9b` | XGBoost-Tuning | f1 | 0.8730 | 2026-10-05T15:26:45.628381+07:00 |
+| `EXP-20261005-152700-1d44` | XGBoost-Tuning | f1 | 0.8730 | 2026-10-05T15:27:00.986198+07:00 |
 | `EXP-20261005-152636-b650` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-05T08:26:36.170281+00:00 |
 | `EXP-20261005-014055-afc1` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-04T18:40:55.422369+00:00 |
 | `EXP-20261005-005858-8adf` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-04T17:58:58.399111+00:00 |

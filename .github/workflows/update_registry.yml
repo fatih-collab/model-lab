@@ -45,14 +45,8 @@ jobs:
 
       - name: Commit generated files
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add README.md research_log.md
-
-          if git diff --cached --quiet; then
-            echo "No generated changes to commit."
-          else
-            git commit -m "chore: update experiment dashboard"
-            git push
-          fi
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Auto-update registry and move notebook" || echo "No changes to commit"
+          git push

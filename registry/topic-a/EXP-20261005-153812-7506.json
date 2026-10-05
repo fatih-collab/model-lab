@@ -1,0 +1,20 @@
+{
+  "experiment_id": "EXP-20261005-153812-7506",
+  "topic": "topic-a",
+  "model": "XGBoost-Tuning",
+  "objective": "Verifikasi Pipeline Payload",
+  "dataset": "dataset-v2",
+  "created_at": "2026-10-05T15:38:12.808784+07:00",
+  "metrics": {
+    "accuracy": 0.875,
+    "f1": 0.873015873015873
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261005-153812-7506.ipynb",
+  "previous_experiment": null
+}

@@ -13,7 +13,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | Total experiments | 3 |
 | topic-a | 3 |
 | Latest experiment | `EXP-20261005-014055-afc1` |
-| README generated | 2026-10-04 18:41:04 UTC |
+| README generated | 2026-10-05 08:19:23 UTC |
 
 ---
 

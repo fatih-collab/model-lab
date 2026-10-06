@@ -10,16 +10,30 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 0 |
-| README generated | 2026-10-06 02:07:45 UTC |
+| Total experiments | 1 |
+| topic-a | 1 |
+| Latest experiment | `EXP-20261006-152728-5f94` |
+| README generated | 2026-10-06 08:27:28 UTC |
 
 ---
 
 ## Recent Experiments
 
-No experiments have been registered yet.
+| Experiment ID | Topic | Model | Primary Metric | Value | Status |
+|---|---|---|---|---:|---|
+| `EXP-20261006-152728-5f94` | topic-a | EfficientNet-B0 | f1 | 0.2604 | SUCCESS |
 
 ---
+
+## topic-a
+
+**Experiments:** 1
+
+**Owner:** Fatih Itsbatul Haq
+
+| Experiment ID | Model | Metric | Value | Date |
+|---|---|---|---:|---|
+| `EXP-20261006-152728-5f94` | EfficientNet-B0 | f1 | 0.2604 | 2026-10-06T15:27:28.219072+07:00 |
 
 ---
 

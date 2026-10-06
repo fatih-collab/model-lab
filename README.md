@@ -10,10 +10,10 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 6 |
-| topic-a | 6 |
+| Total experiments | 5 |
+| topic-a | 5 |
 | Latest experiment | `EXP-20261005-153812-7506` |
-| README generated | 2026-10-06 02:05:15 UTC |
+| README generated | 2026-10-06 02:05:50 UTC |
 
 ---
 
@@ -26,13 +26,12 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | `EXP-20261005-153744-5ade` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 | `EXP-20261005-152636-b650` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 | `EXP-20261005-014055-afc1` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
-| `EXP-20261005-005858-8adf` | topic-a | XGBoost-Test-E2E | f1 | 0.9800 | SUCCESS |
 
 ---
 
 ## topic-a
 
-**Experiments:** 6
+**Experiments:** 5
 
 **Owner:** Fatih Itsbatul Haq
 
@@ -43,7 +42,6 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | `EXP-20261005-153744-5ade` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-05T08:37:44.299071+00:00 |
 | `EXP-20261005-152636-b650` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-05T08:26:36.170281+00:00 |
 | `EXP-20261005-014055-afc1` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-04T18:40:55.422369+00:00 |
-| `EXP-20261005-005858-8adf` | XGBoost-Test-E2E | f1 | 0.9800 | 2026-10-04T17:58:58.399111+00:00 |
 
 ---
 

@@ -10,10 +10,10 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 2 |
-| topic-a | 2 |
+| Total experiments | 1 |
+| topic-a | 1 |
 | Latest experiment | `EXP-20261005-153812-7506` |
-| README generated | 2026-10-06 02:06:41 UTC |
+| README generated | 2026-10-06 02:07:19 UTC |
 
 ---
 
@@ -22,20 +22,18 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
 | `EXP-20261005-153812-7506` | topic-a | XGBoost-Tuning | f1 | 0.8730 | SUCCESS |
-| `EXP-20261005-153754-15ef` | topic-a | XGBoost-Tuning | f1 | 0.8730 | SUCCESS |
 
 ---
 
 ## topic-a
 
-**Experiments:** 2
+**Experiments:** 1
 
 **Owner:** Fatih Itsbatul Haq
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
 | `EXP-20261005-153812-7506` | XGBoost-Tuning | f1 | 0.8730 | 2026-10-05T15:38:12.808784+07:00 |
-| `EXP-20261005-153754-15ef` | XGBoost-Tuning | f1 | 0.8730 | 2026-10-05T15:37:54.184247+07:00 |
 
 ---
 

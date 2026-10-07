@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261007-200149-7175",
+  "topic": "topic-b",
+  "model": "ResNet-50",
+  "objective": "Klasifikasi Skin Undertone dengan Pre-processing Penajaman (Unsharp Mask) dan ResNet-50 Fine-Tuning",
+  "dataset": "skin-undertone",
+  "created_at": "2026-10-07T20:01:49.759016+07:00",
+  "metrics": {
+    "accuracy": 53.16455696202531,
+    "f1": 53.43037960197298,
+    "precision": 52.81045751633987,
+    "recall": 54.510921177587846
+  },
+  "status": "SUCCESS",
+  "owner": "Egyanta Bareka Sebayang",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261007-200149-7175.ipynb",
+  "previous_experiment": null
+}

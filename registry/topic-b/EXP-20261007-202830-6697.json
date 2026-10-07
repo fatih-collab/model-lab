@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261007-202830-6697",
+  "topic": "topic-b",
+  "model": "Enhanced Journal CNN",
+  "objective": "Klasifikasi Undertone dengan Metode Jurnal (Input 64x64, Zoom/Rotate Augmentasi, Penajaman & BatchNorm)",
+  "dataset": "skin-undertone",
+  "created_at": "2026-10-07T20:28:30.665876+07:00",
+  "metrics": {
+    "accuracy": 51.89873417721519,
+    "f1": 50.50192325734121,
+    "precision": 50.13409961685823,
+    "recall": 53.086419753086425
+  },
+  "status": "SUCCESS",
+  "owner": "Egyanta Bareka Sebayang",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261007-202830-6697.ipynb",
+  "previous_experiment": null
+}

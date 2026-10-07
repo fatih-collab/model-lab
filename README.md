@@ -10,11 +10,11 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 7 |
+| Total experiments | 8 |
 | topic-a | 4 |
-| topic-b | 3 |
-| Latest experiment | `EXP-20261007-200149-7175` |
-| README generated | 2026-10-07 13:01:49 UTC |
+| topic-b | 4 |
+| Latest experiment | `EXP-20261007-202830-6697` |
+| README generated | 2026-10-07 13:28:30 UTC |
 
 ---
 
@@ -22,6 +22,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
+| `EXP-20261007-202830-6697` | topic-b | Enhanced Journal CNN | f1 | 50.5019 | SUCCESS |
 | `EXP-20261007-200149-7175` | topic-b | ResNet-50 | f1 | 53.4304 | SUCCESS |
 | `EXP-20261007-194428-8b7e` | topic-b | ConvNeXt V2 | f1 | 55.7011 | SUCCESS |
 | `EXP-20261007-193310-43fb` | topic-b | ConvNeXt V2 | f1 | 55.7011 | SUCCESS |
@@ -47,12 +48,13 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 ## topic-b
 
-**Experiments:** 3
+**Experiments:** 4
 
 **Owner:** Egyanta Bareka Sebayang
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
+| `EXP-20261007-202830-6697` | Enhanced Journal CNN | f1 | 50.5019 | 2026-10-07T20:28:30.665876+07:00 |
 | `EXP-20261007-200149-7175` | ResNet-50 | f1 | 53.4304 | 2026-10-07T20:01:49.759016+07:00 |
 | `EXP-20261007-194428-8b7e` | ConvNeXt V2 | f1 | 55.7011 | 2026-10-07T19:44:28.643913+07:00 |
 | `EXP-20261007-193310-43fb` | ConvNeXt V2 | f1 | 55.7011 | 2026-10-07T19:33:10.144459+07:00 |

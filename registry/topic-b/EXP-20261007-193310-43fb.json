@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261007-193310-43fb",
+  "topic": "topic-b",
+  "model": "ConvNeXt V2",
+  "objective": "Menggunakan",
+  "dataset": "skin-undertone",
+  "created_at": "2026-10-07T19:33:10.144459+07:00",
+  "metrics": {
+    "accuracy": 56.9620253164557,
+    "f1": 55.70111287758347,
+    "precision": 55.03105590062112,
+    "recall": 58.78442545109211
+  },
+  "status": "SUCCESS",
+  "owner": "Egyanta Bareka Sebayang",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261007-193310-43fb.ipynb",
+  "previous_experiment": null
+}

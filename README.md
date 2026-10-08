@@ -10,11 +10,11 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 9 |
+| Total experiments | 10 |
 | topic-a | 4 |
-| topic-b | 5 |
-| Latest experiment | `EXP-20261008-145741-57f4` |
-| README generated | 2026-10-08 07:57:42 UTC |
+| topic-b | 6 |
+| Latest experiment | `EXP-20261008-163613-7e87` |
+| README generated | 2026-10-08 09:36:13 UTC |
 
 ---
 
@@ -22,6 +22,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
+| `EXP-20261008-163613-7e87` | topic-b | Ensemble(svm (tuned), convnext_finetune) on dinov2_vits14 + color | f1 | 68.9834 | SUCCESS |
 | `EXP-20261008-145741-57f4` | topic-b | ConvNeXt-Tiny + XGBoost | f1 | 60.6798 | SUCCESS |
 | `EXP-20261007-202830-6697` | topic-b | Enhanced Journal CNN | f1 | 50.5019 | SUCCESS |
 | `EXP-20261007-200149-7175` | topic-b | ResNet-50 | f1 | 53.4304 | SUCCESS |
@@ -49,12 +50,13 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 ## topic-b
 
-**Experiments:** 5
+**Experiments:** 6
 
 **Owner:** Egyanta Bareka Sebayang
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
+| `EXP-20261008-163613-7e87` | Ensemble(svm (tuned), convnext_finetune) on dinov2_vits14 + color | f1 | 68.9834 | 2026-10-08T16:36:13.387054+07:00 |
 | `EXP-20261008-145741-57f4` | ConvNeXt-Tiny + XGBoost | f1 | 60.6798 | 2026-10-08T14:57:41.965446+07:00 |
 | `EXP-20261007-202830-6697` | Enhanced Journal CNN | f1 | 50.5019 | 2026-10-07T20:28:30.665876+07:00 |
 | `EXP-20261007-200149-7175` | ResNet-50 | f1 | 53.4304 | 2026-10-07T20:01:49.759016+07:00 |

@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261008-145741-57f4",
+  "topic": "topic-b",
+  "model": "ConvNeXt-Tiny + XGBoost",
+  "objective": "Klasifikasi Undertone: fitur ConvNeXt (fine-tuned) + fitur warna Lab/HSV -> XGBoost; augmentasi geometrik & unsharp mask tanpa ubah warna",
+  "dataset": "skin-undertone",
+  "created_at": "2026-10-08T14:57:41.965446+07:00",
+  "metrics": {
+    "accuracy": 62.0253164556962,
+    "f1": 60.679824561403514,
+    "precision": 60.05112664151565,
+    "recall": 62.96296296296296
+  },
+  "status": "SUCCESS",
+  "owner": "Egyanta Bareka Sebayang",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261008-145741-57f4.ipynb",
+  "previous_experiment": null
+}

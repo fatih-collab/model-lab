@@ -14,7 +14,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | topic-a | 4 |
 | topic-b | 6 |
 | Latest experiment | `EXP-20261008-163613-7e87` |
-| README generated | 2026-10-08 09:36:13 UTC |
+| README generated | 2026-10-09 14:30:15 UTC |
 
 ---
 

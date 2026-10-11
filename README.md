@@ -14,7 +14,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | topic-a | 4 |
 | topic-b | 6 |
 | Latest experiment | `EXP-20261008-163613-7e87` |
-| README generated | 2026-10-08 09:36:13 UTC |
+| Registry updated | 2026-10-08T16:36:13.387054+07:00 |
 
 ---
 
@@ -94,10 +94,14 @@ model-lab/
 │   ├── topic-a/
 │   └── topic-b/
 ├── scripts/
+│   ├── extract_registry.py
 │   ├── register_experiment.py
 │   ├── validate_registry.py
 │   ├── generate_readme.py
-│   └── generate_research_log.py
+│   ├── generate_research_log.py
+│   ├── run_pipeline.py
+│   ├── sync_branches.py
+│   └── github_upload.py
 ├── README.md
 └── research_log.md
 ```

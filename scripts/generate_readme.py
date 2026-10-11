@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+import sys
 from pathlib import Path
+
+# Jangan buat scripts/__pycache__/*.pyc (file biner ini dulu ikut ter-commit
+# dan selalu bentrok saat merge antar-branch).
+sys.dont_write_bytecode = True
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -24,8 +28,13 @@ def load_experiments() -> list[dict]:
 
         experiments.append(record)
 
+    # Urutan stabil (created_at lalu experiment_id) supaya output selalu sama
+    # untuk isi registry yang sama, di branch mana pun dijalankan.
     experiments.sort(
-        key=lambda item: item.get("created_at", ""),
+        key=lambda item: (
+            item.get("created_at", ""),
+            item.get("experiment_id", ""),
+        ),
         reverse=True,
     )
 
@@ -232,10 +241,14 @@ def generate_repository_structure() -> list[str]:
         "│   ├── topic-a/",
         "│   └── topic-b/",
         "├── scripts/",
+        "│   ├── extract_registry.py",
         "│   ├── register_experiment.py",
         "│   ├── validate_registry.py",
         "│   ├── generate_readme.py",
-        "│   └── generate_research_log.py",
+        "│   ├── generate_research_log.py",
+        "│   ├── run_pipeline.py",
+        "│   ├── sync_branches.py",
+        "│   └── github_upload.py",
         "├── README.md",
         "└── research_log.md",
         "```",
@@ -247,9 +260,12 @@ def main() -> None:
 
     experiments = load_experiments()
 
-    now = datetime.now().astimezone()
-    generated_at = now.strftime(
-        "%Y-%m-%d %H:%M:%S %Z"
+    # Sengaja TIDAK memakai jam saat ini (datetime.now()). Timestamp yang
+    # berubah setiap kali workflow jalan membuat README.md selalu berbeda di
+    # setiap branch sehingga merge Master <-> model_history pasti konflik.
+    # Pakai waktu eksperimen terbaru: deterministik untuk registry yang sama.
+    generated_at = (
+        experiments[0].get("created_at", "-") if experiments else "-"
     )
 
     topics = sorted(
@@ -300,7 +316,7 @@ def main() -> None:
 
     lines.extend(
         [
-            f"| README generated | {generated_at} |",
+            f"| Registry updated | {generated_at} |",
             "",
             "---",
             "",

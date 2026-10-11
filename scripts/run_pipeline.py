@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -15,9 +18,13 @@ def run_script(script_name: str) -> None:
     print(f"\nRunning: {script_name}")
     print("-" * 60)
 
+    # PYTHONDONTWRITEBYTECODE=1 -> tidak ada __pycache__/*.pyc yang ikut ter-commit.
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+
     result = subprocess.run(
         [sys.executable, str(script_path)],
         cwd=PROJECT_ROOT,
+        env=env,
     )
 
     if result.returncode != 0:
@@ -29,6 +36,7 @@ def run_script(script_name: str) -> None:
 
 def main() -> int:
     try:
+        run_script("extract_registry.py")
         run_script("validate_registry.py")
         run_script("generate_readme.py")
         run_script("generate_research_log.py")

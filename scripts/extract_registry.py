@@ -54,27 +54,43 @@ def process_notebook(nb_path: Path) -> bool:
         register_experiment.validate_experiment(experiment)
         register_experiment.save_experiment(experiment)
 
-        # Ubah nama notebook menyesuaikan Experiment ID
-        new_nb_path = nb_path.parent / f"{exp_id}.ipynb"
+        # Pindahkan notebook ke experiments/<topic>/ dan ubah nama sesuai Experiment ID.
+        # Kaggle "Link to GitHub" selalu menaruh notebook di root repo,
+        # jadi notebook harus dipindahkan, bukan hanya di-rename di tempat.
+        dest_dir = PROJECT_ROOT / "experiments" / metadata["topic"]
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        new_nb_path = dest_dir / f"{exp_id}.ipynb"
         nb_path.rename(new_nb_path)
-        
-        print(f"SUCCESS: Diekstrak {exp_id} dari {nb_path.name}")
+
+        print(f"SUCCESS: Diekstrak {exp_id} dari {nb_path.name} -> {new_nb_path.relative_to(PROJECT_ROOT)}")
         return True
 
     except Exception as e:
         print(f"ERROR memproses {nb_path.name}: {e}", file=sys.stderr)
         return False
 
+def find_candidate_notebooks() -> list[Path]:
+    """
+    Notebook yang belum diproses:
+    1. Root repo  -> tempat Kaggle "Link to GitHub" menyimpan notebook.
+    2. experiments/<topic>/ yang namanya belum berformat EXP- -> untuk penggunaan lokal/manual.
+    """
+    candidates = sorted(PROJECT_ROOT.glob("*.ipynb"))
+
+    for topic in sorted(register_experiment.VALID_TOPICS):
+        topic_dir = PROJECT_ROOT / "experiments" / topic
+        if topic_dir.exists():
+            candidates += sorted(
+                nb for nb in topic_dir.glob("*.ipynb")
+                if not nb.name.startswith("EXP-")
+            )
+
+    return candidates
+
+
 def main():
-    # Loop semua file .ipynb di folder experiments yang belum berformat EXP-
-    for topic in ['topic-a', 'topic-b']:
-        topic_dir = PROJECT_ROOT / 'experiments' / topic
-        if not topic_dir.exists():
-            continue
-            
-        for nb_path in topic_dir.glob("*.ipynb"):
-            if not nb_path.name.startswith("EXP-"):
-                process_notebook(nb_path)
+    for nb_path in find_candidate_notebooks():
+        process_notebook(nb_path)
 
 if __name__ == '__main__':
     main()

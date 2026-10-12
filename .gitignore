@@ -1,0 +1,7 @@
+# File biner Python: dulu ikut ter-commit oleh `git add -A` di workflow
+# dan selalu menyebabkan konflik merge.
+__pycache__/
+*.py[cod]
+
+# Checkpoint Jupyter/Kaggle
+.ipynb_checkpoints/

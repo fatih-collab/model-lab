@@ -2,8 +2,8 @@ import json
 import re
 import sys
 from pathlib import Path
-from zoneinfo import ZoneInfo
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import register_experiment
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -14,7 +14,7 @@ def process_notebook(nb_path: Path) -> bool:
 
     payload_str = None
     
-    # Cari payload di output sel kode
+    # Cari cetakan payload di dalam output sel kode
     for cell in nb_data.get('cells', []):
         if cell.get('cell_type') == 'code':
             for output in cell.get('outputs', []):
@@ -28,17 +28,16 @@ def process_notebook(nb_path: Path) -> bool:
             break
 
     if not payload_str:
-        print(f"Abaikan {nb_path.name}: Tidak ada cetakan payload.")
+        print(f"Skipping {nb_path.name}: Tidak ada cetakan registry payload.")
         return False
 
     try:
         metadata = json.loads(payload_str)
-        topic = metadata["topic"]
         exp_id = register_experiment.generate_experiment_id()
 
         experiment = {
             "experiment_id": exp_id,
-            "topic": topic,
+            "topic": metadata["topic"],
             "model": metadata["model"],
             "objective": metadata["objective"],
             "dataset": metadata["dataset"],
@@ -51,27 +50,31 @@ def process_notebook(nb_path: Path) -> bool:
             "previous_experiment": None
         }
 
-        # 1. Validasi dan simpan JSON ke registry/
+        # Validasi dan simpan menggunakan source of truth
         register_experiment.validate_experiment(experiment)
         register_experiment.save_experiment(experiment)
 
-        # 2. Pindahkan dan rename notebook ke experiments/
-        dest_dir = PROJECT_ROOT / "experiments" / topic
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        new_nb_path = dest_dir / f"{exp_id}.ipynb"
+        # Ubah nama notebook menyesuaikan Experiment ID
+        new_nb_path = nb_path.parent / f"{exp_id}.ipynb"
         nb_path.rename(new_nb_path)
         
-        print(f"SUCCESS: Ekstrak {exp_id}, lalu dipindahkan ke {new_nb_path.relative_to(PROJECT_ROOT)}")
+        print(f"SUCCESS: Diekstrak {exp_id} dari {nb_path.name}")
         return True
 
     except Exception as e:
-        print(f"ERROR saat memproses {nb_path.name}: {e}", file=sys.stderr)
+        print(f"ERROR memproses {nb_path.name}: {e}", file=sys.stderr)
         return False
 
 def main():
-    # Pindai file .ipynb di root directory saja (tempat Kaggle membuang file)
-    for nb_path in PROJECT_ROOT.glob("*.ipynb"):
-        process_notebook(nb_path)
+    # Loop semua file .ipynb di folder experiments yang belum berformat EXP-
+    for topic in ['topic-a', 'topic-b']:
+        topic_dir = PROJECT_ROOT / 'experiments' / topic
+        if not topic_dir.exists():
+            continue
+            
+        for nb_path in topic_dir.glob("*.ipynb"):
+            if not nb_path.name.startswith("EXP-"):
+                process_notebook(nb_path)
 
 if __name__ == '__main__':
     main()

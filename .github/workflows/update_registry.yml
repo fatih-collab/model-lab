@@ -2,10 +2,14 @@ name: Update Experiment Registry
 
 on:
   push:
+    branches:
+      - model_history       # Hanya branch pencatatan; Master (pengembangan platform) tidak tersentuh
     paths:
       - 'registry/**/*.json'
-      - '*.ipynb'           # Trigger menyala jika file notebook masuk ke root
+      - '*.ipynb'           # Trigger menyala jika file notebook masuk ke root (lokasi Kaggle)
+      - 'experiments/**/*.ipynb'
       - 'scripts/**'
+  workflow_dispatch:        # Bisa dijalankan manual dari tab Actions
 
 permissions:
   contents: write
@@ -22,6 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: model_history
           fetch-depth: 0
 
       - name: Setup Python
@@ -48,5 +53,15 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git commit -m "Auto-update registry and move notebook" || echo "No changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Auto-update registry and move notebook"
+          # Dua kontributor bisa push hampir bersamaan: ambil perubahan terbaru dulu, lalu push.
+          for attempt in 1 2 3; do
+            git pull --rebase origin model_history && git push origin HEAD:model_history && exit 0
+            echo "Push gagal (percobaan $attempt), mencoba lagi..."
+            sleep 5
+          done
+          exit 1

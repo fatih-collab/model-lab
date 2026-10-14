@@ -10,11 +10,11 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 11 |
-| topic-a | 5 |
+| Total experiments | 12 |
+| topic-a | 6 |
 | topic-b | 6 |
-| Latest experiment | `EXP-20261012-191927-3fc3` |
-| README generated | 2026-10-12 12:19:27 UTC |
+| Latest experiment | `EXP-20261014-210445-07c0` |
+| README generated | 2026-10-14 14:04:46 UTC |
 
 ---
 
@@ -22,6 +22,7 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
+| `EXP-20261014-210445-07c0` | topic-a | DINOv3 ViT-B/16 Fusion | f1 | 0.3205 | SUCCESS |
 | `EXP-20261012-191927-3fc3` | topic-a | DINOv3 ViT | f1 | 0.3232 | SUCCESS |
 | `EXP-20261008-163613-7e87` | topic-b | Ensemble(svm (tuned), convnext_finetune) on dinov2_vits14 + color | f1 | 68.9834 | SUCCESS |
 | `EXP-20261008-145741-57f4` | topic-b | ConvNeXt-Tiny + XGBoost | f1 | 60.6798 | SUCCESS |
@@ -31,18 +32,18 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | `EXP-20261007-193310-43fb` | topic-b | ConvNeXt V2 | f1 | 55.7011 | SUCCESS |
 | `EXP-20261007-141215-f4c5` | topic-a | FaRL16 | f1 | 0.2741 | SUCCESS |
 | `EXP-20261007-131650-8bb4` | topic-a | EfficientNet-B0 | f1 | 0.2585 | SUCCESS |
-| `EXP-20261007-111955-3fc1` | topic-a | EfficientNet-B0 | f1 | 0.2515 | SUCCESS |
 
 ---
 
 ## topic-a
 
-**Experiments:** 5
+**Experiments:** 6
 
 **Owner:** Fatih Itsbatul Haq
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
+| `EXP-20261014-210445-07c0` | DINOv3 ViT-B/16 Fusion | f1 | 0.3205 | 2026-10-14T21:04:45.904527+07:00 |
 | `EXP-20261012-191927-3fc3` | DINOv3 ViT | f1 | 0.3232 | 2026-10-12T19:19:27.721356+07:00 |
 | `EXP-20261007-141215-f4c5` | FaRL16 | f1 | 0.2741 | 2026-10-07T14:12:15.241081+07:00 |
 | `EXP-20261007-131650-8bb4` | EfficientNet-B0 | f1 | 0.2585 | 2026-10-07T13:16:50.192024+07:00 |

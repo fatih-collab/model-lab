@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261014-210445-07c0",
+  "topic": "topic-a",
+  "model": "DINOv3 ViT-B/16 Fusion",
+  "objective": "E13: fusion DINOv3 ViT-B + Lab per region, logit hierarkis, label smoothing hierarkis, EMA, grup per orang diperbaiki",
+  "dataset": "deep_armocromia",
+  "created_at": "2026-10-14T21:04:45.904527+07:00",
+  "metrics": {
+    "accuracy": 0.34978070175438597,
+    "f1": 0.3205261400240745,
+    "precision": 0.328503195422232,
+    "recall": 0.3204497871040814
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261014-210445-07c0.ipynb",
+  "previous_experiment": null
+}

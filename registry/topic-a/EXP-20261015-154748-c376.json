@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261015-154748-c376",
+  "topic": "topic-a",
+  "model": "DINOv3 ViT-B/16 + ViT-S/16 Fusion",
+  "objective": "E14: fusion teregularisasi (6 epoch, freeze 4 blok, stochastic depth, snapshot ensemble), ViT-B + ViT-S, emb_color_lr",
+  "dataset": "deep_armocromia",
+  "created_at": "2026-10-15T15:47:48.912328+07:00",
+  "metrics": {
+    "accuracy": 0.34649122807017546,
+    "f1": 0.3245602696296243,
+    "precision": 0.33756739943445924,
+    "recall": 0.3240144412806832
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261015-154748-c376.ipynb",
+  "previous_experiment": null
+}

@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261020-111752-4ace",
+  "topic": "topic-a",
+  "model": "Audit emb_color_lr (DINOv3 ViT-S frozen + Lab)",
+  "objective": "Audit label otomatis setelah E14: konsistensi label, confident learning, AUROC per pasangan sub-season, dampak pembersihan ke official test",
+  "dataset": "deep_armocromia",
+  "created_at": "2026-10-20T11:17:52.304704+07:00",
+  "metrics": {
+    "accuracy": 0.33881578947368424,
+    "f1": 0.3062113079713059,
+    "precision": 0.3136509066669725,
+    "recall": 0.3114263799597736
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261020-111752-4ace.ipynb",
+  "previous_experiment": null
+}

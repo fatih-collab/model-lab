@@ -1,0 +1,334 @@
+{
+  "generated_by": "backend/scripts/extract_models.py",
+  "modules": {
+    "undertone": {
+      "notebook": "EXP-20261008-163613-7e87.ipynb",
+      "notebook_sha256": "19aebf9ae6b924f266da6b3abcffcd116c544c37268186e162c32d2180ab5a40",
+      "input": "foto bagian dalam pergelangan tangan (urat)",
+      "generated_module": "ml.nb_generated.undertone_nb",
+      "config": {
+        "CLASS_NAMES": [
+          "cool",
+          "neutral",
+          "warm"
+        ],
+        "IMG_SIZE": 224,
+        "N_TTA": 8,
+        "CACHE_MAX": 512,
+        "USE_ROI_CROP": true,
+        "ROI_SIZE": 384,
+        "MEAN": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "STD": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "reported": {
+        "registry": {
+          "topic": "topic-b",
+          "model": "Ensemble(svm (tuned), convnext_finetune) on dinov2_vits14 + color",
+          "objective": "Klasifikasi undertone: ROI kulit + unsharp, fitur warna CIELab/HSV/YCrCb & kontras urat, multi-backbone frozen (GAP+GeM, TTA), StratifiedGroupKFold 5x2, tuning dg penalti overfit, ensemble OOF",
+          "dataset": "skin-undertone",
+          "owner": "Egyanta Bareka Sebayang",
+          "metrics": {
+            "accuracy": 69.62025316455697,
+            "f1": 68.9833558254611,
+            "precision": 67.93216746157923,
+            "recall": 70.94017094017094
+          }
+        },
+        "ensemble_weights": {
+          "logreg (tuned)": 0.0,
+          "svm (tuned)": 0.171,
+          "extratrees (tuned)": 0.0,
+          "convnext_finetune": 0.829
+        },
+        "test_accuracy_pct": 69.62
+      },
+      "artifacts": {
+        "dir": "models/undertone",
+        "required": [
+          "undertone_ensemble.joblib",
+          "convnext_ft_fold0.pth",
+          "convnext_ft_fold1.pth",
+          "convnext_ft_fold2.pth",
+          "convnext_ft_fold3.pth",
+          "convnext_ft_fold4.pth"
+        ],
+        "optional": [],
+        "bundle": "undertone_bundle.joblib"
+      },
+      "pretrained": [
+        {
+          "repo": "timm/vit_small_patch14_dinov2.lvd142m",
+          "gated": false,
+          "used_by": "svm (tuned) — fitur DINOv2 frozen"
+        }
+      ],
+      "class_names": [
+        "cool",
+        "neutral",
+        "warm"
+      ]
+    },
+    "season": {
+      "notebook": "EXP-20261012-191927-3fc3.ipynb",
+      "notebook_sha256": "0c72b49eddfb7ef663c4afd6ac183dcb16a2b85c04b10199f6834875e6499b5e",
+      "input": "foto wajah + rambut, latar dihitamkan (format RGB-M Deep Armocromia)",
+      "generated_module": "ml.nb_generated.season_nb",
+      "config": {
+        "NUM_CLASSES": 12,
+        "NUM_SEASONS": 4,
+        "BACKBONE_HF_ID": "facebook/dinov3-vits16-pretrain-lvd1689m",
+        "PARSER_HF_ID": "jonathandinu/face-parsing",
+        "PARSE_SIZE": 512,
+        "CACHE_SIZE": 256,
+        "MASK_THRESH": 0.03137254901960784,
+        "EMB_IMG_SIZE": 224,
+        "FT_IMG_SIZE": 224,
+        "EXTRA_MEAN_LAYERS": [
+          4,
+          8
+        ],
+        "FT_DROPOUT": 0.2,
+        "IMNET_MEAN": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "IMNET_STD": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "reported": {
+        "registry": {
+          "topic": "topic-a",
+          "model": "DINOv3 ViT",
+          "objective": "E12: fine-tuning DINOv3 ViT + warna Lab per region, grup per orang, holdout baru, XGBoost stacking",
+          "dataset": "deep_armocromia",
+          "owner": "Fatih Itsbatul Haq",
+          "metrics": {
+            "accuracy": 0.3541666666666667,
+            "f1": 0.3232463551143505,
+            "precision": 0.3313252349198555,
+            "recall": 0.3277351075894274
+          }
+        },
+        "class_names": [
+          "autunno_deep",
+          "autunno_soft",
+          "autunno_warm",
+          "estate_cool",
+          "estate_light",
+          "estate_soft",
+          "inverno_bright",
+          "inverno_cool",
+          "inverno_deep",
+          "primavera_bright",
+          "primavera_light",
+          "primavera_warm"
+        ],
+        "char_names": [
+          "bright",
+          "cool",
+          "deep",
+          "light",
+          "soft",
+          "warm"
+        ],
+        "component_temperatures": {
+          "emb_lr": 1.063,
+          "emb_lr_orig": 1.048,
+          "color_hgb": 1.322,
+          "ft": 1.118
+        },
+        "ensemble_weights": {
+          "emb_lr": 0.1,
+          "emb_lr_orig": 0.0,
+          "color_hgb": 0.3,
+          "ft": 0.6
+        },
+        "ensemble_temperature": 0.854,
+        "conf_high": 0.4139,
+        "final_method": "ensemble"
+      },
+      "artifacts": {
+        "dir": "models/season",
+        "required": [
+          "E12_artifacts.joblib",
+          "ft_s42_f0.pt",
+          "ft_s42_f1.pt",
+          "ft_s42_f2.pt",
+          "ft_s42_f3.pt",
+          "ft_s42_f4.pt"
+        ],
+        "optional": [
+          "E12_summary.json"
+        ],
+        "bundle": "season_bundle.joblib"
+      },
+      "pretrained": [
+        {
+          "repo": "facebook/dinov3-vits16-pretrain-lvd1689m",
+          "gated": true,
+          "used_by": "emb_lr (frozen) + arsitektur ArmoNet (ft)"
+        },
+        {
+          "repo": "jonathandinu/face-parsing",
+          "gated": false,
+          "used_by": "SegFormer face parsing (mask wajah + fitur warna per region)"
+        }
+      ],
+      "class_names": [
+        "autunno_deep",
+        "autunno_soft",
+        "autunno_warm",
+        "estate_cool",
+        "estate_light",
+        "estate_soft",
+        "inverno_bright",
+        "inverno_cool",
+        "inverno_deep",
+        "primavera_bright",
+        "primavera_light",
+        "primavera_warm"
+      ],
+      "labels": {
+        "autunno_deep": {
+          "name": "Deep Autumn",
+          "family": "Autumn",
+          "subtype": "deep",
+          "undertone": "warm"
+        },
+        "autunno_soft": {
+          "name": "Soft Autumn",
+          "family": "Autumn",
+          "subtype": "soft",
+          "undertone": "warm"
+        },
+        "autunno_warm": {
+          "name": "Warm Autumn",
+          "family": "Autumn",
+          "subtype": "warm",
+          "undertone": "warm"
+        },
+        "estate_cool": {
+          "name": "Cool Summer",
+          "family": "Summer",
+          "subtype": "cool",
+          "undertone": "cool"
+        },
+        "estate_light": {
+          "name": "Light Summer",
+          "family": "Summer",
+          "subtype": "light",
+          "undertone": "cool"
+        },
+        "estate_soft": {
+          "name": "Soft Summer",
+          "family": "Summer",
+          "subtype": "soft",
+          "undertone": "cool"
+        },
+        "inverno_bright": {
+          "name": "Bright Winter",
+          "family": "Winter",
+          "subtype": "bright",
+          "undertone": "cool"
+        },
+        "inverno_cool": {
+          "name": "Cool Winter",
+          "family": "Winter",
+          "subtype": "cool",
+          "undertone": "cool"
+        },
+        "inverno_deep": {
+          "name": "Deep Winter",
+          "family": "Winter",
+          "subtype": "deep",
+          "undertone": "cool"
+        },
+        "primavera_bright": {
+          "name": "Bright Spring",
+          "family": "Spring",
+          "subtype": "bright",
+          "undertone": "warm"
+        },
+        "primavera_light": {
+          "name": "Light Spring",
+          "family": "Spring",
+          "subtype": "light",
+          "undertone": "warm"
+        },
+        "primavera_warm": {
+          "name": "Warm Spring",
+          "family": "Spring",
+          "subtype": "warm",
+          "undertone": "warm"
+        }
+      },
+      "region_cols": [
+        "skin_L",
+        "skin_a",
+        "skin_b",
+        "skin_L_std",
+        "skin_chroma",
+        "skin_hue",
+        "hair_L",
+        "hair_a",
+        "hair_b",
+        "hair_L_std",
+        "hair_chroma",
+        "hair_hue",
+        "eye_L",
+        "eye_a",
+        "eye_b",
+        "eye_L_std",
+        "eye_chroma",
+        "eye_hue",
+        "lip_L",
+        "lip_a",
+        "lip_b",
+        "lip_L_std",
+        "lip_chroma",
+        "lip_hue",
+        "brow_L",
+        "brow_a",
+        "brow_b",
+        "brow_L_std",
+        "brow_chroma",
+        "brow_hue",
+        "skin_a_std",
+        "skin_b_std",
+        "skin_L_p10",
+        "skin_L_p90",
+        "skin_ita",
+        "frac_skin",
+        "frac_hair",
+        "frac_eye",
+        "frac_lip",
+        "frac_brow",
+        "frac_glasses",
+        "dL_skin_hair",
+        "dE_skin_hair",
+        "dL_skin_eye",
+        "dE_skin_eye",
+        "dE_skin_lip",
+        "da_lip_skin",
+        "dL_skin_brow",
+        "db_hair_skin",
+        "L_range",
+        "all_L",
+        "all_a",
+        "all_b"
+      ]
+    }
+  }
+}

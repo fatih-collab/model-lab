@@ -1,0 +1,27 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+node_modules/
+# artefak model (besar, dari Kaggle / Hugging Face) — manifest.json tetap di-commit
+models/undertone/
+models/season/
+models/hf_cache/
+models/*.onnx
+models/artifacts.lock.json
+models/pretrained.json
+
+
+backend/.venv/
+backend/node_modules/
+dataset/
+images/
+*.csv
+*.h5
+*.pth
+
+# Mengabaikan file bobot model machine learning
+Model/**/*.pth
+Model/**/*.joblib
+Model/**/*.h5
+Model/**/*.pt

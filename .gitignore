@@ -1,7 +1,27 @@
-# File biner Python: dulu ikut ter-commit oleh `git add -A` di workflow
-# dan selalu menyebabkan konflik merge antara Master dan model_history.
 __pycache__/
-*.py[cod]
+.pytest_cache/
+*.pyc
+.venv/
+node_modules/
+# artefak model (besar, dari Kaggle / Hugging Face) — manifest.json tetap di-commit
+models/undertone/
+models/season/
+models/hf_cache/
+models/*.onnx
+models/artifacts.lock.json
+models/pretrained.json
 
-# Checkpoint Jupyter/Kaggle
-.ipynb_checkpoints/
+
+backend/.venv/
+backend/node_modules/
+dataset/
+images/
+*.csv
+*.h5
+*.pth
+
+# Mengabaikan file bobot model machine learning
+Model/**/*.pth
+Model/**/*.pt
+Model/**/*.joblib
+Model/**/*.h5

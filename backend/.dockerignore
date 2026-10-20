@@ -1,0 +1,12 @@
+**/__pycache__
+**/*.pyc
+.pytest_cache
+tests
+scripts/mock_server.py
+models/undertone
+models/season
+models/hf_cache
+models/*.onnx
+models/*.lock.json
+models/pretrained.json
+requirements-dev.txt

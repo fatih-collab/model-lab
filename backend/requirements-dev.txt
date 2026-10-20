@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8
+httpx>=0.27                        # TestClient FastAPI
+scikit-image>=0.22                 # gambar wajah contoh untuk test Haar

@@ -1,0 +1,55 @@
+# GlowMatch — 12-Season Personal Color Analysis
+#   docker compose up -d --build                      -> http://localhost:8080
+#   DOMAIN=glowmatch.example.com docker compose --profile tls up -d --build   -> https://DOMAIN
+# Panduan lengkap: DEPLOYMENT.md
+name: glowmatch
+
+services:
+  api:
+    build: ./backend
+    image: glowmatch-api:latest
+    restart: unless-stopped
+    environment:
+      GLOWMATCH_TORCH_THREADS: ${TORCH_THREADS:-0}
+      GLOWMATCH_MAX_FOLDS: ${MAX_FOLDS:-0}
+      GLOWMATCH_WHITE_BALANCE: ${WHITE_BALANCE:-1}
+      GLOWMATCH_WB_STRENGTH: ${WB_STRENGTH:-1.0}
+      GLOWMATCH_MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-8}
+    volumes:
+      # Diisi di host dengan backend/scripts/extract_models.py (lihat DEPLOYMENT.md)
+      - ./backend/models/undertone:/app/models/undertone:ro
+      - ./backend/models/season:/app/models/season:ro
+      - ./backend/models/hf_cache:/app/models/hf_cache
+    expose:
+      - "8000"
+    mem_limit: ${API_MEMORY:-4g}
+
+  web:
+    build: ./model-lab-Front-end
+    image: glowmatch-web:latest
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+  # HTTPS otomatis (Let's Encrypt). Kamera browser hanya jalan di HTTPS atau localhost.
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["tls"]
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

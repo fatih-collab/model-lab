@@ -1,0 +1,22 @@
+{
+  "experiment_id": "EXP-20261023-192230-45bf",
+  "topic": "topic-a",
+  "model": "DINOv3 ViT-S/16 Fusion + fitur tahan white balance",
+  "objective": "E15: fitur warna tahan white balance & efek kamera (log-rasio RGB linear antar region, kromatisitas, HSV, YCrCb, cast gray-world; diadaptasi dari notebook undertone EXP-7e87) + ablasi vs fitur Lab E14",
+  "dataset": "deep_armocromia",
+  "created_at": "2026-10-23T19:22:30.803613+07:00",
+  "metrics": {
+    "accuracy": 0.3519736842105263,
+    "f1": 0.32822349193761313,
+    "precision": 0.3399157574748033,
+    "recall": 0.3282848064241071
+  },
+  "status": "SUCCESS",
+  "owner": "Fatih Itsbatul Haq",
+  "kaggle": {
+    "version": null,
+    "url": null
+  },
+  "notebook": "EXP-20261023-192230-45bf.ipynb",
+  "previous_experiment": null
+}

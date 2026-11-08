@@ -287,6 +287,54 @@ def create_app(
         return session_id
 
     # --------------------------------------------------------
+    # DEPENDENCY: PROFILE COMPLETION
+    # --------------------------------------------------------
+
+    def require_complete_profile(
+        request: Request,
+        session_id: int = Depends(current_session_id),
+    ) -> int:
+        """
+        Memastikan pengguna sudah melengkapi profil
+        sebelum memulai proses analisis.
+        """
+
+        database_instance: Database = (
+            request.app.state.database
+        )
+
+        try:
+            profile = database_instance.get_profile(
+                session_id=session_id,
+            )
+
+        except LookupError as exc:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "PROFILE_INCOMPLETE",
+                    "message": (
+                        "Lengkapi profil terlebih dahulu "
+                        "sebelum memulai analisis."
+                    ),
+                },
+            ) from exc
+
+        if not profile.get("is_complete", False):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "PROFILE_INCOMPLETE",
+                    "message": (
+                        "Lengkapi profil terlebih dahulu "
+                        "sebelum memulai analisis."
+                    ),
+                },
+            )
+
+        return session_id
+
+    # --------------------------------------------------------
     # HELPER: IMAGE UPLOAD
     # --------------------------------------------------------
 
@@ -401,6 +449,7 @@ def create_app(
         request: Request,
         image: UploadFile = File(...),
         kind: Literal["face", "wrist"] = Form("face"),
+        _session_id: int = Depends(require_complete_profile),
     ):
         """
         Preprocessing dan pemeriksaan kualitas frame.
@@ -429,6 +478,7 @@ def create_app(
     async def undertone(
         request: Request,
         wrist: UploadFile = File(...),
+        _session_id: int = Depends(require_complete_profile),
     ):
         """
         Menganalisis undertone melalui foto pergelangan.
@@ -461,6 +511,7 @@ def create_app(
             Literal["warm", "cool", "neutral"]
         ] = Form(None),
         debug: bool = Form(False),
+        _session_id: int = Depends(require_complete_profile),
     ):
         """
         Melakukan analisis personal color.
@@ -632,7 +683,7 @@ def create_app(
                 palette=body.palette,
                 notes=body.notes or "",
 
-                # Akan digunakan ketika schema diperluas.
+                # Snapshot hasil klasifikasi lengkap.
                 analysis_result=getattr(
                     body,
                     "analysis_result",

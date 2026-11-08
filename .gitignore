@@ -25,3 +25,7 @@ Model/**/*.pth
 Model/**/*.pt
 Model/**/*.joblib
 Model/**/*.h5
+# Local environment secrets
+.env
+.env.*
+!.env.example

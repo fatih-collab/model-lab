@@ -1,9 +1,13 @@
 """Skema respons API (dokumentasi OpenAPI di /docs + validasi keluaran)."""
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel as _BaseModel, ConfigDict
+from pydantic import (
+    BaseModel as _BaseModel,
+    ConfigDict,
+    Field,
+)
 
 
 class BaseModel(_BaseModel):
@@ -145,49 +149,119 @@ class SeasonInfo(BaseModel):
 
 
 class Profile(BaseModel):
+    """
+    Informasi profil pengguna GlowMatch.
+    """
+
     id: int
     name: str
     gender: str = "wanita"
     age: Optional[int] = 22
     notes: Optional[str] = ""
+    is_complete: bool = False
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
 
 class ProfileUpdate(BaseModel):
-    name: str
-    gender: str = "wanita"
-    age: Optional[int] = 22
+    """
+    Request untuk memperbarui profil pengguna.
+    """
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+    )
+
+    name: str = Field(
+        min_length=1,
+        max_length=120,
+    )
+
+    gender: str = Field(
+        default="wanita",
+        min_length=1,
+        max_length=20,
+    )
+
+    age: int = Field(
+        default=22,
+        ge=5,
+        le=100,
+    )
+
     notes: Optional[str] = ""
 
 
 class HistoryItem(BaseModel):
+    """
+    Data riwayat analisis yang dikembalikan API.
+
+    Selain ringkasan, schema ini menyediakan snapshot
+    agar hasil analisis lama dapat ditampilkan kembali
+    dan digunakan untuk menghasilkan laporan PDF.
+    """
+
     id: int
     request_id: Optional[str] = None
     profile_id: Optional[int] = None
+
+    # Ringkasan hasil analisis.
     season_id: str
     season_name: str
     detected_season: Optional[str] = None
+
     undertone: str
     undertone_source: Optional[str] = "wrist_model"
     confidence: Optional[float] = 1.0
-    palette: list[str] = []
+
+    palette: list[str] = Field(default_factory=list)
     notes: Optional[str] = ""
+
     created_at: Optional[str] = None
+
+    # Snapshot informasi profil saat analisis dilakukan.
     user_name: Optional[str] = None
     user_gender: Optional[str] = None
     user_age: Optional[int] = None
 
+    # Snapshot hasil klasifikasi lengkap.
+    analysis_result: Optional[dict[str, Any]] = None
+
+    # Snapshot season atau rekomendasi yang dipilih.
+    selected_season: Optional[dict[str, Any]] = None
+
+    # Snapshot profil pada saat analisis dilakukan.
+    profile_snapshot: Optional[dict[str, Any]] = None
+
 
 class HistoryCreate(BaseModel):
+    """
+    Request untuk menyimpan hasil analisis GlowMatch.
+
+    profile_id tetap dipertahankan untuk kompatibilitas
+    request lama, tetapi backend tidak menggunakannya
+    sebagai penentu kepemilikan data.
+    """
+
     season_id: str
     season_name: str
     undertone: str
+
     request_id: Optional[str] = None
     detected_season: Optional[str] = None
     undertone_source: Optional[str] = "wrist_model"
     confidence: Optional[float] = 1.0
-    palette: list[str] = []
+
+    palette: list[str] = Field(default_factory=list)
     notes: Optional[str] = ""
+
+    # Data hasil analisis lengkap.
+    analysis_result: Optional[dict[str, Any]] = None
+
+    # Data rekomendasi season yang dipilih pengguna.
+    selected_season: Optional[dict[str, Any]] = None
+
+    # Field lama dipertahankan untuk kompatibilitas.
+    # Kepemilikan tetap ditentukan dari session cookie.
     profile_id: Optional[int] = None
 

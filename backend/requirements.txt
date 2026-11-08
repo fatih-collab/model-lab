@@ -1,6 +1,6 @@
 # Runtime (dipakai Docker image). Dependensi dev/test ada di requirements-dev.txt.
 numpy>=1.26,<2.3
-opencv-python-headless>=4.8        # FaceDetectorYN (YuNet) butuh >= 4.8
+opencv-python-headless>=4.8,<5.0   # FaceDetectorYN dan Haar Cascade    # FaceDetectorYN (YuNet) butuh >= 4.8
 pillow>=10.0
 # WAJIB sama dengan versi saat training di Kaggle (pickle sklearn tidak dijamin lintas versi).
 # Cek di Kaggle: import sklearn; print(sklearn.__version__)  -> lalu pin di sini, mis. scikit-learn==1.6.1
@@ -16,5 +16,10 @@ uvicorn[standard]>=0.29
 python-multipart>=0.0.9            # upload file (multipart/form-data)
 pydantic>=2.5
 
+# Database - PostgreSQL
+SQLAlchemy>=2.0,<3.0
+psycopg[binary]>=3.2,<4.0
+alembic>=1.13,<2.0
+python-dotenv>=1.0,<2.0
 # opsional: backend deteksi wajah MTCNN
 # facenet-pytorch>=2.6

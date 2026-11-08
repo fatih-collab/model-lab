@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
+from app.db import Database
 
 from app.main import create_app
 from app.pipeline import AnalysisService
@@ -32,11 +33,35 @@ class RoutingDetector(FakeDetector):
         return [FACE_BOX] if noise < 5 else []
 
 
+
 def make_client(undertone_model=None, season_model=None) -> TestClient:
-    pre = Preprocessor(PreprocessConfig(min_sharpness=0), detector=RoutingDetector([]))
+    pre = Preprocessor(
+        PreprocessConfig(min_sharpness=0),
+        detector=RoutingDetector([]),
+    )
+
     pre.detector.backend = "fake"
-    svc = AnalysisService(pre, LABELS, undertone_model, season_model, load_errors={})
-    return TestClient(create_app(service=svc))
+
+    svc = AnalysisService(
+        pre,
+        LABELS,
+        undertone_model,
+        season_model,
+        load_errors={},
+    )
+
+    test_database = Database(
+        "sqlite+pysqlite:///:memory:",
+        create_schema=True,
+    )
+
+    return TestClient(
+        create_app(
+            service=svc,
+            database=test_database,
+        )
+    )
+
 
 
 @pytest.fixture(scope="module")

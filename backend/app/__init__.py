@@ -1,1 +1,0 @@
-"""GlowMatch FastAPI app."""

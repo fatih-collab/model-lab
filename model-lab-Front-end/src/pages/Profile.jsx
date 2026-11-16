@@ -362,7 +362,7 @@ const Profile = () => {
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">
                   Belum ada analisis sesi ini. Pindai wajahmu untuk
-                  menemukan 12 musim warnamu.
+                  menemukan season warnamu dari 12 pilihan.
                 </p>
 
                 <Link

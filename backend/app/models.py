@@ -226,6 +226,12 @@ class AnalysisHistory(Base):
         nullable=True,
     )
 
+    # Rekomendasi warna season (dari Color Season Palette.xlsx).
+    recommendation_json: Mapped[dict[str, Any] | None] = mapped_column(
+        JSONDocument,
+        nullable=True,
+    )
+
     # Snapshot profil pada saat analisis dilakukan.
     profile_snapshot_json: Mapped[dict[str, Any] | None] = mapped_column(
         JSONDocument,

@@ -28,4 +28,5 @@ Model/**/*.h5
 # Local environment secrets
 .env
 .env.*
+/env
 !.env.example

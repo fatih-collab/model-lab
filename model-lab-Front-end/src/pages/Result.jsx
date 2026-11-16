@@ -5,7 +5,7 @@ import {
   FiVideo, FiImage, FiRefreshCw, FiCheck, FiBookOpen, FiUser
 } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
-import ColorSwatch from '../components/ColorSwatch';
+import PaletteSection from '../components/PaletteSection';
 import LiveTryOn from '../components/LiveTryOn';
 import RadialBurst, { FrameOverlay } from '../components/RadialBurst';
 import SeasonSwitcher from '../components/SeasonSwitcher';
@@ -18,26 +18,21 @@ const SOURCE_LABEL = {
   season_model: 'estimasi fitur wajah',
 };
 
-function PaletteSection({ title, link, colors }) {
-  return (
-    <div>
-      <div className="flex justify-between items-end mb-4 border-b border-gray-100 pb-3">
-        <h4 className="font-medium text-slate-700">{title}</h4>
-        <Link to={link} className="text-sm font-medium text-glowmatch-primary flex items-center gap-1 hover:underline">
-          Lihat semua <FiArrowRight />
-        </Link>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
-        {colors.slice(0, 7).map((c) => <ColorSwatch key={c.hex} name={c.name} hex={c.hex} />)}
-      </div>
-    </div>
-  );
-}
+const AXIS_NAME = { undertone: 'Undertone', value: 'Kedalaman', chroma: 'Kejernihan' };
+const AXIS_LABEL = {
+  'slight warm': 'sedikit hangat', 'strong warm': 'sangat hangat',
+  'slight cool': 'sedikit dingin', 'strong cool': 'sangat dingin',
+  'strongly light': 'sangat terang', 'slightly light': 'cenderung terang',
+  'slightly deep': 'cenderung gelap', 'strongly deep': 'sangat gelap',
+  'slight clarity': 'sedikit jernih', 'clear clarity': 'jernih', 'strong clarity': 'sangat jernih',
+  'slight muting': 'sedikit redup', 'strong muting': 'sangat redup',
+};
 
 const Result = () => {
   const { result, face, selectedId, setSelectedId, reset, profile } = useAnalysis();
   const [mode, setMode] = useState('foto'); // foto | live
   const [savedId, setSavedId] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const navigate = useNavigate();
 
@@ -46,7 +41,7 @@ const Result = () => {
       <div className="py-24 max-w-md mx-auto text-center space-y-4">
         <HiSparkles className="text-4xl text-glowmatch-primary mx-auto" />
         <h1 className="text-2xl font-semibold text-glowmatch-secondary">Belum ada hasil analisis</h1>
-        <p className="text-gray-500 text-sm">Pindai wajah dan pergelanganmu untuk menemukan musim warnamu.</p>
+        <p className="text-gray-500 text-sm">Pindai wajah dan pergelangan tanganmu untuk mengetahui season warnamu.</p>
         <Link to="/scan-wajah" className="inline-block bg-glowmatch-primary text-white px-6 py-3 rounded-xl font-medium">Mulai analisis</Link>
       </div>
     );
@@ -61,8 +56,13 @@ const Result = () => {
   const undertoneText = `${UNDERTONE_LABEL[gate.undertone]}${result.undertone?.confidence ? ` · ${Math.round(result.undertone.confidence * 100)}%` : ''}`;
 
   const handleSave = async () => {
-    await saveToHistory(result, selected, profile);
-    setSavedId(selected.id);
+    setSaveError(null);
+    try {
+      await saveToHistory(result, selected, profile);
+      setSavedId(selected.id);
+    } catch (err) {
+      setSaveError(err?.message || 'Hasil belum tersimpan. Coba lagi sebentar lagi.');
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -95,7 +95,7 @@ const Result = () => {
               Harmoni Warnamu Ditemukan
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              {profile?.name ? `Analisis khusus untuk ${profile.name}` : 'Palet yang dirancang untuk menonjolkan keanggunan alami kulitmu.'}
+              {profile?.name ? `Analisis khusus untuk ${profile.name}` : 'Palet yang menonjolkan warna alami kulitmu.'}
             </p>
           </div>
 
@@ -107,7 +107,7 @@ const Result = () => {
           </Link>
         </div>
 
-        {/* 2 Banner Kartu Utama: Musim Terdeteksi & Undertone */}
+        {/* 2 Banner Kartu Utama: Season Terdeteksi & Undertone */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-[#FFF0E0] border border-orange-200/60 rounded-2xl p-5 flex items-center gap-4 shadow-xs">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-orange-500 shadow-sm shrink-0">
@@ -115,7 +115,7 @@ const Result = () => {
             </div>
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                {selected.id === result.result.season.id ? 'Musim Hasil Analisis' : 'Musim Pilihanmu'}
+                {selected.id === result.result.season.id ? 'Season Hasil Analisis' : 'Season Pilihanmu'}
               </p>
               <h2 className="text-lg font-bold text-glowmatch-secondary">{selected.name}</h2>
               <span className="text-xs text-orange-600 font-medium">{keywords.join(' · ')}</span>
@@ -136,15 +136,25 @@ const Result = () => {
           </div>
         </div>
 
-        {/* Penjelasan Karakteristik Musim */}
+        {/* Penjelasan Karakteristik Season */}
         <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-xs text-xs sm:text-sm text-gray-600 space-y-2">
           <h3 className="font-bold text-glowmatch-secondary text-base flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-glowmatch-primary" />
-            Mengapa Palet {selected.name} Sangat Cocok Untukmu?
+            Kenapa Palet {selected.name} Cocok Untukmu?
           </h3>
           <p className="leading-relaxed">
-            {description} Warna-warna dalam palet ini memiliki saturasi dan suhu yang selaras dengan pigmen mata, bibir, serta rona dasar kulitmu, sehingga bayangan lelah pada wajah tersamarkan secara natural tanpa perlu riasan yang tebal.
+            {description} Saturasi dan suhu warna di palet ini sejalan dengan warna mata, bibir, dan undertone kulitmu. Hasilnya, wajah terlihat lebih segar tanpa perlu riasan tebal.
           </p>
+          {selected.palette.rekomendasi?.axis && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {Object.entries(selected.palette.rekomendasi.axis).map(([key, a]) => (
+                <span key={key} className="bg-slate-50 border border-slate-100 rounded-full px-3 py-1 text-xs">
+                  <span className="text-slate-400">{AXIS_NAME[key] ?? key}:</span>{' '}
+                  <strong className="text-glowmatch-secondary font-semibold">{AXIS_LABEL[a.label] ?? a.label}</strong>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -192,19 +202,19 @@ const Result = () => {
         </div>
       </div>
 
-      {/* 3. Visual swapping musim tetangga */}
+      {/* 3. Visual swapping season mendekati */}
       <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_20px_rgb(0,0,0,0.02)] space-y-5">
         <div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bandingkan</p>
-          <h3 className="text-xl font-bold text-glowmatch-secondary">Musim Tetangga yang Berdekatan</h3>
+          <h3 className="text-xl font-bold text-glowmatch-secondary">Season Mendekati</h3>
           <p className="text-sm text-slate-500 mt-1">
-            Musim yang berbagi karakter dengan hasilmu. Pilih musim di bawah untuk menukar palet, lalu bandingkan di wajahmu lewat <button onClick={() => setMode('live')} className="text-glowmatch-primary font-bold hover:underline">Coba Live</button>.
+            Season ini punya karakter yang mirip dengan hasilmu. Pilih salah satu untuk mengganti palet, lalu bandingkan langsung di wajahmu lewat <button onClick={() => setMode('live')} className="text-glowmatch-primary font-bold hover:underline">Coba Live</button>.
           </p>
         </div>
         <SeasonSwitcher options={options} selectedId={selected.id} onSelect={setSelectedId} />
       </div>
 
-      {/* 4. Warna rekomendasi (Utama & Netral) */}
+      {/* 4. Warna rekomendasi (Utama, Netral, Palet Lengkap) */}
       <div className="bg-white border border-gray-100 rounded-3xl p-8 space-y-10 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-purple-50 text-glowmatch-primary rounded-xl flex items-center justify-center">
@@ -215,8 +225,9 @@ const Result = () => {
             <h3 className="text-xl font-bold text-glowmatch-secondary">Warna Terbaik Untuk Penampilanmu</h3>
           </div>
         </div>
-        <PaletteSection title="Warna Utama (Statement & Accent Colors)" link="/full-palette/utama" colors={palettes.utama} />
-        <PaletteSection title="Warna Netral (Wardrobe Foundation & Celana/Blazer)" link="/full-palette/netral" colors={palettes.netral} />
+        <PaletteSection title="Warna Utama" subtitle="Warna yang paling mendukung. Pakai di dekat wajah: atasan, hijab, syal, atau lipstik." link="/full-palette/utama" colors={palettes.utama} limit={7} />
+        <PaletteSection title="Warna Netral" subtitle="Dasar lemari pakaian: celana, blazer, dan luaran." link="/full-palette/netral" colors={palettes.netral} limit={7} />
+        <PaletteSection title={`Palet Lengkap ${selected.name}`} subtitle="Semua warna season-mu. Klik warna untuk menyalin kodenya." link="/full-palette/lengkap" colors={palettes.lengkap} limit={14} />
       </div>
 
       {/* 5. Warna hindari */}
@@ -230,7 +241,7 @@ const Result = () => {
             <h3 className="text-xl font-bold text-glowmatch-secondary">Warna yang Sebaiknya Dihindari di Area Wajah</h3>
           </div>
         </div>
-        <PaletteSection title={`Kurang cocok untuk ${selected.name}`} link="/full-palette/hindari" colors={palettes.hindari} />
+        <PaletteSection title={`Kurang cocok untuk ${selected.name}`} subtitle="Warna ini cenderung membuat wajah tampak kusam atau lelah jika dipakai dekat wajah." link="/full-palette/hindari" colors={palettes.hindari} limit={7} />
       </div>
 
       {/* 6. Aksi Simpan & Download PDF */}
@@ -238,8 +249,9 @@ const Result = () => {
         <div className="text-center md:text-left space-y-1">
           <h4 className="text-lg font-bold text-glowmatch-secondary">Simpan & Unduh Laporan Lengkap</h4>
           <p className="text-xs sm:text-sm text-slate-500 font-normal">
-            Unduh laporan format PDF untuk dibawa saat berbelanja baju, jilbab, atau makeup.
+            Simpan hasil dan rekomendasi warnanya ke riwayat, atau unduh PDF untuk dibawa saat belanja baju, hijab, atau makeup.
           </p>
+          {saveError && <p className="text-xs text-red-500">{saveError}</p>}
         </div>
         <div className="flex flex-wrap w-full md:w-auto gap-3">
           <button 
@@ -279,7 +291,7 @@ const Result = () => {
             Ingin lebih tahu penjelasan selanjutnya?
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Pelajari lebih dalam bagaimana undertone keluarga Warm vs Cool mengunci hasil musim warnamu, prinsip sistem Gatekeeper AI, serta catatan validasi diagnostik selengkapnya di halaman khusus.
+            Baca cara undertone Warm dan Cool menentukan season warnamu, cara kerja Gatekeeper AI, dan catatan validasi lengkapnya di halaman penjelasan.
           </p>
         </div>
         

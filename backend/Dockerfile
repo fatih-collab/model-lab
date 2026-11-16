@@ -30,6 +30,8 @@ ADD --checksum=sha256:8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2
 
 COPY app ./app
 COPY ml ./ml
+COPY alembic.ini ./alembic.ini
+COPY migrations ./migrations
 COPY scripts/extract_models.py ./scripts/extract_models.py
 COPY models/manifest.json ./models/manifest.json
 

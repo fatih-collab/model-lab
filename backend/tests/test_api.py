@@ -160,10 +160,15 @@ def test_health_and_seasons(client):
 
     assert len(seasons) == 12
 
-    assert all(
-        len(s["palette"]["palettes"]["utama"]) == 10
-        for s in seasons
-    )
+    for s in seasons:
+        groups = s["palette"]["palettes"]
+        rec = s["palette"]["rekomendasi"]
+        assert groups["utama"] == [
+            {"name": c["name"], "hex": c["hex"], "source": c["source"]} for c in rec["flatter"]
+        ]
+        assert len(groups["lengkap"]) == 32
+        assert len(groups["hindari"]) == len(rec["avoid"])
+        assert groups["netral"]
 
     soft_summer = next(
         s for s in seasons
@@ -171,6 +176,14 @@ def test_health_and_seasons(client):
     )
 
     assert "autunno_soft" in soft_summer["neighbors"]
+
+    # Rekomendasi warna dari Color Season Palette.xlsx.
+    for s in seasons:
+        rec = s["palette"]["rekomendasi"]
+        assert len(rec["chromatic"]) == 28
+        assert len(rec["neutral"]) == 4
+        assert rec["flatter"] and rec["avoid"]
+    assert soft_summer["palette"]["rekomendasi"]["season"] == "Soft Summer"
 
 
 def test_analysis_endpoints_require_complete_profile(client):
@@ -520,6 +533,8 @@ def test_history_endpoints(client):
 
     assert item["season_name"] == "True Spring"
     assert len(item["palette"]) == 3
+    assert item["recommendations"]["season"] == "True Spring"
+    assert len(item["recommendations"]["chromatic"]) == 28
 
     # GET history.
     list_response = client.get("/api/history")

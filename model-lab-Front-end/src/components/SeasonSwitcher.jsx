@@ -1,12 +1,12 @@
 const RELATION_LABEL = {
   final: 'Hasil analisis',
-  same_family: 'Satu keluarga',
-  cross_undertone: 'Tetangga beda undertone',
-  opposite_side_best: 'Terbaik dari sisi seberang',
+  same_family: 'Season mendekati',
+  cross_undertone: 'Mendekati, beda undertone',
+  opposite_side_best: 'Terdekat dari undertone lain',
 };
 
 /**
- * Pilihan musim untuk visual swapping (hasil akhir + musim tetangga).
+ * Pilihan season untuk visual swapping (hasil akhir + season mendekati).
  * compact: chip kecil untuk ditumpuk di atas video live.
  */
 export default function SeasonSwitcher({ options, selectedId, onSelect, compact = false }) {

@@ -306,8 +306,8 @@ export function useAnalysis() {
 // ============================================================
 
 /**
- * Semua musim yang bisa dipilih pengguna:
- * hasil akhir + musim tetangga.
+ * Semua season yang bisa dipilih pengguna:
+ * hasil akhir + season mendekati.
  */
 
 // eslint-disable-next-line react-refresh/only-export-components

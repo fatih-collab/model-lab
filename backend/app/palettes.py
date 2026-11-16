@@ -1,11 +1,11 @@
 """
-Palet 12 musim. Format sama dengan model-lab-Front-end/src/data/colorData.js:
-  utama   : warna terbaik (dipakai cincin radial burst di sekitar wajah)
-  netral  : warna dasar / basic wardrobe
-  hindari : warna yang melawan karakter musim
-Titik awal kurasi berdasarkan karakter tiap musim (nilai, suhu, kejernihan); silakan disesuaikan tim desain.
+Palet 12 season. Deskripsi, kata kunci, dan warna netral bernama dikurasi di sini;
+warna utama, palet lengkap, dan warna yang dihindari diambil dari "Color Season Palette.xlsx"
+(lihat _groups dan app/color_recommendations.py). Daftar "utama"/"hindari" di _RAW tidak lagi dipakai.
 """
 from __future__ import annotations
+
+from app.color_recommendations import RECOMMENDATIONS
 
 _RAW = {
     "primavera_light": {
@@ -86,7 +86,7 @@ _RAW = {
                     ("Fuchsia", "#FF2AA0"), ("Silver Grey", "#C7CBD1"), ("Pure White", "#FFFFFF")],
     },
     "autunno_warm": {
-        "description": "Hangat, kaya, dan membumi. Warna rempah dan dedaunan musim gugur paling menyatu denganmu.",
+        "description": "Hangat, kaya, dan membumi. Warna rempah dan dedaunan khas Autumn paling menyatu denganmu.",
         "keywords": ["Warm", "Muted", "Deep"],
         "utama": [("Pumpkin", "#D2691E"), ("Mustard", "#D4A017"), ("Olive", "#708238"), ("Terracotta", "#C0583A"),
                   ("Teal", "#2A7B79"), ("Rust", "#B7410E"), ("Moss", "#8A9A5B"), ("Gold", "#C9A44C"),
@@ -144,11 +144,31 @@ _RAW = {
     },
 }
 
+def _groups(sid: str, raw: dict) -> dict:
+    """
+    Satu set palet per season. Sumber utama "Color Season Palette.xlsx":
+      utama   : Colors That Flatter (bernama)
+      netral  : warna netral bernama (kurasi di atas)
+      lengkap : 28 warna chromatic + 4 netral (hanya kode hex)
+      hindari : Colors to Avoid (bernama)
+    """
+    rec = RECOMMENDATIONS[sid]
+    named = lambda items: [{"name": c["name"], "hex": c["hex"], "source": c["source"]} for c in items]
+    return {
+        "utama": named(rec["flatter"]),
+        "netral": [{"name": n, "hex": h} for n, h in raw["netral"]],
+        "lengkap": [{"name": "", "hex": h} for h in rec["chromatic"] + rec["neutral"]],
+        "hindari": named(rec["avoid"]),
+    }
+
+
 PALETTES: dict[str, dict] = {
     sid: {
         "description": v["description"],
         "keywords": v["keywords"],
-        "palettes": {k: [{"name": n, "hex": h} for n, h in v[k]] for k in ("utama", "netral", "hindari")},
+        "palettes": _groups(sid, v),
+        # Data mentah Excel (sumbu warna, dipakai juga untuk riwayat).
+        "rekomendasi": RECOMMENDATIONS[sid],
     }
     for sid, v in _RAW.items()
 }

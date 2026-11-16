@@ -32,6 +32,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.color_recommendations import RECOMMENDATIONS
 from app.models import (
     AnalysisHistory,
     Base,
@@ -480,6 +481,11 @@ class Database:
             "user_age": profile.age,
             "analysis_result": history.analysis_result_json,
             "selected_season": history.selected_season_json,
+            # Riwayat lama (sebelum kolom ini ada) memakai data Excel terkini.
+            "recommendations": (
+                history.recommendation_json
+                or RECOMMENDATIONS.get(history.season_id)
+            ),
             "profile_snapshot": history.profile_snapshot_json,
         }
 
@@ -546,6 +552,8 @@ class Database:
 
             history.analysis_result_json = analysis_result
             history.selected_season_json = selected_season
+            # Diambil dari data server, bukan dari client.
+            history.recommendation_json = RECOMMENDATIONS.get(season_id)
 
             history.profile_snapshot_json = (
                 profile_snapshot

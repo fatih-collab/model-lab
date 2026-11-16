@@ -113,12 +113,12 @@ class Settings:
 
     # Koneksi utama aplikasi menggunakan role glowmatch.
     database_url: str = field(
-        default_factory=lambda: _env("DATABASE_URL", "")
+        default_factory=lambda: _env("DATABASE_URL", "").strip()
     )
 
     # Koneksi administratif untuk proses migration.
     migration_database_url: str = field(
-        default_factory=lambda: _env("MIGRATION_DATABASE_URL", "")
+        default_factory=lambda: _env("MIGRATION_DATABASE_URL", "").strip()
     )
 
     # --------------------------------------------------------

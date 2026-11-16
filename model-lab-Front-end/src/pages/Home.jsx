@@ -9,12 +9,12 @@ import HeroModel from '../assets/hero-model.jpg';
 
 const FAQS = [
   {
-    q: 'Apa itu Seasonal Color Analysis (Analisis Warna 12 Musim)?',
-    a: 'Seasonal Color Analysis adalah metode pengelompokan warna berdasarkan teori warna alamiah manusia (suhu undertone, kejernihan, dan kedalaman kontras). Sistem ini membagi warna menjadi 12 musim (Spring, Summer, Autumn, Winter beserta variannya) untuk menentukan palet busana dan riasan yang paling menyempurnakan rona kulit alami Anda.',
+    q: 'Apa itu Seasonal Color Analysis (Analisis 12 Season Warna)?',
+    a: 'Seasonal Color Analysis adalah metode pengelompokan warna berdasarkan teori warna alamiah manusia (suhu undertone, kejernihan, dan kedalaman kontras). Sistem ini membagi warna menjadi 12 season (Spring, Summer, Autumn, Winter, masing-masing dengan tiga varian) untuk menentukan palet busana dan riasan yang paling cocok dengan warna kulit alami Anda.',
   },
   {
     q: 'Apakah warna personal saya bisa berubah seiring bertambahnya usia?',
-    a: 'Undertone dasar kulit Anda (Warm, Cool, atau Neutral) bersifat genetik dan cenderung permanen sepanjang hidup. Namun, tingkat kontras rambut atau kecerahan kulit bisa mengalami sedikit penyesuaian, yang mungkin menggeser preferensi Anda ke musim tetangga dalam keluarga yang sama.',
+    a: 'Undertone dasar kulit Anda (Warm, Cool, atau Neutral) bersifat genetik dan cenderung permanen sepanjang hidup. Namun, tingkat kontras rambut atau kecerahan kulit bisa mengalami sedikit penyesuaian, sehingga hasil Anda bisa bergeser ke season mendekati dalam keluarga yang sama.',
   },
   {
     q: 'Mengapa GlowMatch memverifikasi pergelangan tangan selain wajah?',
@@ -32,28 +32,28 @@ const FAQS = [
 
 const SEASONS_OVERVIEW = [
   {
-    name: 'Spring (Musim Semi)',
+    name: 'Spring',
     family: 'Warm & Clear',
     color: 'from-amber-400 to-rose-400',
     desc: 'Cerah, hangat, dan berenergi. Cocok dengan warna peach, coral cerah, warm turquoise, dan emas kuning berkilau.',
     tags: ['Light Spring', 'True Spring', 'Bright Spring'],
   },
   {
-    name: 'Summer (Musim Panas)',
+    name: 'Summer',
     family: 'Cool & Soft',
     color: 'from-sky-400 to-pink-400',
     desc: 'Sejuk, lembut, dan elegan. Menyatu indah dengan lavender, baby pink, powder blue, soft navy, dan perak.',
     tags: ['Light Summer', 'True Summer', 'Soft Summer'],
   },
   {
-    name: 'Autumn (Musim Gugur)',
+    name: 'Autumn',
     family: 'Warm & Muted',
     color: 'from-amber-600 to-orange-700',
     desc: 'Hangat, kaya, dan membumi. Memancarkan aura mewah dengan terracotta, olive, mustard, rust, dan bronze.',
     tags: ['Soft Autumn', 'True Autumn', 'Deep Autumn'],
   },
   {
-    name: 'Winter (Musim Dingin)',
+    name: 'Winter',
     family: 'Cool & Deep / Bright',
     color: 'from-blue-600 to-fuchsia-600',
     desc: 'Kontras tajam, tegas, dan jernih. Sempurna dengan warna permata seperti ruby, sapphire, emerald, true black, dan icy white.',
@@ -96,7 +96,7 @@ const Home = () => {
           </div>
           
           <p className="text-base sm:text-lg text-gray-500 mb-8 leading-relaxed max-w-xl">
-            Kenali 12 musim warna terbaikmu melalui analisis AI cerdas—memadukan fitur wajah, rona kulit, dan verifikasi undertone pergelangan tangan untuk hasil personal yang presisi.
+            Kenali season warnamu lewat analisis AI yang membaca fitur wajah, warna kulit, dan undertone dari pergelangan tangan. Hasilnya personal dan bisa langsung kamu pakai.
           </p>
           
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-12">
@@ -149,14 +149,6 @@ const Home = () => {
               <div className="absolute w-full h-16 bg-gradient-to-b from-glowmatch-primary/0 via-glowmatch-primary/20 to-glowmatch-primary/0 animate-[scan_3s_ease-in-out_infinite] -translate-y-8" />
             </div>
 
-            <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/50 text-xs">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-bold text-glowmatch-secondary">12 Seasonal Palette</span>
-                <span className="text-[10px] bg-purple-100 text-glowmatch-primary font-bold px-2 py-0.5 rounded-full">AI Match</span>
-              </div>
-              <p className="text-gray-500 text-[11px]">Harmoni warna yang mempertegas keanggunan alaminya.</p>
-            </div>
-
           </div>
         </div>
 
@@ -173,11 +165,11 @@ const Home = () => {
             Pernahkah Anda mengenakan pakaian tertentu dan tiba-tiba orang mengatakan Anda terlihat segar bersinar, namun di pakaian lain wajah Anda tampak lelah atau kusam? Itulah keajaiban <strong>Personal Color</strong>.
           </p>
           <p className="text-gray-600 leading-relaxed text-sm sm:text-base mt-3">
-            Warna personal ditentukan oleh interaksi antara rona dasar kulit (undertone), pigmen mata, warna rambut alami, dan tingkat kontras wajah. Sistem <strong>12 Seasonal Color</strong> mengelompokkannya menjadi 4 keluarga besar musim yang disempurnakan:
+            Warna personal ditentukan oleh interaksi antara rona dasar kulit (undertone), pigmen mata, warna rambut alami, dan tingkat kontras wajah. Sistem <strong>12 Seasonal Color</strong> mengelompokkannya ke dalam 4 keluarga season besar:
           </p>
         </div>
 
-        {/* Grid 4 Keluarga Musim */}
+        {/* Grid 4 Keluarga Season */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
           {SEASONS_OVERVIEW.map((season) => (
             <div key={season.name} className="bg-gray-50/70 border border-gray-100 rounded-2xl p-6 space-y-4 hover:shadow-md transition">
@@ -279,15 +271,15 @@ const Home = () => {
             <span className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Langkah 02</span>
             <h3 className="text-lg font-bold text-white">Verifikasi Undertone Ganda</h3>
             <p className="text-xs text-purple-200 leading-relaxed">
-              Sistem Gatekeeper menganalisis pergelangan tangan untuk mengonfirmasi rona darah dasar (Warm/Cool/Neutral), mengunci musim agar tidak tertipu kemerahan kulit sesaat.
+              Sistem Gatekeeper menganalisis pergelangan tangan untuk mengonfirmasi rona darah dasar (Warm/Cool/Neutral), lalu mengunci season agar hasil tidak terkecoh kemerahan kulit sesaat.
             </p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-3">
             <span className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Langkah 03</span>
-            <h3 className="text-lg font-bold text-white">Ensemble 12-Musim & Swatch</h3>
+            <h3 className="text-lg font-bold text-white">Ensemble 12 Season & Swatch</h3>
             <p className="text-xs text-purple-200 leading-relaxed">
-              Kombinasi model klasifikasi menghasilkan musim terbaik, pilihan musim tetangga untuk visual try-on secara langsung, serta rekomendasi busana yang dapat diunduh ke PDF.
+              Gabungan model klasifikasi menentukan season terbaikmu, menampilkan season mendekati untuk dicoba langsung lewat kamera, dan memberi rekomendasi warna serta busana yang bisa diunduh sebagai PDF.
             </p>
           </div>
         </div>

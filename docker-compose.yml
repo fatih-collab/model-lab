@@ -15,6 +15,9 @@ services:
       GLOWMATCH_WHITE_BALANCE: ${WHITE_BALANCE:-1}
       GLOWMATCH_WB_STRENGTH: ${WB_STRENGTH:-1.0}
       GLOWMATCH_MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-8}
+      GLOWMATCH_DEVICE: ${GLOWMATCH_DEVICE:-cpu}
+      GLOWMATCH_DATABASE_URL: ${GLOWMATCH_DATABASE_URL:-}
+      GLOWMATCH_CORS_ORIGINS: ${GLOWMATCH_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080}
     volumes:
       # Diisi di host dengan backend/scripts/extract_models.py (lihat DEPLOYMENT.md)
       - ./backend/models/undertone:/app/models/undertone:ro
@@ -23,6 +26,36 @@ services:
     expose:
       - "8000"
     mem_limit: ${API_MEMORY:-4g}
+
+  # Migrasi skema database sekali jalan: docker compose --profile migrate run --rm migrate
+  migrate:
+    build: ./backend
+    image: glowmatch-api:latest
+    profiles: ["migrate"]
+    restart: "no"
+    environment:
+      GLOWMATCH_MIGRATION_DATABASE_URL: ${GLOWMATCH_MIGRATION_DATABASE_URL:-}
+      GLOWMATCH_LOAD_MODELS: "0"
+    command: ["alembic", "upgrade", "head"]
+
+  # PostgreSQL lokal opsional (jika tidak memakai Neon): docker compose --profile local-db up -d
+  db:
+    image: postgres:16-alpine
+    profiles: ["local-db"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-glowmatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-glowmatch_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-glowmatch}
+    ports:
+      - "${POSTGRES_PORT:-127.0.0.1:5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-glowmatch} -d ${POSTGRES_DB:-glowmatch}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   web:
     build: ./model-lab-Front-end
@@ -53,3 +86,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  postgres_data:

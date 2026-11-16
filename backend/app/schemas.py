@@ -15,20 +15,44 @@ class BaseModel(_BaseModel):
 
 
 class Color(BaseModel):
-    name: str
+    name: str                                 # boleh kosong untuk warna palet lengkap
     hex: str
+    source: Optional[str] = None              # official | estimasi (data Excel)
 
 
 class PaletteGroups(BaseModel):
     utama: list[Color]
     netral: list[Color]
+    lengkap: list[Color] = []
     hindari: list[Color]
+
+
+class RecommendedColor(BaseModel):
+    name: str
+    hex: str
+    source: str = "official"                  # official | estimasi
+
+
+class AxisValue(BaseModel):
+    value: float
+    label: str
+
+
+class ColorRecommendation(BaseModel):
+    """Rekomendasi warna per season dari "Color Season Palette.xlsx"."""
+    season: str
+    axis: dict[str, AxisValue] = {}           # undertone | value | chroma
+    chromatic: list[str]                      # 28 hex palet season
+    neutral: list[str]                        # 4 hex netral
+    flatter: list[RecommendedColor]           # warna yang paling mendukung
+    avoid: list[RecommendedColor]             # warna yang sebaiknya dihindari
 
 
 class Palette(BaseModel):
     description: str
     keywords: list[str]
     palettes: PaletteGroups
+    rekomendasi: Optional[ColorRecommendation] = None
 
 
 class WhiteBalance(BaseModel):
@@ -229,6 +253,9 @@ class HistoryItem(BaseModel):
 
     # Snapshot season atau rekomendasi yang dipilih.
     selected_season: Optional[dict[str, Any]] = None
+
+    # Rekomendasi warna untuk season yang disimpan.
+    recommendations: Optional[ColorRecommendation] = None
 
     # Snapshot profil pada saat analisis dilakukan.
     profile_snapshot: Optional[dict[str, Any]] = None

@@ -7,7 +7,7 @@ import { useSmoothedBox } from '../hooks/useSmoothedBox';
 
 /**
  * Coba palet secara live: cincin radial burst mengikuti wajah real-time (box dari /api/frame/check,
- * dihaluskan per animation frame), dan musim bisa ditukar langsung untuk membandingkan di wajah sendiri.
+ * dihaluskan per animation frame), dan season bisa ditukar langsung untuk membandingkan di wajah sendiri.
  */
 export default function LiveTryOn({ options, selected, onSelect }) {
   const camera = useCamera();

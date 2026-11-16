@@ -249,7 +249,7 @@ export const FASHION_RECOMMENDATIONS = {
       grooming: 'Sepatu boots kulit cokelat saddle, frame kacamata warm tortoise pekat.',
     },
     looks: [
-      { name: 'Hangat Musim Gugur', colors: ['#D2691E', '#F1E2C3', '#708238'], desc: 'Atasan pumpkin cerah dipadu bawahan cream dan luaran olive green.' },
+      { name: 'Hangat ala Autumn', colors: ['#D2691E', '#F1E2C3', '#708238'], desc: 'Atasan pumpkin cerah dipadu bawahan cream dan luaran olive green.' },
       { name: 'Gaya Profesional Karismatik', colors: ['#5A3A29', '#C19A6B', '#D4A017'], desc: 'Blazer cokelat tua pekat dengan celana camel dan dasi mustard emas.' },
       { name: 'Makan Malam Spesial', colors: ['#C0583A', '#2A7B79', '#8F7A62'], desc: 'Setelan terracotta berpadu aksen syal teal dan tas kulit warm taupe.' },
     ],

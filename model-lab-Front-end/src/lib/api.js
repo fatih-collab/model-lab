@@ -210,4 +210,15 @@ export const api = {
       method: 'DELETE',
       signal,
     }),
+
+  // ----------------------------------------------------------
+  // CHAT AI: rekomendasi outfit per season (RAG + 9router)
+  // ----------------------------------------------------------
+
+  chat: ({ season_id, message, history = [] }, signal) =>
+    request('/chat', {
+      method: 'POST',
+      json: { season_id, message, history },
+      signal,
+    }),
 };

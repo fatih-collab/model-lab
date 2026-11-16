@@ -51,3 +51,29 @@ def test_chat_endpoint_unconfigured(client, monkeypatch):
     monkeypatch.setattr(chat, "settings", type("S", (), {"ai_api_key": "", "ai_model": ""})())
     r = client.post("/api/chat", json={"season_id": "estate_cool", "message": "outfit santai?"})
     assert r.status_code == 503
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("outfit untuk Deep Autumn dong", "autunno_deep"),
+    ("kalau autumn deep gimana?", "autunno_deep"),
+    ("saya true summer", "estate_cool"),
+    ("Cool Summer cocok apa", "estate_cool"),
+    ("outfit kerja", None),
+    ("deep spring", None),  # kombinasi tidak ada
+])
+def test_detect_season(text, expected):
+    assert chat.detect_season(text) == expected
+
+
+def test_chat_without_season_asks_user(client, monkeypatch):
+    monkeypatch.setattr(chat, "_call_llm", lambda m: pytest.fail("LLM tidak boleh dipanggil"))
+    r = client.post("/api/chat", json={"message": "outfit kerja?"})
+    assert r.status_code == 200
+    assert r.json()["reply"] == chat.NO_SEASON_REPLY
+
+
+def test_chat_season_written_in_message_wins(client, monkeypatch):
+    monkeypatch.setattr(chat, "_call_llm", lambda m: '{"reply":"ok","outfits":[]}')
+    r = client.post("/api/chat", json={"season_id": "estate_cool", "message": "kalau Deep Autumn?"})
+    assert r.json()["season_id"] == "autunno_deep"
+    assert r.json()["season_name"] == "Deep Autumn"

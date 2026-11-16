@@ -829,7 +829,7 @@ def create_app(
     ):
         """Chat stylist AI: hanya membahas outfit sesuai season."""
 
-        if body.season_id not in rules_engine.WHEEL:
+        if body.season_id and body.season_id not in rules_engine.WHEEL:
             raise HTTPException(status_code=400, detail="Season tidak dikenal.")
 
         if not chat_limiter.allow(session_id):
@@ -844,10 +844,18 @@ def create_app(
         except LookupError:
             gender = None
 
+        # Prioritas season: ditulis di pesan > dikirim klien > riwayat terbaru.
+        season_id = chat.detect_season(body.message) or body.season_id
+        if not season_id:
+            latest = database_instance.get_history(session_id=session_id, limit=1)
+            season_id = latest[0].get("season_id") if latest else None
+        if season_id not in rules_engine.WHEEL:
+            return {"reply": chat.NO_SEASON_REPLY, "outfits": []}
+
         try:
             return await run_in_threadpool(
                 chat.answer,
-                body.season_id,
+                season_id,
                 body.message,
                 [turn.model_dump() for turn in body.history],
                 gender,

@@ -139,7 +139,7 @@ class Settings:
     )
 
     ai_max_tokens: int = field(
-        default_factory=lambda: int(_env("AI_MAX_TOKENS", "450"))
+        default_factory=lambda: int(_env("AI_MAX_TOKENS", "1500"))
     )
 
     ai_timeout: float = field(

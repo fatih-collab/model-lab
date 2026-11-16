@@ -4,6 +4,8 @@ import { FiMessageCircle, FiSend, FiX } from 'react-icons/fi';
 import { api } from '../lib/api';
 import { seasonOptions, useAnalysis } from '../context/AnalysisContext';
 
+const pickSeason = (id, name) => (id ? { id, name: name || id } : null);
+
 const SUGGESTIONS = [
   'Outfit kerja yang cocok?',
   'Outfit santai akhir pekan',
@@ -72,8 +74,9 @@ function OutfitCard({ outfit }) {
 export default function ChatBubble() {
   const { result, selectedId } = useAnalysis();
   const [open, setOpen] = useState(false);
-  const [allSeasons, setAllSeasons] = useState([]);
-  const [seasonId, setSeasonId] = useState(null);
+  // Season terakhir yang dipakai percakapan (bisa berganti jika pengguna menulis season lain).
+  const [chatSeason, setChatSeason] = useState(null);
+  const [latestSeason, setLatestSeason] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,24 +84,31 @@ export default function ChatBubble() {
   const listRef = useRef(null);
   const abortRef = useRef(null);
 
-  // Season dari hasil analisis (hasil akhir + season mendekati), bila ada.
-  const analysisSeasons = useMemo(() => seasonOptions(result), [result]);
-  const options = analysisSeasons.length ? analysisSeasons : allSeasons;
+  // Season hasil analisis yang sedang dibuka (pilihan pengguna di halaman hasil).
+  const currentSeason = useMemo(() => {
+    const options = seasonOptions(result);
+    const s = options.find((o) => o.id === selectedId) ?? options[0];
+    return s ? pickSeason(s.id, s.name) : null;
+  }, [result, selectedId]);
 
-  // Tanpa hasil analisis: muat daftar 12 season sekali saat chat dibuka.
+  // Tanpa hasil analisis aktif: ambil season terbaru dari riwayat saat chat dibuka.
   useEffect(() => {
-    if (!open || analysisSeasons.length || allSeasons.length) return;
+    if (!open || currentSeason || latestSeason) return;
     const ctrl = new AbortController();
-    api.seasons(ctrl.signal).then(setAllSeasons).catch(() => {});
+    api.getHistory(1, ctrl.signal)
+      .then((rows) => {
+        const row = Array.isArray(rows) ? rows[0] : null;
+        if (row) setLatestSeason(pickSeason(row.season_id, row.season_name));
+      })
+      .catch(() => {});
     return () => ctrl.abort();
-  }, [open, analysisSeasons.length, allSeasons.length]);
+  }, [open, currentSeason, latestSeason]);
 
-  const activeId =
-    (seasonId && options.some((o) => o.id === seasonId) && seasonId) ||
-    (selectedId && options.some((o) => o.id === selectedId) && selectedId) ||
-    options[0]?.id ||
-    null;
-  const activeSeason = options.find((o) => o.id === activeId);
+  // Season percakapan hanya berlaku selama hasil analisis aktif tidak berganti.
+  const convoSeason = chatSeason && chatSeason.base === (currentSeason?.id ?? null)
+    ? chatSeason.season
+    : null;
+  const activeSeason = convoSeason ?? currentSeason ?? latestSeason;
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
@@ -106,15 +116,9 @@ export default function ChatBubble() {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const changeSeason = (id) => {
-    setSeasonId(id);
-    setMessages([]); // konteks baru untuk season berbeda
-    setError('');
-  };
-
   const send = async (text) => {
     const message = text.trim();
-    if (!message || loading || !activeId) return;
+    if (!message || loading) return;
 
     const history = messages
       .slice(-MAX_HISTORY)
@@ -130,7 +134,15 @@ export default function ChatBubble() {
     abortRef.current = ctrl;
 
     try {
-      const res = await api.chat({ season_id: activeId, message, history }, ctrl.signal);
+      // Backend memprioritaskan season yang ditulis di pesan, lalu season ini,
+      // lalu season terbaru di riwayat.
+      const res = await api.chat({ season_id: activeSeason?.id ?? null, message, history }, ctrl.signal);
+      if (res.season_id) {
+        setChatSeason({
+          season: pickSeason(res.season_id, res.season_name),
+          base: currentSeason?.id ?? null,
+        });
+      }
       setMessages((m) => [...m, { role: 'assistant', content: res.reply, outfits: res.outfits }]);
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -151,46 +163,37 @@ export default function ChatBubble() {
           <header className="flex items-center justify-between gap-2 bg-glowmatch-primary px-4 py-3 text-white">
             <div className="min-w-0">
               <p className="text-sm font-semibold">Stylist AI GlowMatch</p>
-              <p className="text-[11px] opacity-80">Rekomendasi outfit sesuai season</p>
+              <p className="truncate text-[11px] opacity-80">
+                {activeSeason ? `Season: ${activeSeason.name}` : 'Rekomendasi outfit sesuai season'}
+              </p>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Tutup chat" className="rounded-full p-1 hover:bg-white/20">
               <FiX size={18} />
             </button>
           </header>
 
-          <div className="border-b border-gray-100 px-4 py-2">
-            <label className="flex items-center gap-2 text-xs text-gray-500">
-              Season
-              <select
-                value={activeId ?? ''}
-                onChange={(e) => changeSeason(e.target.value)}
-                disabled={!options.length}
-                className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-glowmatch-secondary"
-              >
-                {!options.length && <option value="">Memuat season...</option>}
-                {options.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}{o.id === result?.result?.season?.id ? ' (hasil kamu)' : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {messages.length === 0 && (
               <div className="space-y-2 text-sm text-gray-500">
-                <p>
-                  Hai! Tanyakan outfit yang cocok untuk season
-                  {' '}<b className="text-glowmatch-secondary">{activeSeason?.name ?? '...'}</b>.
-                </p>
+                {activeSeason ? (
+                  <p>
+                    Hai! Aku pakai season terbarumu,
+                    {' '}<b className="text-glowmatch-secondary">{activeSeason.name}</b>.
+                    {' '}Mau season lain? Tulis saja namanya, misalnya &ldquo;outfit untuk Deep Autumn&rdquo;.
+                  </p>
+                ) : (
+                  <p>
+                    Hai! Lakukan analisis wajah dulu, atau tulis season-mu di pesan,
+                    misalnya &ldquo;outfit kerja untuk Light Spring&rdquo;.
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       type="button"
                       onClick={() => send(s)}
-                      disabled={!activeId}
+                      disabled={!activeSeason}
                       className="rounded-full border border-glowmatch-primary/30 px-3 py-1 text-xs text-glowmatch-primary hover:bg-glowmatch-primary/5 disabled:opacity-50"
                     >
                       {s}
@@ -236,7 +239,7 @@ export default function ChatBubble() {
             />
             <button
               type="submit"
-              disabled={loading || !input.trim() || !activeId}
+              disabled={loading || !input.trim()}
               aria-label="Kirim"
               className="rounded-full bg-glowmatch-primary p-2.5 text-white disabled:opacity-50"
             >

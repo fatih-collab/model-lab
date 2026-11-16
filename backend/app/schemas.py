@@ -323,7 +323,9 @@ class ChatTurn(BaseModel):
 class ChatRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    season_id: str = Field(min_length=1, max_length=40)
+    # Opsional: season percakapan/hasil analisis yang sedang dibuka.
+    # Jika kosong, backend memakai season terbaru dari riwayat.
+    season_id: Optional[str] = Field(default=None, max_length=40)
     message: str = Field(min_length=1, max_length=500)
     history: list[ChatTurn] = Field(default_factory=list, max_length=10)
 
@@ -336,6 +338,8 @@ class ChatOutfit(BaseModel):
 
 
 class ChatResponse(BaseModel):
+    season_id: Optional[str] = None
+    season_name: Optional[str] = None
     reply: str
     outfits: list[ChatOutfit] = Field(default_factory=list)
     off_topic: bool = False

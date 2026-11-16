@@ -167,7 +167,7 @@ const Home = () => {
       </section>
 
       {/* CARA KERJA */}
-      <Reveal as="section" className="mt-36 rounded-[36px] bg-ink text-paper px-7 py-14 sm:px-14 sm:py-20 relative overflow-hidden">
+      <Reveal as="section" id="cara-kerja" className="scroll-mt-24 mt-36 rounded-[36px] bg-ink text-paper px-7 py-14 sm:px-14 sm:py-20 relative overflow-hidden">
         <span className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-accent/40 blur-[90px] animate-[gm-drift-b_18s_ease-in-out_infinite]" aria-hidden="true" />
         <span className="absolute -left-20 bottom-0 w-72 h-72 rounded-full bg-[#6b46c1]/40 blur-[90px] animate-[gm-drift-a_22s_ease-in-out_infinite]" aria-hidden="true" />
         <h2 className="gm-display text-paper text-[44px] sm:text-[60px] relative">

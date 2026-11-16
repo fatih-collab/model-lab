@@ -17,7 +17,8 @@ import logoTileUrl from '../assets/logo-tile.webp';
  *  - menuOpen       : logo bergeser memberi ruang untuk menu.
  *  - onHoverChange  : dipanggil true/false saat kursor masuk/keluar bentuk logo.
  *  - onTap          : ketukan jari pada logo (layar sentuh tidak punya hover).
- *  - controls       : node tambahan (tombol Menu) di samping tombol putar.
+ *  - controls       : node tambahan (mis. petunjuk atau tombol) di bawah logo.
+ *  - showSpinButton : tampilkan tombol "Putar logo" (bawaan true). Logo tetap bisa diputar dengan diseret.
  */
 
 const TAU = Math.PI * 2;
@@ -50,7 +51,7 @@ function tileShape(radius) {
   return s;
 }
 
-export default function LogoSculpture({ menuOpen = false, onHoverChange, onTap, controls = null }) {
+export default function LogoSculpture({ menuOpen = false, onHoverChange, onTap, controls = null, showSpinButton = true }) {
   const hostRef = useRef(null);
   const spinRef = useRef(() => {});
   const syncOpenRef = useRef(() => {});
@@ -434,7 +435,7 @@ export default function LogoSculpture({ menuOpen = false, onHoverChange, onTap, 
       </div>
       <div className="play-controls">
         <div className="play-row">
-          {available && (
+          {available && showSpinButton && (
             <button type="button" className="spin-button" onClick={() => spinRef.current()} aria-label="Putar logo GlowMatch">
               <FiRotateCw aria-hidden="true" size={14} />
               Putar logo

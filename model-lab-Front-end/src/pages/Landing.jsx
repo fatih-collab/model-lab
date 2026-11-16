@@ -1,43 +1,41 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiChevronDown } from 'react-icons/fi';
+import { FiArrowRight } from 'react-icons/fi';
 import logoTile from '../assets/logo-tile.webp';
 import '../landing.css';
 
 // Three.js (~600 KB) hanya diunduh ketika landing page dibuka.
 const LogoSculpture = lazy(() => import('../components/LogoSculpture'));
 
-// Menu yang muncul saat kursor menyentuh logo. Warna titik = empat lingkaran di logo.
-const MENU_ITEMS = [
-  { label: 'Mulai Analisis', to: '/scan-wajah', color: '#f69179', primary: true },
-  { label: 'Hasil Warna', to: '/hasil', color: '#96a8e0' },
-  { label: 'Riwayat', to: '/riwayat', color: '#aa2870' },
-  { label: 'Simpan Hasil', to: '/profil?tab=simpan', color: '#7e8a59' },
-  { label: 'Profil', to: '/profil', color: '#f69179' },
-  { label: 'Teori Warna', to: '/penjelasan-analisis', color: '#96a8e0' },
-  { label: 'Tentang GlowMatch', to: '/beranda', color: '#aa2870' },
+// Satu daftar tujuan untuk navigasi atas DAN menu logo, supaya label selalu sama.
+// Aksi utama ("Mulai analisis") sengaja tidak masuk sini: ia punya tombol sendiri di hero.
+const SITE_LINKS = [
+  { label: 'Tentang', to: '/beranda' },
+  { label: 'Hasil warna', to: '/hasil' },
+  { label: 'Riwayat', to: '/riwayat' },
+  { label: 'Teori warna', to: '/penjelasan-analisis' },
+  { label: 'Profil', to: '/profil' },
 ];
+
+// Urutan proses analisis (informasi, bukan tautan).
+const FLOW_STEPS = ['Pindai wajah', 'Cek undertone', 'Palet season', 'Unduh PDF'];
 
 const CLOSE_DELAY_MS = 320;
 
+// Menu tambahan yang muncul saat kursor menyentuh logo 3D (atau logo diketuk di layar sentuh).
+// Navigasi utama tetap terlihat di bagian atas; menu ini hanya jalan pintas.
 function LogoMenu({ open, onEnter, onLeave, onBlur }) {
-  const count = MENU_ITEMS.length;
+  const count = SITE_LINKS.length;
   return (
-    <nav id="logo-menu" className={`logo-menu${open ? ' is-open' : ''}`} aria-label="Menu GlowMatch" onPointerEnter={onEnter} onPointerLeave={onLeave} onFocus={onEnter} onBlur={onBlur}>
+    <nav id="logo-menu" className={`logo-menu${open ? ' is-open' : ''}`} aria-label="Menu logo GlowMatch" onPointerEnter={onEnter} onPointerLeave={onLeave} onFocus={onEnter} onBlur={onBlur}>
       <ul>
-        {MENU_ITEMS.map((item, i) => {
-          // Lengkung tipis: item di ujung sedikit menjauh dari logo, item tengah paling dekat.
-          const t = count > 1 ? (i / (count - 1)) * 2 - 1 : 0;
-          const style = { '--i': i, '--n': count, '--x': `${Math.round(34 * t * t)}px` };
-          return (
-            <li key={item.label} style={style}>
-              <Link to={item.to} className={item.primary ? 'is-primary' : undefined} tabIndex={open ? 0 : -1}>
-                <span className="menu-dot" style={{ background: item.color }} aria-hidden="true" />
-                <span className="menu-label">{item.label}</span>
-              </Link>
-            </li>
-          );
-        })}
+        {SITE_LINKS.map((item, i) => (
+          <li key={item.to} style={{ '--i': i, '--n': count }}>
+            <Link to={item.to} tabIndex={open ? 0 : -1}>
+              <span className="menu-label">{item.label}</span>
+            </Link>
+          </li>
+        ))}
       </ul>
     </nav>
   );
@@ -108,43 +106,46 @@ export default function Landing() {
 
   useEffect(() => () => window.clearTimeout(closeTimer.current), []);
 
-  const menuButton = (
-    <button
-      type="button"
-      className="spin-button"
-      onClick={togglePinned}
-      aria-expanded={open}
-      aria-controls="logo-menu"
-    >
-      Menu
-      <FiChevronDown className="chev" aria-hidden="true" size={14} />
-    </button>
+  // Logo bisa diputar dengan diseret; petunjuk ini menggantikan tombol "Putar logo" dan "Menu".
+  const sculptureHint = (
+    <p className="drag-hint">
+      <span className="hint-hover">Seret logo untuk memutarnya</span>
+      <span className="hint-touch">Geser untuk memutar, ketuk untuk menu</span>
+    </p>
   );
 
   return (
     <div className="gm-landing">
       <main className="studio-footer" aria-label="GlowMatch — analisis warna personal">
-        <div className="studio-topline">
+        <header className="studio-topline">
           <div className="wordmark" role="img" aria-label="GlowMatch">
             <img className="wordmark-mark" src={logoTile} alt="" width="32" height="32" />
             <span>glowmatch<span className="wordmark-period">.</span></span>
           </div>
-          <div className="studio-descriptor">WARNA YANG PAS.<br />PERCAYA DIRI, SETIAP HARI.</div>
-          <div className="availability"><span aria-hidden="true" />AI SIAP MEMINDAI</div>
-        </div>
+          <nav className="site-nav" aria-label="Navigasi utama">
+            <ul>
+              {SITE_LINKS.map((item) => (
+                <li key={item.to}><Link to={item.to}>{item.label}</Link></li>
+              ))}
+            </ul>
+          </nav>
+          <div className="availability"><span aria-hidden="true" />AI siap memindai</div>
+        </header>
 
         <div className="studio-main">
           <div className="studio-story">
-            <div className="eyebrow"><span className="eyebrow-line" /> PERSONAL COLOR ANALYSIS BERTENAGA AI</div>
+            <div className="eyebrow"><span className="eyebrow-line" /> Personal color analysis bertenaga AI</div>
             <h1>Temukan warnamu.<br />Pancarkan <em>cahayamu.</em></h1>
             <p className="studio-intro">
-              Kenali season warnamu lewat analisis AI.<br />
-              Dari wajah, kulit, hingga undertone pergelangan tangan,<br className="desktop-break" /> hasilnya personal dan siap dipakai.
+              Kenali season warnamu lewat analisis AI. Dari wajah, kulit, hingga undertone
+              pergelangan tangan, hasilnya personal dan siap dipakai.
             </p>
-            <Link to="/scan-wajah" className="conversation">
-              <span className="conversation-icon" aria-hidden="true">↗</span>
-              <div><span className="conversation-label">SIAP MULAI?</span><p>Mulai analisis sekarang.</p></div>
-            </Link>
+            <div className="hero-actions">
+              <Link to="/scan-wajah" className="gm-btn">
+                Mulai analisis <FiArrowRight aria-hidden="true" />
+              </Link>
+              <Link to="/beranda#cara-kerja" className="gm-btn-ghost">Lihat cara kerjanya</Link>
+            </div>
           </div>
 
           <div
@@ -159,7 +160,7 @@ export default function Landing() {
                 </div>
               )}
             >
-              <LogoSculpture menuOpen={open} onHoverChange={onLogoHover} onTap={togglePinned} controls={menuButton} />
+              <LogoSculpture menuOpen={open} onHoverChange={onLogoHover} onTap={togglePinned} showSpinButton={false} controls={sculptureHint} />
             </Suspense>
             <LogoMenu open={open} onEnter={onMenuEnter} onLeave={onMenuLeave} onBlur={onBlurMenu} />
           </div>
@@ -168,9 +169,14 @@ export default function Landing() {
         <footer className="footer-bottom">
           <div className="footer-bottom-main">
             <p className="bottom-manifesto">Kenali warna.<br /><em>Percaya diri.</em></p>
-            <div className="display-navigation" aria-label="Alur analisis">
-              <span>Pindai wajah</span><span>Cek undertone</span><span>Palet season</span><span>Unduh PDF</span>
-            </div>
+            <ol className="flow-steps" aria-label="Alur analisis">
+              {FLOW_STEPS.map((step, i) => (
+                <li key={step}>
+                  <span className="step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
           </div>
         </footer>
       </main>

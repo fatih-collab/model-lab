@@ -45,26 +45,28 @@
 .gm-landing .wordmark{display:flex;align-items:center;gap:12px;font-size:32px;letter-spacing:-1.8px;line-height:1;color:var(--ink)}
 .gm-landing .wordmark-mark{width:32px;height:32px;border-radius:9px;display:block;box-shadow:0 2px 8px rgba(120,60,120,.18)}
 .gm-landing .wordmark-period{color:var(--accent)}
-/* Teks huruf kapital kecil: 12px (batas minimum), bobot 500, tracking .08em. */
-.gm-landing .studio-descriptor{font-size:.75rem;font-weight:500;line-height:1.5;letter-spacing:.08em;color:var(--intro);margin-left:16px;margin-right:auto;padding-left:56px}
-.gm-landing .availability{display:flex;align-items:center;gap:8px;font-size:.75rem;font-weight:500;letter-spacing:.08em;color:var(--intro)}
+/* Navigasi utama yang selalu terlihat (sebelumnya hanya lewat hover logo / tombol Menu). */
+.gm-landing .site-nav{margin-left:auto;margin-right:40px}
+.gm-landing .site-nav ul{display:flex;align-items:center;gap:28px;list-style:none;margin:0;padding:0}
+.gm-landing .site-nav a{position:relative;display:inline-flex;align-items:center;min-height:44px;font-size:.875rem;font-weight:500;color:var(--ink);text-decoration:none}
+.gm-landing .site-nav a::after{content:'';position:absolute;left:0;right:0;bottom:10px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.gm-landing .site-nav a:hover::after,.gm-landing .site-nav a:focus-visible::after{transform:scaleX(1);transform-origin:left}
+/* Huruf kapital kecil: 12px (batas minimum), bobot 500, tracking .08em. Teks sumbernya sentence case. */
+.gm-landing .availability{display:flex;align-items:center;gap:8px;font-size:.75rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--intro)}
 .gm-landing .availability>span{width:6px;height:6px;border-radius:50%;background:var(--olive);box-shadow:0 0 0 4px #7e8a590d}
 
 .gm-landing .studio-main{display:grid;grid-template-columns:1.09fr 1fr;align-items:center;flex:1;min-height:590px;position:relative;padding-top:40px;padding-bottom:42px}
 .gm-landing .studio-story{position:relative;z-index:2;padding-top:9px}
-.gm-landing .eyebrow{display:flex;align-items:center;gap:12px;font-size:.75rem;font-weight:500;letter-spacing:.08em;line-height:1.5;color:var(--intro);margin-bottom:32px}
+.gm-landing .eyebrow{display:flex;align-items:center;gap:12px;font-size:.75rem;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase;color:var(--intro);margin-bottom:32px}
 .gm-landing .eyebrow-line{width:24px;height:1px;background:#b49bc0}
 .gm-landing h1{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(72px,7.9vw,132px);font-weight:400;letter-spacing:-.025em;line-height:1;margin:0 -40px 32px 0;white-space:nowrap}
 .gm-landing h1 em{font-weight:400;color:#b0366e;display:inline-block;padding-right:.08em;background:linear-gradient(95deg,var(--grad-start,#e0583f) 0%,var(--accent) 52%,var(--brand) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 /* body-lg: 18px / 1.6, lebar baris dibatasi. */
 .gm-landing .studio-intro{font-size:1.125rem;line-height:1.6;color:var(--intro);margin:0;max-width:34rem}
 
-.gm-landing .conversation{display:flex;gap:12px;align-items:center;margin-top:40px;width:max-content;max-width:100%;color:inherit;text-decoration:none}
-.gm-landing .conversation-icon{display:flex;align-items:center;justify-content:center;background:var(--chip);border-radius:50%;width:43px;height:43px;font-size:23px;font-family:Arial,sans-serif;flex-shrink:0;transition:background .18s,color .18s,transform .18s}
-.gm-landing .conversation:hover .conversation-icon{background:var(--ink);color:var(--paper);transform:translate(2px,-2px)}
-.gm-landing .conversation:active .conversation-icon{transform:translate(0,0) scale(.97)}
-.gm-landing .conversation-label{font-size:.75rem;font-weight:500;letter-spacing:.08em;color:var(--label)}
-.gm-landing .conversation p{margin:4px 0 0;font-size:1rem;font-weight:500}
+/* CTA hero: tombol sungguhan (primer + sekunder), tinggi ±54px. */
+.gm-landing .hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:40px}
+.gm-landing .hero-actions .gm-btn,.gm-landing .hero-actions .gm-btn-ghost{font-size:1rem;padding:15px 28px;text-decoration:none}
 
 .gm-landing .studio-art{width:100%;height:100%;min-height:490px;position:relative;isolation:isolate}
 .gm-landing .sculpture-wrap{position:absolute;inset:-8px -46px -4px -20px;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -82,7 +84,7 @@
 .gm-landing .spin-button:active{transform:translateY(0) scale(.97)}
 .gm-landing .spin-button svg.chev{transition:transform .25s}
 .gm-landing .spin-button[aria-expanded="true"] svg.chev{transform:rotate(180deg)}
-.gm-landing .drag-hint{font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-style:italic;color:var(--label)}
+.gm-landing .drag-hint{margin:0;font-size:.875rem;color:var(--label)}
 .gm-landing .hint-touch{display:none}
 .gm-landing .fallback-logo{position:absolute;inset:0;margin:auto;width:min(62%,330px);aspect-ratio:1;border-radius:20%;box-shadow:0 18px 40px rgba(120,60,140,.18);transition:transform .5s cubic-bezier(.22,1,.36,1)}
 .gm-landing .studio-art.is-menu-open .fallback-logo{transform:translateX(-18%)}
@@ -93,21 +95,20 @@
 .gm-landing .logo-menu ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;align-items:flex-start}
 .gm-landing .logo-menu li{opacity:0;transform:translateX(calc(var(--x,0px) + 26px)) scale(.94);transition:opacity .3s ease,transform .45s cubic-bezier(.22,1.2,.36,1);transition-delay:calc((var(--n) - var(--i)) * 22ms)}
 .gm-landing .logo-menu.is-open li{opacity:1;transform:translateX(var(--x,0px));transition-delay:calc(var(--i) * 45ms)}
-.gm-landing .logo-menu a{display:flex;align-items:center;gap:11px;padding:9px 18px 9px 13px;border:1px solid var(--btn-line);border-radius:30px;background:rgba(251,247,236,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink);text-decoration:none;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s,color .18s}
+/* Item rata kiri (tanpa lengkung), tanpa titik warna dekoratif. */
+.gm-landing .logo-menu a{display:flex;align-items:center;min-height:44px;padding:10px 20px;border:1px solid var(--btn-line);border-radius:30px;background:rgba(251,247,236,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink);text-decoration:none;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s,color .18s}
 .gm-landing .logo-menu a:hover,.gm-landing .logo-menu a:focus-visible{background:var(--btn-hover);border-color:var(--btn-hover-line);transform:translateX(-4px)}
-.gm-landing .logo-menu a.is-primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
-.gm-landing .logo-menu a.is-primary:hover,.gm-landing .logo-menu a.is-primary:focus-visible{background:#3d2a54;border-color:#3d2a54}
-.gm-landing .menu-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(42,29,59,.06)}
 .gm-landing .menu-label{display:block;font-size:.875rem;font-weight:500;line-height:1.25}
-.gm-landing .menu-desc{display:block;font-size:.75rem;letter-spacing:.06em;line-height:1.4;margin-top:2px;color:var(--label);text-transform:uppercase}
-.gm-landing .logo-menu a.is-primary .menu-desc{color:#cdbfdc}
 
 .gm-landing .footer-bottom{border-top:1px solid var(--line);position:relative;z-index:2;padding-top:22px}
 .gm-landing .footer-bottom-main{display:flex;align-items:center;justify-content:space-between;gap:30px}
 /* Serif hanya >= 32px. em: #8f7a9c = 3.6:1, lolos untuk teks besar. */
 .gm-landing .bottom-manifesto{font-family:'Instrument Serif',Georgia,serif;font-size:2rem;line-height:1.05;margin:0;letter-spacing:-.01em}
 .gm-landing .bottom-manifesto em{color:#8f7a9c}
-.gm-landing .display-navigation{display:flex;gap:40px;font-size:.875rem;line-height:1.5}
+/* Alur analisis: daftar bernomor yang jelas bukan tautan (warna sekunder, tanpa hover). */
+.gm-landing .flow-steps{display:flex;gap:40px;list-style:none;margin:0;padding:0;font-size:.875rem;line-height:1.5;color:var(--intro)}
+.gm-landing .flow-steps li{display:flex;align-items:baseline;gap:8px}
+.gm-landing .step-num{font-size:.75rem;font-weight:500;color:var(--label);font-variant-numeric:tabular-nums}
 .gm-landing .privacy-note{display:flex;gap:8px;align-items:center;max-width:240px;font-size:.75rem;line-height:1.5;color:var(--intro)}
 .gm-landing .privacy-note svg{flex-shrink:0;width:15px;height:15px;color:var(--brand);opacity:.8}
 .gm-landing .footer-fineprint{margin-top:32px;display:flex;justify-content:space-between;align-items:center;color:var(--label);font-size:.75rem;line-height:1.5;letter-spacing:.04em}
@@ -117,10 +118,10 @@
 
 /* Ukuran teks TIDAK lagi diubah per breakpoint: token di atas berlaku di semua lebar layar.
    Media query hanya mengatur tata letak. */
-@media(min-width:1600px){.gm-landing .studio-footer{padding-top:48px;padding-bottom:32px}.gm-landing .studio-main{min-height:730px;padding-top:60px;padding-bottom:64px}.gm-landing .eyebrow{margin-bottom:40px}.gm-landing .studio-intro{font-size:1.25rem}.gm-landing .conversation{margin-top:48px}.gm-landing .sculpture-wrap{inset:-25px -46px -25px -25px}.gm-landing .art-caption{top:25px}.gm-landing .footer-bottom{padding-top:28px}.gm-landing .display-navigation{gap:48px}.gm-landing .footer-fineprint{margin-top:40px}.gm-landing .logo-menu a{padding:11px 22px 11px 15px}}
+@media(min-width:1600px){.gm-landing .studio-footer{padding-top:48px;padding-bottom:32px}.gm-landing .studio-main{min-height:730px;padding-top:60px;padding-bottom:64px}.gm-landing .eyebrow{margin-bottom:40px}.gm-landing .studio-intro{font-size:1.25rem}.gm-landing .hero-actions{margin-top:48px}.gm-landing .sculpture-wrap{inset:-25px -46px -25px -25px}.gm-landing .art-caption{top:25px}.gm-landing .footer-bottom{padding-top:28px}.gm-landing .flow-steps{gap:48px}.gm-landing .footer-fineprint{margin-top:40px}.gm-landing .logo-menu a{padding:11px 22px 11px 15px}}
 @media(min-width:1100px) and (min-height:900px){.gm-landing .studio-main{min-height:650px}.gm-landing .studio-footer{padding-top:45px;padding-bottom:30px}}
-@media(max-width:1100px){.gm-landing .studio-footer{padding-left:5vw;padding-right:5vw}.gm-landing .studio-main{min-height:570px;grid-template-columns:1.15fr 1fr}.gm-landing .studio-art{min-height:460px}.gm-landing h1{font-size:8.2vw}.gm-landing .studio-descriptor{padding-left:24px}.gm-landing .sculpture-wrap{inset:5px -35px 12px -25px}.gm-landing .art-caption{right:28px}.gm-landing .display-navigation{gap:24px}.gm-landing .drag-hint{font-size:16px}.gm-landing .logo-menu a{padding:8px 14px 8px 11px}.gm-landing .menu-desc{display:none}}
-@media(max-width:760px){.gm-landing .studio-footer{padding:26px 25px 24px;min-height:100svh}.gm-landing .studio-topline{min-height:32px}.gm-landing .wordmark{font-size:28px;gap:10px}.gm-landing .wordmark-mark{width:28px;height:28px;border-radius:8px}.gm-landing .studio-descriptor{display:none}.gm-landing .availability{letter-spacing:.04em;gap:6px}.gm-landing .availability>span{width:5px;height:5px}.gm-landing .studio-main{display:flex;flex-direction:column;align-items:stretch;padding:65px 0 31px;min-height:0;gap:9px}.gm-landing .studio-story{padding-top:0}.gm-landing .eyebrow{gap:8px;margin-bottom:24px}.gm-landing .eyebrow-line{width:20px}.gm-landing h1{font-size:clamp(36px,calc(12.2vw - 5px),89px);line-height:1.03;margin:0 0 24px;white-space:normal}.gm-landing .desktop-break{display:none}.gm-landing .conversation{margin-top:32px;gap:12px}.gm-landing .conversation-icon{width:44px;height:44px;font-size:21px}.gm-landing .studio-art{height:425px;min-height:0;margin-top:6px}.gm-landing .sculpture-wrap{inset:-12px -25px 0}.gm-landing .sculpture-canvas{inset:5px -5px 5px}.gm-landing .art-caption{top:13px;right:27px}.gm-landing .sculpture-shadow{bottom:67px;left:28%;width:44%;height:21px;filter:blur(14px)}.gm-landing .studio-art.is-menu-open .sculpture-shadow{transform:translateY(-34px) rotate(-5deg)}.gm-landing .play-controls{bottom:0;gap:10px}.gm-landing .spin-button{min-height:44px;padding:10px 18px}.gm-landing .drag-hint{font-size:17px}.gm-landing .footer-bottom{padding-top:24px}.gm-landing .footer-bottom-main{display:grid;grid-template-columns:1fr auto;gap:26px 15px}.gm-landing .bottom-manifesto{line-height:1.1}.gm-landing .display-navigation{grid-column:1 / -1;grid-row:2;gap:8px 16px;justify-content:flex-start;flex-wrap:wrap}.gm-landing .privacy-note{max-width:160px}.gm-landing .footer-fineprint{margin-top:24px}.gm-landing .fineprint-center{display:none}.gm-landing .fallback-logo{width:min(58%,240px)}.gm-landing .studio-art.is-menu-open .fallback-logo{transform:translateY(-70px) scale(.8)}
+@media(max-width:1100px){.gm-landing .studio-footer{padding-left:5vw;padding-right:5vw}.gm-landing .studio-main{min-height:570px;grid-template-columns:1.15fr 1fr}.gm-landing .studio-art{min-height:460px}.gm-landing h1{font-size:8.2vw}.gm-landing .studio-intro{max-width:24rem}.gm-landing .availability{display:none}.gm-landing .site-nav{margin-right:0}.gm-landing .site-nav ul{gap:24px}.gm-landing .sculpture-wrap{inset:5px -35px 12px -25px}.gm-landing .art-caption{right:28px}.gm-landing .flow-steps{gap:24px}.gm-landing .logo-menu a{padding:8px 16px}}
+@media(max-width:760px){.gm-landing .studio-footer{padding:26px 25px 24px;min-height:100svh}.gm-landing .studio-topline{min-height:32px;flex-wrap:wrap}.gm-landing .wordmark{font-size:28px;gap:10px}.gm-landing .wordmark-mark{width:28px;height:28px;border-radius:8px}.gm-landing .site-nav{order:3;width:100%;margin:12px 0 0}.gm-landing .site-nav ul{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 24px}.gm-landing .availability{display:flex;letter-spacing:.04em;gap:6px}.gm-landing .availability>span{width:5px;height:5px}.gm-landing .studio-main{display:flex;flex-direction:column;align-items:stretch;padding:40px 0 32px;min-height:0;gap:8px}.gm-landing .studio-story{padding-top:0}.gm-landing .eyebrow{gap:8px;margin-bottom:24px}.gm-landing .eyebrow-line{width:20px}.gm-landing h1{font-size:clamp(36px,calc(12.2vw - 5px),89px);line-height:1.03;margin:0 0 24px;white-space:normal}.gm-landing .hero-actions{margin-top:32px}.gm-landing .studio-art{height:425px;min-height:0;margin-top:6px}.gm-landing .sculpture-wrap{inset:-12px -25px 0}.gm-landing .sculpture-canvas{inset:5px -5px 5px}.gm-landing .art-caption{top:13px;right:27px}.gm-landing .sculpture-shadow{bottom:67px;left:28%;width:44%;height:21px;filter:blur(14px)}.gm-landing .studio-art.is-menu-open .sculpture-shadow{transform:translateY(-34px) rotate(-5deg)}.gm-landing .play-controls{bottom:0;gap:10px}.gm-landing .spin-button{min-height:44px;padding:10px 18px}.gm-landing .footer-bottom{padding-top:24px}.gm-landing .footer-bottom-main{display:grid;grid-template-columns:1fr auto;gap:26px 15px}.gm-landing .bottom-manifesto{line-height:1.1}.gm-landing .flow-steps{grid-column:1 / -1;grid-row:2;gap:8px 20px;justify-content:flex-start;flex-wrap:wrap}.gm-landing .privacy-note{max-width:160px}.gm-landing .footer-fineprint{margin-top:24px}.gm-landing .fineprint-center{display:none}.gm-landing .fallback-logo{width:min(58%,240px)}.gm-landing .studio-art.is-menu-open .fallback-logo{transform:translateY(-70px) scale(.8)}
   /* menu di mobile: chip berjajar di atas tombol kontrol, logo bergeser naik */
   .gm-landing .logo-menu{top:auto;bottom:72px;left:0;right:0;transform:none}
   .gm-landing .logo-menu ul{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}

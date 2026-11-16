@@ -120,10 +120,12 @@ function RequireCompleteProfile({ children }) {
 function SiteLayout() {
   const location = useLocation();
 
-  // Halaman baru selalu dibuka dari atas.
+  // Halaman baru dibuka dari atas, kecuali tautan menunjuk ke bagian tertentu (mis. /beranda#cara-kerja).
   useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, [location.pathname]);
+    const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) target.scrollIntoView();
+    else window.scrollTo({ top: 0 });
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="relative min-h-screen bg-paper flex flex-col justify-between overflow-x-clip">

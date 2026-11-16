@@ -24,7 +24,7 @@ const ColorSwatch = ({ name, hex, index = 0 }) => {
         style={{ backgroundColor: hex }}
       >
         <span
-          className={`absolute left-2 right-2 bottom-2 flex items-center justify-between gap-1 rounded-full bg-paper/90 backdrop-blur px-2.5 py-1 text-[12px] text-ink transition-all duration-300 ${
+          className={`absolute left-2 right-2 bottom-2 flex items-center justify-between gap-1 rounded-full bg-paper/90 backdrop-blur px-2.5 py-1 text-label text-ink transition-all duration-300 ${
             copied ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0'
           }`}
         >
@@ -32,7 +32,7 @@ const ColorSwatch = ({ name, hex, index = 0 }) => {
           {copied ? <FiCheck className="text-olive" /> : <FiCopy />}
         </span>
       </span>
-      <span className="mt-2.5 text-[14px] text-ink leading-snug">{name || hex}</span>
+      <span className="mt-2.5 text-small text-ink">{name || hex}</span>
     </button>
   );
 };

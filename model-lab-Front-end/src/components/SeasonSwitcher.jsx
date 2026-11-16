@@ -12,7 +12,7 @@ export default function SeasonSwitcher({ options, selectedId, onSelect, compact 
             type="button"
             onClick={() => onSelect(o.id)}
             aria-pressed={o.id === selectedId}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] border transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-small border transition-all duration-300 ${
               o.id === selectedId ? 'bg-ink border-ink text-paper' : 'border-line bg-paper/70 hover:border-[#b498b8]'}`}
           >
             <span className="flex">
@@ -49,13 +49,13 @@ export default function SeasonSwitcher({ options, selectedId, onSelect, compact 
               ))}
             </span>
             <span className="flex items-baseline justify-between gap-3">
-              <span className="font-serif text-[24px] leading-tight">{o.name}</span>
-              <span className={`font-serif italic text-[22px] ${active ? 'text-[#d9b6d4]' : 'text-[#b394b9]'}`}>
+              <span className="text-title">{o.name}</span>
+              <span className={`text-small font-medium tabular-nums ${active ? 'text-[#d9b6d4]' : 'text-gray-600'}`}>
                 {Math.round(o.model_probability * 100)}%
               </span>
             </span>
             {!o.matches_undertone && (
-              <span className={`mt-3 inline-flex items-center gap-1.5 text-[13px] ${active ? 'text-[#f5c2b4]' : 'text-[#c0603f]'}`}>
+              <span className={`mt-3 inline-flex items-center gap-1.5 text-small ${active ? 'text-[#f5c2b4]' : 'text-[#a3452c]'}`}>
                 <span className="w-1.5 h-1.5 rounded-full bg-coral" /> Beda undertone
               </span>
             )}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FiBookmark, FiDownload, FiArrowRight, FiArrowUpRight,
+  FiBookmark, FiDownload, FiArrowRight, FiChevronDown,
   FiVideo, FiImage, FiRefreshCw,
 } from 'react-icons/fi';
 import { BsBookmarkFill } from 'react-icons/bs';
@@ -73,11 +73,15 @@ const Result = () => {
     return () => controller.abort();
   }, []);
 
+  // Empty state: kenapa kosong + apa yang harus dilakukan, satu aksi.
   if (!result) {
     return (
-      <div className="gm-rise py-28 max-w-xl mx-auto text-center space-y-8">
-        <h1 className="gm-display text-[56px] sm:text-[72px]">Belum ada <em>hasil.</em></h1>
-        <Link to="/scan-wajah" className="gm-btn">Mulai analisis <FiArrowRight /></Link>
+      <div className="gm-rise min-h-[55svh] py-20 max-w-xl mx-auto flex flex-col items-center justify-center text-center">
+        <h1 className="gm-display text-display">Belum ada hasil analisis</h1>
+        <p className="gm-lead text-body-lg mt-5">
+          Ambil dua foto singkat untuk melihat season dan palet warnamu.
+        </p>
+        <Link to="/scan-wajah" className="gm-btn mt-8">Mulai analisis <FiArrowRight aria-hidden="true" /></Link>
       </div>
     );
   }
@@ -156,110 +160,90 @@ const Result = () => {
         </div>
 
         <div className="order-1 lg:order-2">
-          <h1 key={selected.id} className="gm-display gm-rise text-[56px] sm:text-[84px]">
-            Kamu adalah<br /><em>{selected.name}.</em>
+          <h1 key={selected.id} className="gm-display gm-rise text-display">
+            Kamu adalah <em>{selected.name}</em>
           </h1>
-          <p className="gm-lead gm-rise text-[16px] mt-6 max-w-md" style={{ '--d': '120ms' }}>
+          <p className="gm-lead gm-rise text-body-lg mt-5 max-w-md" style={{ '--d': '120ms' }}>
             {description}
           </p>
-          <div className="gm-rise flex flex-wrap gap-2 mt-7" style={{ '--d': '200ms' }}>
+          <div className="gm-rise flex flex-wrap gap-2 mt-6" style={{ '--d': '200ms' }}>
             <span className="gm-tag">
               <span className="gm-dot" style={{ background: gate.undertone === 'warm' ? '#f69179' : gate.undertone === 'cool' ? '#96a8e0' : '#7e8a59' }} />
               {undertoneText}
             </span>
-            {keywords.map((kw) => (
+            {keywords.slice(0, 3).map((kw) => (
               <span key={kw} className="gm-tag">{kw}</span>
             ))}
           </div>
+
+          {/* Aksi: satu primer (Unduh PDF), satu sekunder (Simpan), satu tersier (Analisis ulang). */}
+          <div className="gm-rise flex flex-wrap items-center gap-3 mt-8" style={{ '--d': '260ms' }}>
+            <button type="button" onClick={handleDownloadPdf} disabled={isDownloadingPdf} className="gm-btn">
+              <FiDownload aria-hidden="true" /> {isDownloadingPdf ? 'Membuat PDF...' : 'Unduh PDF'}
+            </button>
+            {saved ? (
+              <Link to="/profil?tab=simpan" className="gm-btn-ghost" title="Lihat di profil">
+                <BsBookmarkFill className="text-olive" aria-hidden="true" /> Tersimpan
+              </Link>
+            ) : (
+              <button type="button" onClick={handleSave} disabled={saving} className="gm-btn-ghost">
+                <FiBookmark aria-hidden="true" /> {saving ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => { reset(); navigate('/scan-wajah'); }}
+              className="gm-link text-small font-medium ml-2 min-h-[44px]"
+            >
+              <FiRefreshCw aria-hidden="true" /> Analisis ulang
+            </button>
+          </div>
+          {saveError && <p className="text-small text-[#a3452c] mt-3" role="alert">{saveError}</p>}
+
+          {/* Detail teknis disembunyikan sampai diminta (progressive disclosure). */}
           {selected.palette.rekomendasi?.axis && (
-            <dl className="gm-rise grid grid-cols-3 gap-4 mt-9 border-t border-line pt-6" style={{ '--d': '280ms' }}>
-              {Object.entries(selected.palette.rekomendasi.axis).map(([key, a]) => (
-                <div key={key}>
-                  <dt className="text-[14px] text-gray-500">{AXIS_NAME[key] ?? key}</dt>
-                  <dd className="font-serif text-[24px] leading-tight mt-1">{AXIS_LABEL[a.label] ?? a.label}</dd>
-                </div>
-              ))}
-            </dl>
+            <details className="gm-rise group mt-8 border-t border-line pt-4" style={{ '--d': '320ms' }}>
+              <summary className="flex items-center gap-2 cursor-pointer list-none text-small font-medium text-gray-600 hover:text-ink [&::-webkit-details-marker]:hidden">
+                Detail analisis <FiChevronDown className="transition-transform group-open:rotate-180" aria-hidden="true" />
+              </summary>
+              <dl className="grid grid-cols-3 gap-4 mt-4">
+                {Object.entries(selected.palette.rekomendasi.axis).map(([key, a]) => (
+                  <div key={key}>
+                    <dt className="text-small text-gray-600">{AXIS_NAME[key] ?? key}</dt>
+                    <dd className="text-title mt-0.5">{AXIS_LABEL[a.label] ?? a.label}</dd>
+                  </div>
+                ))}
+              </dl>
+              <Link to="/penjelasan-analisis" className="gm-link text-small font-medium mt-4">
+                Cara analisis ini bekerja <FiArrowRight aria-hidden="true" />
+              </Link>
+            </details>
           )}
         </div>
       </section>
 
-      {/* 2. Season mendekati */}
+      {/* 2. Season mendekati (mode Live di hero sudah menjadi cara membandingkan langsung) */}
       <Reveal as="section" className="mt-28">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <h2 className="gm-display text-[44px] sm:text-[56px]">Season <em>terdekat.</em></h2>
-          <button type="button" onClick={() => setMode('live')} className="gm-btn-ghost gm-btn-sm self-start sm:self-auto">
-            <FiVideo /> Bandingkan live
-          </button>
-        </div>
+        <h2 className="gm-display text-headline mb-8">Season terdekat</h2>
         <SeasonSwitcher options={options} selectedId={selected.id} onSelect={setSelectedId} />
       </Reveal>
 
-      {/* 3. Warna rekomendasi */}
-      <Reveal as="section" className="mt-28 space-y-14">
-        <h2 className="gm-display text-[44px] sm:text-[56px]">Warna <em>terbaikmu.</em></h2>
+      {/* 3. Warna rekomendasi — "Palet lengkap" adalah gabungan utama + netral, jadi cukup tautan */}
+      <Reveal as="section" className="mt-28 space-y-12">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="gm-display text-headline">Warna terbaikmu</h2>
+          <Link to="/full-palette/lengkap" className="gm-link text-small font-medium">
+            Lihat semua warna <FiArrowRight aria-hidden="true" />
+          </Link>
+        </div>
         <PaletteSection title="Warna utama" link="/full-palette/utama" colors={palettes.utama} limit={7} />
         <PaletteSection title="Warna netral" link="/full-palette/netral" colors={palettes.netral} limit={7} />
-        <PaletteSection title="Palet lengkap" link="/full-palette/lengkap" colors={palettes.lengkap} limit={14} />
       </Reveal>
 
       {/* 4. Warna hindari */}
-      <Reveal as="section" className="mt-28 space-y-10">
-        <h2 className="gm-display text-[44px] sm:text-[56px]">Sebaiknya <em>dihindari.</em></h2>
-        <PaletteSection title={`Kurang cocok untuk ${selected.name}`} link="/full-palette/hindari" colors={palettes.hindari} limit={7} />
-      </Reveal>
-
-      {/* 5. Simpan & unduh */}
-      <Reveal as="section" className="mt-28 rounded-[36px] bg-ink text-paper px-7 py-12 sm:px-12 sm:py-14 relative overflow-hidden">
-        <span className="absolute -right-20 -top-28 w-80 h-80 rounded-full bg-accent/40 blur-[90px] animate-[gm-drift-b_18s_ease-in-out_infinite]" aria-hidden="true" />
-        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-          <div>
-            <h2 className="gm-display text-paper text-[44px] sm:text-[56px]">
-              Bawa palet ini<br /><em>ke mana saja.</em>
-            </h2>
-            {saved && (
-              <Link to="/profil?tab=simpan" className="gm-link text-[#d9b6d4] text-[14px] mt-5">
-                Lihat di profil <FiArrowRight />
-              </Link>
-            )}
-            {saveError && <p className="text-[14px] text-[#f5c2b4] mt-4">{saveError}</p>}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => { reset(); navigate('/scan-wajah'); }}
-              className="gm-btn-ghost text-paper border-white/25 hover:bg-white/10 hover:border-white/40"
-            >
-              <FiRefreshCw /> Analisis ulang
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saved || saving}
-              className="gm-btn-ghost text-paper border-white/25 hover:bg-white/10 hover:border-white/40"
-            >
-              {saved ? <><BsBookmarkFill className="text-[#c9d6a0]" /> Tersimpan</> : <><FiBookmark /> {saving ? 'Menyimpan...' : 'Simpan hasil'}</>}
-            </button>
-            <button
-              type="button"
-              onClick={handleDownloadPdf}
-              disabled={isDownloadingPdf}
-              className="gm-btn bg-paper text-ink hover:bg-white"
-            >
-              <FiDownload /> {isDownloadingPdf ? 'Membuat PDF...' : 'Unduh PDF'}
-            </button>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* 6. Penjelasan lanjutan */}
-      <Reveal>
-        <Link to="/penjelasan-analisis" className="group mt-10 flex items-center justify-between gap-6 border-y border-line py-8">
-          <span className="gm-title text-[30px] sm:text-[40px] transition-colors group-hover:text-accent">
-            Cara analisis ini bekerja
-          </span>
-          <span className="gm-orb"><FiArrowUpRight /></span>
-        </Link>
+      <Reveal as="section" className="mt-28 space-y-8">
+        <h2 className="gm-display text-headline">Warna yang sebaiknya dihindari</h2>
+        <PaletteSection link="/full-palette/hindari" colors={palettes.hindari} limit={7} />
       </Reveal>
 
     </div>

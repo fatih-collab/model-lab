@@ -36,7 +36,7 @@ const Navbar = () => {
   ];
 
   const navLinks = [
-    { name: 'Beranda', path: '/' },
+    { name: 'Beranda', path: '/beranda' },
     { name: 'Hasil Warna', path: '/hasil' },
     { name: 'Riwayat', path: '/riwayat' },
     { name: 'Profil', path: '/profil' },

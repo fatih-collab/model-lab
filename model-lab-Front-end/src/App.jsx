@@ -5,12 +5,14 @@ import {
   Routes,
   Route,
   Navigate,
+  Outlet,
 } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatBubble from './components/ChatBubble';
 
+import Landing from './pages/Landing';
 import Home from './pages/Home';
 import ScanFace from './pages/ScanFace';
 import ScanUndertone from './pages/ScanUndertone';
@@ -112,93 +114,110 @@ function RequireCompleteProfile({ children }) {
 
 
 // ============================================================
+// LAYOUT SITUS (Navbar + Footer + Chat) untuk semua halaman selain landing
+// ============================================================
+
+function SiteLayout() {
+  return (
+    <div className="min-h-screen bg-glowmatch-background flex flex-col justify-between">
+
+      <div>
+        <Navbar />
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Outlet />
+        </main>
+      </div>
+
+      <Footer />
+
+      {/* Chat AI rekomendasi outfit (bubble kanan bawah) */}
+      <ChatBubble />
+    </div>
+  );
+}
+
+
+// ============================================================
 // MAIN APPLICATION
 // ============================================================
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-glowmatch-background flex flex-col justify-between">
+      <Routes>
+        {/* Landing page: layar penuh, menu muncul saat kursor menyentuh logo 3D */}
+        <Route
+          path="/"
+          element={<Landing />}
+        />
 
-        <div>
-          <Navbar />
+        <Route element={<SiteLayout />}>
+          {/* Beranda lama (fitur, season, FAQ) */}
+          <Route
+            path="/beranda"
+            element={<Home />}
+          />
 
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Profile Onboarding */}
+          <Route
+            path="/lengkapi-profil"
+            element={<ProfileSetup />}
+          />
 
-            <Routes>
-              {/* Landing Page */}
-              <Route
-                path="/"
-                element={<Home />}
-              />
+          {/* Face Scan: hanya setelah profil lengkap */}
+          <Route
+            path="/scan-wajah"
+            element={
+              <RequireCompleteProfile>
+                <ScanFace />
+              </RequireCompleteProfile>
+            }
+          />
 
-              {/* Profile Onboarding */}
-              <Route
-                path="/lengkapi-profil"
-                element={<ProfileSetup />}
-              />
+          {/* Undertone Scan: hanya setelah profil lengkap */}
+          <Route
+            path="/scan-undertone"
+            element={
+              <RequireCompleteProfile>
+                <ScanUndertone />
+              </RequireCompleteProfile>
+            }
+          />
 
-              {/* Face Scan: hanya setelah profil lengkap */}
-              <Route
-                path="/scan-wajah"
-                element={
-                  <RequireCompleteProfile>
-                    <ScanFace />
-                  </RequireCompleteProfile>
-                }
-              />
+          {/* Existing Features */}
+          <Route
+            path="/hasil"
+            element={<Result />}
+          />
 
-              {/* Undertone Scan: hanya setelah profil lengkap */}
-              <Route
-                path="/scan-undertone"
-                element={
-                  <RequireCompleteProfile>
-                    <ScanUndertone />
-                  </RequireCompleteProfile>
-                }
-              />
+          <Route
+            path="/full-palette/:type"
+            element={<FullPalette />}
+          />
 
-              {/* Existing Features */}
-              <Route
-                path="/hasil"
-                element={<Result />}
-              />
+          <Route
+            path="/riwayat"
+            element={<Riwayat />}
+          />
 
-              <Route
-                path="/full-palette/:type"
-                element={<FullPalette />}
-              />
+          <Route
+            path="/profil"
+            element={<Profile />}
+          />
 
-              <Route
-                path="/riwayat"
-                element={<Riwayat />}
-              />
+          <Route
+            path="/penjelasan-analisis"
+            element={<AnalysisExplanation />}
+          />
 
-              <Route
-                path="/profil"
-                element={<Profile />}
-              />
-
-              <Route
-                path="/penjelasan-analisis"
-                element={<AnalysisExplanation />}
-              />
-
-              {/* Route fallback */}
-              <Route
-                path="*"
-                element={<Navigate to="/" replace />}
-              />
-            </Routes>
-
-          </main>
-        </div>
-
-        <Footer />
-
-        {/* Chat AI rekomendasi outfit (bubble kanan bawah) */}
-        <ChatBubble />
-      </div>
+          {/* Route fallback */}
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+        </Route>
+      </Routes>
     </Router>
   );
 }

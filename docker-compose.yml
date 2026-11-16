@@ -18,6 +18,17 @@ services:
       GLOWMATCH_DEVICE: ${GLOWMATCH_DEVICE:-cpu}
       GLOWMATCH_DATABASE_URL: ${GLOWMATCH_DATABASE_URL:-}
       GLOWMATCH_CORS_ORIGINS: ${GLOWMATCH_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080}
+      # Chat AI (9router). Di dalam container, 9router di host diakses via host.docker.internal.
+      # Sengaja variabel terpisah: GLOWMATCH_AI_BASE_URL di .env berisi localhost untuk dev non-Docker.
+      GLOWMATCH_AI_BASE_URL: ${DOCKER_AI_BASE_URL:-http://host.docker.internal:20128/v1}
+      GLOWMATCH_AI_API_KEY: ${GLOWMATCH_AI_API_KEY:-}
+      GLOWMATCH_AI_MODEL: ${GLOWMATCH_AI_MODEL:-}
+      GLOWMATCH_AI_MAX_TOKENS: ${GLOWMATCH_AI_MAX_TOKENS:-450}
+      GLOWMATCH_AI_TIMEOUT: ${GLOWMATCH_AI_TIMEOUT:-45}
+      GLOWMATCH_AI_RATE_LIMIT: ${GLOWMATCH_AI_RATE_LIMIT:-20}
+      GLOWMATCH_OUTFIT_IMAGE_URL: ${GLOWMATCH_OUTFIT_IMAGE_URL-https://image.pollinations.ai/prompt/{prompt}?width=512&height=640&nologo=true&seed={seed}}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       # Diisi di host dengan backend/scripts/extract_models.py (lihat DEPLOYMENT.md)
       - ./backend/models/undertone:/app/models/undertone:ro

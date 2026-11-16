@@ -9,6 +9,7 @@ import {
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatBubble from './components/ChatBubble';
 
 import Home from './pages/Home';
 import ScanFace from './pages/ScanFace';
@@ -194,6 +195,9 @@ function App() {
         </div>
 
         <Footer />
+
+        {/* Chat AI rekomendasi outfit (bubble kanan bawah) */}
+        <ChatBubble />
       </div>
     </Router>
   );

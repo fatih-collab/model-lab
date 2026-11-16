@@ -309,3 +309,33 @@ class SavedResultItem(BaseModel):
     season_id: str
     season_name: str
     palette: list[str] = Field(default_factory=list)
+
+
+# ============================================================
+# CHAT AI (REKOMENDASI OUTFIT)
+# ============================================================
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=1200)
+
+
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    season_id: str = Field(min_length=1, max_length=40)
+    message: str = Field(min_length=1, max_length=500)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=10)
+
+
+class ChatOutfit(BaseModel):
+    name: str
+    items: list[str] = Field(default_factory=list)
+    colors: list[str] = Field(default_factory=list)
+    image_url: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    outfits: list[ChatOutfit] = Field(default_factory=list)
+    off_topic: bool = False

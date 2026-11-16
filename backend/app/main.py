@@ -54,7 +54,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app import rules_engine, schemas
+from app import chat, rules_engine, schemas
 from app.db import Database
 from app.palettes import palette_for
 from app.pipeline import AnalysisService, ModelsNotReady
@@ -811,6 +811,49 @@ def create_app(
             )
 
         return {"status": "ok", "deleted_id": saved_id}
+
+    # ========================================================
+    # CHAT AI: REKOMENDASI OUTFIT PER SEASON (RAG + 9router)
+    # ========================================================
+
+    chat_limiter = chat.RateLimiter(settings.ai_rate_limit, 600)
+
+    @app.post(
+        "/api/chat",
+        response_model=schemas.ChatResponse,
+    )
+    async def chat_outfit(
+        body: schemas.ChatRequest,
+        request: Request,
+        session_id: int = Depends(current_session_id),
+    ):
+        """Chat stylist AI: hanya membahas outfit sesuai season."""
+
+        if body.season_id not in rules_engine.WHEEL:
+            raise HTTPException(status_code=400, detail="Season tidak dikenal.")
+
+        if not chat_limiter.allow(session_id):
+            raise HTTPException(
+                status_code=429,
+                detail="Terlalu banyak pesan. Coba lagi beberapa menit lagi.",
+            )
+
+        database_instance: Database = request.app.state.database
+        try:
+            gender = database_instance.get_profile(session_id=session_id).get("gender")
+        except LookupError:
+            gender = None
+
+        try:
+            return await run_in_threadpool(
+                chat.answer,
+                body.season_id,
+                body.message,
+                [turn.model_dump() for turn in body.history],
+                gender,
+            )
+        except chat.ChatUnavailable as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     # --------------------------------------------------------
     # RETURN APPLICATION

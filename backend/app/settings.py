@@ -122,6 +122,45 @@ class Settings:
     )
 
     # --------------------------------------------------------
+    # Chat AI (9router, endpoint OpenAI-compatible)
+    # --------------------------------------------------------
+
+    ai_base_url: str = field(
+        default_factory=lambda: _env("AI_BASE_URL", "http://localhost:20128/v1").strip()
+    )
+
+    # Rahasia: hanya dari .env, tidak pernah dikirim ke browser.
+    ai_api_key: str = field(
+        default_factory=lambda: _env("AI_API_KEY", "").strip()
+    )
+
+    ai_model: str = field(
+        default_factory=lambda: _env("AI_MODEL", "").strip()
+    )
+
+    ai_max_tokens: int = field(
+        default_factory=lambda: int(_env("AI_MAX_TOKENS", "450"))
+    )
+
+    ai_timeout: float = field(
+        default_factory=lambda: float(_env("AI_TIMEOUT", "45"))
+    )
+
+    # Jumlah pesan chat per sesi per 10 menit.
+    ai_rate_limit: int = field(
+        default_factory=lambda: int(_env("AI_RATE_LIMIT", "20"))
+    )
+
+    # Template URL foto outfit ({prompt} & {seed}). Kosongkan untuk mematikan.
+    outfit_image_url: str = field(
+        default_factory=lambda: _env(
+            "OUTFIT_IMAGE_URL",
+            "https://image.pollinations.ai/prompt/{prompt}"
+            "?width=512&height=640&nologo=true&seed={seed}",
+        ).strip()
+    )
+
+    # --------------------------------------------------------
     # API Configuration
     # --------------------------------------------------------
 

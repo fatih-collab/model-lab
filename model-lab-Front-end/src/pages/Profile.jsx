@@ -1,13 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import {
-  FiSave,
-  FiCheck,
-  FiArrowRight,
-  FiSmile,
-} from 'react-icons/fi';
-import { HiSparkles } from 'react-icons/hi';
+import { FiSave, FiCheck, FiArrowRight } from 'react-icons/fi';
 import { useAnalysis } from '../context/AnalysisContext';
 import SavedResults from '../components/SavedResults';
 
@@ -17,6 +10,12 @@ const DEFAULT_FORM = {
   age: 22,
   notes: '',
 };
+
+const GENDERS = [
+  { id: 'wanita', label: 'Wanita' },
+  { id: 'pria', label: 'Pria' },
+  { id: 'lainnya', label: 'Lainnya' },
+];
 
 const Profile = () => {
   // Bagian dipilih dari dropdown profil di navbar.
@@ -102,331 +101,171 @@ const Profile = () => {
   };
 
   return (
-    <div className="py-10 max-w-4xl mx-auto space-y-8">
-      {/* Header Halaman */}
-      <div>
-        <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-2">
-          {activeTab === 'profil' ? 'Profil Pengguna' : 'Simpan Hasil'}
-        </p>
-
-        <h1 className="text-3xl font-semibold text-glowmatch-secondary mb-2">
-          {activeTab === 'profil' ? 'Identitas Personal' : 'Hasil yang Disimpan'}
+    <div className="pt-8 pb-4 max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+        <h1 key={activeTab} className="gm-display gm-rise text-[56px] sm:text-[84px]">
+          {activeTab === 'profil' ? <>Identitas <em>personal.</em></> : <>Hasil <em>tersimpan.</em></>}
         </h1>
-
-        <p className="text-gray-500 text-sm">
-          {activeTab === 'profil'
-            ? 'Informasi ini digunakan untuk mempersonalisasi laporan dan sertifikat PDF analisis warna pribadimu.'
-            : 'Season dan warna yang kamu tandai lewat tombol "Simpan Hasil".'}
-        </p>
+        <nav className="gm-seg gm-rise self-start sm:self-auto" style={{ '--d': '120ms' }} aria-label="Bagian profil">
+          <Link to="/profil" aria-current={activeTab === 'profil' ? 'page' : undefined}>Profil</Link>
+          <Link to="/profil?tab=simpan" aria-current={activeTab === 'simpan' ? 'page' : undefined}>Simpan hasil</Link>
+        </nav>
       </div>
 
-      {activeTab === 'simpan' && (
-        <div>
-          <SavedResults />
-        </div>
-      )}
+      {activeTab === 'simpan' && <SavedResults />}
 
       {activeTab === 'profil' && (
-      <div className="space-y-8">
+        <div className="space-y-8">
 
-      {/* Status pemuatan profil */}
-      {profileLoading && (
-        <p className="text-sm text-gray-500">
-          Memuat profil pengguna...
-        </p>
-      )}
+          {profileLoading && (
+            <div className="gm-shimmer h-40 rounded-[28px]" />
+          )}
 
-      {/* Error pemuatan profil dari backend */}
-      {!profileLoading && profileError && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-2">
-          <p className="text-sm text-red-600">
-            Gagal mengambil profil dari server: {profileError.message}
-          </p>
-
-          <button
-            type="button"
-            onClick={handleRetry}
-            className="text-sm font-semibold text-red-700 hover:underline"
-          >
-            Coba muat ulang profil
-          </button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-
-        {/* Kolom Kiri: Form Profil */}
-        <div className="md:col-span-7 bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_4px_25px_rgb(0,0,0,0.03)] space-y-6">
-
-          <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center text-2xl font-bold shadow-md shadow-purple-200">
-              {formData.name
-                ? formData.name.charAt(0).toUpperCase()
-                : 'G'}
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-glowmatch-secondary">
-                {formData.name || 'Nama Belum Diisi'}
-              </h2>
-
-              <p className="text-xs text-gray-400 capitalize">
-                {formData.gender} ·{' '}
-                {formData.age
-                  ? `${formData.age} tahun`
-                  : 'Umur belum disetel'}
+          {!profileLoading && profileError && (
+            <div className="gm-open rounded-2xl border border-[#ecc3d6] bg-[#fbeef3] p-5 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[14px] text-accent">
+                Gagal mengambil profil: {profileError.message}
               </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-
-            {/* Nama */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-              >
-                Nama Lengkap / Panggilan{' '}
-                <span className="text-red-400">*</span>
-              </label>
-
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                maxLength={120}
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Contoh: Alya Maharani"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-              />
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label
-                htmlFor="gender"
-                className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-              >
-                Gender <span className="text-red-400">*</span>
-              </label>
-
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { id: 'wanita', label: 'Wanita' },
-                  { id: 'pria', label: 'Pria' },
-                  { id: 'lainnya', label: 'Lainnya' },
-                ].map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        gender: g.id,
-                      }));
-
-                      setSaved(false);
-                      setSaveError('');
-                    }}
-                    className={`py-3 px-3 rounded-xl border text-sm font-semibold transition text-center ${
-                      formData.gender === g.id
-                        ? 'border-glowmatch-primary bg-purple-50 text-glowmatch-primary shadow-sm'
-                        : 'border-gray-200 hover:bg-gray-50 text-gray-600'
-                    }`}
-                  >
-                    {g.label}
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-[11px] text-gray-400 mt-1.5">
-                Membantu menyesuaikan saran outfit & busana harian
-                (dress/blazer/hijab/jas/kemeja).
-              </p>
-            </div>
-
-            {/* Umur */}
-            <div>
-              <label
-                htmlFor="age"
-                className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-              >
-                Umur (Tahun)
-              </label>
-
-              <input
-                id="age"
-                name="age"
-                type="number"
-                min="5"
-                max="100"
-                value={formData.age}
-                onChange={handleChange}
-                placeholder="Contoh: 23"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-              />
-            </div>
-
-            {/* Catatan */}
-            <div>
-              <label
-                htmlFor="notes"
-                className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-              >
-                Catatan Personal / Preferensi Gaya (Opsional)
-              </label>
-
-              <textarea
-                id="notes"
-                name="notes"
-                rows="3"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Contoh: Menyukai gaya minimalis, hijab kasual, dan warna earthy tone..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-              />
-            </div>
-
-            {/* Error penyimpanan */}
-            {saveError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                <p className="text-sm text-red-600">
-                  {saveError}
-                </p>
-              </div>
-            )}
-
-            {/* Tombol Simpan */}
-            <div className="pt-2 flex items-center gap-4">
-              <button
-                type="submit"
-                disabled={loading || profileLoading}
-                className="flex-1 bg-glowmatch-primary hover:bg-purple-800 text-white py-3.5 px-6 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <FiSave className="text-lg" />
-                    Menyimpan...
-                  </>
-                ) : saved ? (
-                  <>
-                    <FiCheck className="text-lg" />
-                    Tersimpan ke Database
-                  </>
-                ) : (
-                  <>
-                    <FiSave className="text-lg" />
-                    Simpan Perubahan Profil
-                  </>
-                )}
+              <button type="button" onClick={handleRetry} className="gm-link text-[14px] text-accent">
+                Muat ulang
               </button>
             </div>
-          </form>
-        </div>
+          )}
 
-        {/* Kolom Kanan: Status & Riwayat Terkait */}
-        <div className="md:col-span-5 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
 
-          {/* Card Hasil Terkini */}
-          <div className="bg-gradient-to-br from-purple-50 via-rose-50 to-orange-50 p-6 rounded-3xl border border-purple-100 shadow-sm space-y-4">
-            <div className="flex items-center gap-3 text-glowmatch-primary font-bold text-xs uppercase tracking-wider">
-              <HiSparkles className="text-lg" />
-              <span>Analisis Warna Anda</span>
+            {/* Form profil */}
+            <div className="md:col-span-7 gm-card gm-rise p-7 sm:p-9" style={{ '--d': '160ms' }}>
+              <div className="flex items-center gap-5 pb-7 border-b border-line">
+                <span className="w-16 h-16 rounded-full bg-ink text-paper flex items-center justify-center font-serif text-[34px]">
+                  {formData.name ? formData.name.charAt(0).toUpperCase() : 'G'}
+                </span>
+                <div className="min-w-0">
+                  <h2 className="gm-title text-[32px] truncate">{formData.name || 'Tanpa nama'}</h2>
+                  <p className="text-[14px] text-gray-500 capitalize">
+                    {formData.gender}{formData.age ? ` · ${formData.age} tahun` : ''}
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6 pt-7">
+                <div>
+                  <label htmlFor="name" className="gm-label">Nama</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    maxLength={120}
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Contoh: Alya Maharani"
+                    className="gm-input"
+                  />
+                </div>
+
+                <div>
+                  <span className="gm-label">Gender</span>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {GENDERS.map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        aria-pressed={formData.gender === g.id}
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, gender: g.id }));
+                          setSaved(false);
+                          setSaveError('');
+                        }}
+                        className="gm-choice"
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="age" className="gm-label">Umur</label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={formData.age}
+                    onChange={handleChange}
+                    placeholder="Contoh: 23"
+                    className="gm-input"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="notes" className="gm-label">Preferensi gaya</label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows="3"
+                    value={formData.notes}
+                    onChange={handleChange}
+                    placeholder="Contoh: minimalis, hijab kasual, earthy tone..."
+                    className="gm-input resize-none"
+                  />
+                </div>
+
+                {saveError && (
+                  <p className="gm-open text-[14px] text-accent">{saveError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || profileLoading}
+                  className="gm-btn w-full py-4"
+                >
+                  {loading ? (
+                    <><FiSave /> Menyimpan...</>
+                  ) : saved ? (
+                    <><FiCheck className="text-[#c9d6a0]" /> Tersimpan</>
+                  ) : (
+                    <><FiSave /> Simpan perubahan</>
+                  )}
+                </button>
+              </form>
             </div>
 
-            {result ? (
-              <div className="space-y-3">
-                <h3 className="text-2xl font-bold text-glowmatch-secondary">
-                  {result.result.season.name}
-                </h3>
-
-                <p className="text-xs text-gray-600">
-                  Undertone:{' '}
-                  <strong className="capitalize">
-                    {result.result.gate.undertone}
-                  </strong>
-                </p>
-
-                <div className="flex -space-x-2 pt-1">
-                  {result.result.season.palette.palettes.utama
-                    .slice(0, 6)
-                    .map((color) => (
-                      <div
+            {/* Hasil terkini */}
+            <div className="md:col-span-5 gm-rise rounded-[28px] bg-ink text-paper p-8 relative overflow-hidden" style={{ '--d': '260ms' }}>
+              <span className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-accent/45 blur-[70px] animate-[gm-drift-b_16s_ease-in-out_infinite]" aria-hidden="true" />
+              {result ? (
+                <div className="relative">
+                  <p className="font-serif italic text-[22px] text-[#d9b6d4]">Season kamu</p>
+                  <h3 className="gm-display text-paper text-[52px] mt-2">{result.result.season.name}</h3>
+                  <p className="text-[14px] text-[#cdbfdc] capitalize mt-2">{result.result.gate.undertone}</p>
+                  <div className="flex -space-x-2 mt-7">
+                    {result.result.season.palette.palettes.utama.slice(0, 6).map((color, i) => (
+                      <span
                         key={color.hex}
-                        className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                        style={{ backgroundColor: color.hex }}
+                        className="gm-pop w-10 h-10 rounded-full ring-2 ring-ink"
+                        style={{ backgroundColor: color.hex, '--d': `${300 + i * 60}ms` }}
                         title={color.name}
                       />
                     ))}
-                </div>
-
-                <div className="pt-2">
-                  <Link
-                    to="/hasil"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-glowmatch-primary hover:underline"
-                  >
-                    Buka Halaman Hasil Analisis <FiArrowRight />
+                  </div>
+                  <Link to="/hasil" className="gm-btn bg-paper text-ink hover:bg-white mt-9">
+                    Buka hasil <FiArrowRight />
                   </Link>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-600">
-                  Belum ada analisis sesi ini. Pindai wajahmu untuk
-                  menemukan season warnamu dari 12 pilihan.
-                </p>
-
-                <Link
-                  to="/scan-wajah"
-                  className="inline-flex items-center gap-2 bg-glowmatch-primary text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-purple-800 transition"
-                >
-                  Mulai Analisis Sekarang <FiArrowRight />
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Card Manfaat Profil */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-3 text-sm">
-            <h4 className="font-bold text-glowmatch-secondary flex items-center gap-2">
-              <FiSmile className="text-glowmatch-primary" />
-              Mengapa Mengisi Profil?
-            </h4>
-
-            <ul className="space-y-2 text-xs text-gray-500 leading-relaxed">
-              <li className="flex items-start gap-2">
-                <span className="text-glowmatch-primary font-bold">•</span>
-                <span>
-                  <strong>Laporan PDF Personal:</strong> Nama dan
-                  identitasmu akan tercantum rapi di kartu palet dan
-                  file PDF unduhan.
-                </span>
-              </li>
-
-              <li className="flex items-start gap-2">
-                <span className="text-glowmatch-primary font-bold">•</span>
-                <span>
-                  <strong>Rekomendasi Gaya Busana:</strong> Saran
-                  pakaian dan aksesori disesuaikan untuk wanita
-                  maupun pria.
-                </span>
-              </li>
-
-              <li className="flex items-start gap-2">
-                <span className="text-glowmatch-primary font-bold">•</span>
-                <span>
-                  <strong>Sinkronisasi Otomatis:</strong> Data profil
-                  tersimpan di database Neon PostgreSQL.
-                </span>
-              </li>
-            </ul>
+              ) : (
+                <div className="relative">
+                  <h3 className="gm-display text-paper text-[44px]">Belum ada <em>season.</em></h3>
+                  <Link to="/scan-wajah" className="gm-btn bg-paper text-ink hover:bg-white mt-9">
+                    Mulai analisis <FiArrowRight />
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      </div>
       )}
     </div>
   );

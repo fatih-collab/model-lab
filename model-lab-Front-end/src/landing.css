@@ -1,0 +1,128 @@
+/* ==========================================================================
+   GlowMatch landing page
+   Diadaptasi dari spesifikasi "Soft Spot": angka tata letak, breakpoint, dan
+   urutan media query dipertahankan. Yang diganti: palet warna (diambil dari
+   logo GlowMatch), teks, dan menu yang muncul saat logo 3D di-hover.
+
+   Semua selector dibatasi di .gm-landing supaya tidak bentrok dengan preflight
+   Tailwind maupun halaman lain. Ganti palet cukup lewat variabel di bawah.
+   ========================================================================== */
+
+
+.gm-landing{
+  /* --- Palet (diturunkan dari logo GlowMatch + warna brand yang sudah ada) --- */
+  --paper:#fbf7ec;          /* krem latar logo */
+  --ink:#2a1d3b;            /* ungu tua, selaras dengan primary #6B46C1 */
+  --brand:#6b46c1;          /* glowmatch-primary */
+  --accent:#aa2870;         /* magenta lingkaran logo */
+  --coral:#f69179;          /* lingkaran logo kiri atas */
+  --peri:#96a8e0;           /* lingkaran logo kanan atas */
+  --olive:#7e8a59;          /* lingkaran logo kanan bawah */
+  --intro:#7d6b88;
+  --label:#9a86a3;
+  --line:#e7ddd0;
+  --chip:#f0e4ee;
+  --btn-line:#d6c6d6;
+  --btn-hover:#f0e5ef;
+  --btn-hover-line:#b498b8;
+
+  font-family:'DM Sans',sans-serif;
+  font-synthesis:none;
+  font-weight:400;
+  color:var(--ink);
+  background:var(--paper);
+  min-height:100svh;
+}
+.gm-landing *{box-sizing:border-box}
+.gm-landing ::selection{background:#efc6dd;color:var(--ink)}
+.gm-landing button{font:inherit;color:inherit}
+.gm-landing button:focus-visible,.gm-landing a:focus-visible{outline:2px solid var(--brand);outline-offset:5px}
+.gm-landing button:disabled{cursor:default}
+
+.gm-landing .studio-footer{max-width:1920px;margin:0 auto;min-height:100svh;padding:38px 5.4vw 25px;display:flex;flex-direction:column;overflow:hidden}
+.gm-landing .studio-topline{display:flex;align-items:center;justify-content:space-between;min-height:40px;position:relative;z-index:2}
+.gm-landing .wordmark{display:flex;align-items:center;gap:12px;font-size:32px;letter-spacing:-1.8px;line-height:1;color:var(--ink)}
+.gm-landing .wordmark-mark{width:32px;height:32px;border-radius:9px;display:block;box-shadow:0 2px 8px rgba(120,60,120,.18)}
+.gm-landing .wordmark-period{color:var(--accent)}
+.gm-landing .studio-descriptor{font-size:9px;line-height:1.6;letter-spacing:1.1px;margin-left:15px;margin-right:auto;padding-left:55px}
+.gm-landing .availability{display:flex;align-items:center;gap:9px;font-size:9px;letter-spacing:1.4px;color:#5e4d6e}
+.gm-landing .availability>span{width:6px;height:6px;border-radius:50%;background:var(--olive);box-shadow:0 0 0 4px #7e8a590d}
+
+.gm-landing .studio-main{display:grid;grid-template-columns:1.09fr 1fr;align-items:center;flex:1;min-height:590px;position:relative;padding-top:40px;padding-bottom:42px}
+.gm-landing .studio-story{position:relative;z-index:2;padding-top:9px}
+.gm-landing .eyebrow{display:flex;align-items:center;gap:11px;font-size:9px;letter-spacing:1.2px;line-height:1.5;color:#8f7a9c;margin-bottom:29px}
+.gm-landing .eyebrow-line{width:24px;height:1px;background:#b49bc0}
+.gm-landing h1{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(72px,7.9vw,132px);font-weight:400;letter-spacing:-3.9px;line-height:.97;margin:0 -40px 29px 0;white-space:nowrap}
+.gm-landing h1 em{font-weight:400;color:#b0366e;display:inline-block;padding-right:.08em;background:linear-gradient(95deg,#ef6f58 0%,var(--accent) 52%,var(--brand) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.gm-landing .studio-intro{font-size:13px;line-height:1.75;color:var(--intro);margin:0;letter-spacing:.03px}
+
+.gm-landing .conversation{display:flex;gap:13px;align-items:center;margin-top:42px;width:max-content;max-width:100%;color:inherit;text-decoration:none}
+.gm-landing .conversation-icon{display:flex;align-items:center;justify-content:center;background:var(--chip);border-radius:50%;width:43px;height:43px;font-size:23px;font-family:Arial,sans-serif;flex-shrink:0;transition:background .18s,color .18s,transform .18s}
+.gm-landing .conversation:hover .conversation-icon{background:var(--ink);color:var(--paper);transform:translate(2px,-2px)}
+.gm-landing .conversation:active .conversation-icon{transform:translate(0,0) scale(.97)}
+.gm-landing .conversation-label{font-size:8px;letter-spacing:1.3px;color:#a08ca9}
+.gm-landing .conversation p{margin:4px 0 0;font-size:14px;letter-spacing:-.2px}
+
+.gm-landing .studio-art{width:100%;height:100%;min-height:490px;position:relative;isolation:isolate}
+.gm-landing .sculpture-wrap{position:absolute;inset:-8px -46px -4px -20px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gm-landing .art-caption{position:absolute;top:18px;right:44px;font-size:8px;letter-spacing:1.4px;color:#ab97b4;z-index:2}
+.gm-landing .sculpture-canvas{position:absolute;inset:0;z-index:1;touch-action:pan-y}
+.gm-landing .sculpture-canvas.is-over{cursor:grab}
+.gm-landing .sculpture-canvas.is-dragging{cursor:grabbing}
+.gm-landing .sculpture-canvas canvas{display:block;width:100%;height:100%}
+.gm-landing .sculpture-shadow{position:absolute;bottom:65px;left:30%;width:40%;height:25px;background:#c88fb4;opacity:.22;filter:blur(18px);border-radius:50%;transform:rotate(-5deg);pointer-events:none;transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.gm-landing .studio-art.is-menu-open .sculpture-shadow{transform:translateX(-12%) rotate(-5deg)}
+.gm-landing .play-controls{position:absolute;bottom:7px;left:0;right:0;z-index:2;display:flex;align-items:center;flex-direction:column;gap:12px;pointer-events:none}
+.gm-landing .play-row{display:flex;gap:10px;align-items:center;justify-content:center;pointer-events:auto}
+.gm-landing .spin-button{border:1px solid var(--btn-line);background:transparent;border-radius:30px;min-height:37px;display:flex;align-items:center;justify-content:center;gap:9px;padding:8px 15px;cursor:pointer;font-size:11px;transition:background .18s,border-color .18s,transform .18s}
+.gm-landing .spin-button:hover{background:var(--btn-hover);border-color:var(--btn-hover-line);transform:translateY(-2px)}
+.gm-landing .spin-button:active{transform:translateY(0) scale(.97)}
+.gm-landing .spin-button svg.chev{transition:transform .25s}
+.gm-landing .spin-button[aria-expanded="true"] svg.chev{transform:rotate(180deg)}
+.gm-landing .drag-hint{font-family:'Instrument Serif',Georgia,serif;font-size:17px;font-style:italic;color:#a68fb0}
+.gm-landing .hint-touch{display:none}
+.gm-landing .fallback-logo{position:absolute;inset:0;margin:auto;width:min(62%,330px);aspect-ratio:1;border-radius:20%;box-shadow:0 18px 40px rgba(120,60,140,.18);transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.gm-landing .studio-art.is-menu-open .fallback-logo{transform:translateX(-18%)}
+
+/* --- Menu yang muncul saat logo 3D disentuh kursor --- */
+.gm-landing .logo-menu{position:absolute;top:50%;right:18px;transform:translateY(-50%);z-index:3;pointer-events:none;visibility:hidden;transition:visibility 0s linear .45s}
+.gm-landing .logo-menu.is-open{pointer-events:auto;visibility:visible;transition-delay:0s}
+.gm-landing .logo-menu ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+.gm-landing .logo-menu li{opacity:0;transform:translateX(calc(var(--x,0px) + 26px)) scale(.94);transition:opacity .3s ease,transform .45s cubic-bezier(.22,1.2,.36,1);transition-delay:calc((var(--n) - var(--i)) * 22ms)}
+.gm-landing .logo-menu.is-open li{opacity:1;transform:translateX(var(--x,0px));transition-delay:calc(var(--i) * 45ms)}
+.gm-landing .logo-menu a{display:flex;align-items:center;gap:11px;padding:9px 18px 9px 13px;border:1px solid var(--btn-line);border-radius:30px;background:rgba(251,247,236,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink);text-decoration:none;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s,color .18s}
+.gm-landing .logo-menu a:hover,.gm-landing .logo-menu a:focus-visible{background:var(--btn-hover);border-color:var(--btn-hover-line);transform:translateX(-4px)}
+.gm-landing .logo-menu a.is-primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.gm-landing .logo-menu a.is-primary:hover,.gm-landing .logo-menu a.is-primary:focus-visible{background:#3d2a54;border-color:#3d2a54}
+.gm-landing .menu-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(42,29,59,.06)}
+.gm-landing .menu-label{display:block;font-size:13px;letter-spacing:-.1px;line-height:1.2}
+.gm-landing .menu-desc{display:block;font-size:9px;letter-spacing:.9px;line-height:1.4;margin-top:2px;color:var(--label);text-transform:uppercase}
+.gm-landing .logo-menu a.is-primary .menu-desc{color:#cdbfdc}
+
+.gm-landing .footer-bottom{border-top:1px solid var(--line);position:relative;z-index:2;padding-top:22px}
+.gm-landing .footer-bottom-main{display:flex;align-items:center;justify-content:space-between;gap:30px}
+.gm-landing .bottom-manifesto{font-family:'Instrument Serif',Georgia,serif;font-size:26px;line-height:1.05;margin:0;letter-spacing:-.4px}
+.gm-landing .bottom-manifesto em{color:#b394b9}
+.gm-landing .display-navigation{display:flex;gap:36px;font-size:11px;line-height:2}
+.gm-landing .privacy-note{display:flex;gap:9px;align-items:center;max-width:210px;font-size:9px;line-height:1.5;letter-spacing:.9px;color:#8f7a9c}
+.gm-landing .privacy-note svg{flex-shrink:0;width:15px;height:15px;color:var(--brand);opacity:.8}
+.gm-landing .footer-fineprint{margin-top:29px;display:flex;justify-content:space-between;align-items:center;color:#a591ad;font-size:7px;line-height:1.5;letter-spacing:1px}
+.gm-landing .footer-fineprint>span:last-child{display:flex;align-items:center;gap:7px}
+.gm-landing .footer-fineprint svg{width:11px;height:11px;stroke-width:2}
+.gm-landing .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+@media(min-width:1600px){.gm-landing .studio-footer{padding-top:49px;padding-bottom:32px}.gm-landing .studio-main{min-height:730px;padding-top:60px;padding-bottom:65px}.gm-landing .eyebrow{font-size:11px;margin-bottom:34px}.gm-landing .studio-intro{font-size:15px}.gm-landing .studio-descriptor,.gm-landing .availability{font-size:10px}.gm-landing .conversation{margin-top:52px}.gm-landing .conversation-label{font-size:9px}.gm-landing .conversation p{font-size:16px}.gm-landing .sculpture-wrap{inset:-25px -46px -25px -25px}.gm-landing .art-caption{font-size:9px;top:25px}.gm-landing .footer-bottom{padding-top:29px}.gm-landing .display-navigation{font-size:13px;gap:45px}.gm-landing .footer-fineprint{font-size:8px;margin-top:35px}.gm-landing .logo-menu a{padding:11px 22px 11px 15px}.gm-landing .menu-label{font-size:14px}}
+@media(min-width:1100px) and (min-height:900px){.gm-landing .studio-main{min-height:650px}.gm-landing .studio-footer{padding-top:45px;padding-bottom:30px}}
+@media(max-width:1100px){.gm-landing .studio-footer{padding-left:5vw;padding-right:5vw}.gm-landing .studio-main{min-height:570px;grid-template-columns:1.15fr 1fr}.gm-landing .studio-art{min-height:460px}.gm-landing h1{font-size:8.2vw;letter-spacing:-2.5px}.gm-landing .studio-descriptor{padding-left:25px}.gm-landing .sculpture-wrap{inset:5px -35px 12px -25px}.gm-landing .art-caption{right:28px;font-size:7px}.gm-landing .display-navigation{gap:23px}.gm-landing .eyebrow{font-size:8px}.gm-landing .studio-intro{font-size:12px}.gm-landing .conversation p{font-size:13px}.gm-landing .drag-hint{font-size:16px}.gm-landing .logo-menu a{padding:8px 14px 8px 11px}.gm-landing .menu-desc{display:none}}
+@media(max-width:760px){.gm-landing .studio-footer{padding:26px 25px 24px;min-height:100svh}.gm-landing .studio-topline{min-height:32px}.gm-landing .wordmark{font-size:28px;gap:10px}.gm-landing .wordmark-mark{width:28px;height:28px;border-radius:8px}.gm-landing .studio-descriptor{display:none}.gm-landing .availability{font-size:7px;letter-spacing:.6px;gap:6px}.gm-landing .availability>span{width:5px;height:5px}.gm-landing .studio-main{display:flex;flex-direction:column;align-items:stretch;padding:65px 0 31px;min-height:0;gap:9px}.gm-landing .studio-story{padding-top:0}.gm-landing .eyebrow{font-size:7px;letter-spacing:1px;gap:9px;margin-bottom:24px}.gm-landing .eyebrow-line{width:19px}.gm-landing h1{font-size:clamp(52px,12vw,89px);letter-spacing:-2.5px;line-height:1.03;margin:0 0 22px}.gm-landing .studio-intro{font-size:12px;line-height:1.8}.gm-landing .desktop-break{display:none}.gm-landing .conversation{margin-top:28px;gap:12px}.gm-landing .conversation-icon{width:38px;height:38px;font-size:21px}.gm-landing .conversation-label{font-size:7px}.gm-landing .conversation p{font-size:12px}.gm-landing .studio-art{height:425px;min-height:0;margin-top:6px}.gm-landing .sculpture-wrap{inset:-12px -25px 0}.gm-landing .sculpture-canvas{inset:5px -5px 5px}.gm-landing .art-caption{font-size:7px;top:13px;right:27px}.gm-landing .sculpture-shadow{bottom:67px;left:28%;width:44%;height:21px;filter:blur(14px)}.gm-landing .studio-art.is-menu-open .sculpture-shadow{transform:translateY(-34px) rotate(-5deg)}.gm-landing .play-controls{bottom:0;gap:10px}.gm-landing .spin-button{min-height:40px;padding:9px 17px}.gm-landing .drag-hint{font-size:17px}.gm-landing .footer-bottom{padding-top:24px}.gm-landing .footer-bottom-main{display:grid;grid-template-columns:1fr auto;gap:26px 15px}.gm-landing .bottom-manifesto{font-size:27px;line-height:1.1}.gm-landing .display-navigation{grid-column:1 / -1;grid-row:2;gap:0;justify-content:space-between;font-size:10px;flex-wrap:wrap;row-gap:9px}.gm-landing .privacy-note{max-width:135px}.gm-landing .footer-fineprint{margin-top:26px;font-size:6px;letter-spacing:.6px}.gm-landing .fineprint-center{display:none}.gm-landing .fallback-logo{width:min(58%,240px)}.gm-landing .studio-art.is-menu-open .fallback-logo{transform:translateY(-70px) scale(.8)}
+  /* menu di mobile: chip berjajar di atas tombol kontrol, logo bergeser naik */
+  .gm-landing .logo-menu{top:auto;bottom:72px;left:0;right:0;transform:none}
+  .gm-landing .logo-menu ul{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}
+  .gm-landing .logo-menu li{--x:0px;transform:translateY(12px) scale(.94)}
+  .gm-landing .logo-menu a{padding:8px 14px 8px 11px;gap:8px}
+  .gm-landing .logo-menu a:hover,.gm-landing .logo-menu a:focus-visible{transform:translateY(-2px)}
+  .gm-landing .menu-label{font-size:12px}
+}
+@media(hover:none){.gm-landing .hint-hover{display:none}.gm-landing .hint-touch{display:inline}}
+@media(max-width:359px){.gm-landing .studio-footer{padding-left:20px;padding-right:20px}.gm-landing .availability{font-size:6px;letter-spacing:.2px}.gm-landing .wordmark{font-size:26px;gap:7px}.gm-landing .wordmark-mark{width:24px;height:24px;border-radius:7px}.gm-landing .studio-main{padding-top:53px}.gm-landing h1{font-size:12vw;letter-spacing:-1.5px}.gm-landing .eyebrow{font-size:6px;letter-spacing:.7px}.gm-landing .studio-art{height:360px}.gm-landing .sculpture-wrap{inset:-10px -20px 0}.gm-landing .art-caption{font-size:6px;right:20px}.gm-landing .display-navigation{font-size:9px}.gm-landing .bottom-manifesto{font-size:25px}.gm-landing .footer-fineprint{font-size:5px}.gm-landing .logo-menu{bottom:68px}.gm-landing .menu-label{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.gm-landing *,.gm-landing *::before,.gm-landing *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

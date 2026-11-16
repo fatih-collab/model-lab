@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FiBookmark, FiDownload, FiArrowRight, FiXCircle, FiCircle, 
-  FiVideo, FiImage, FiRefreshCw, FiBookOpen, FiUser
+  FiBookmark, FiDownload, FiArrowRight, FiArrowUpRight,
+  FiVideo, FiImage, FiRefreshCw,
 } from 'react-icons/fi';
-import { HiSparkles } from 'react-icons/hi';
 import { BsBookmarkFill } from 'react-icons/bs';
+import Reveal from '../components/Reveal';
 import PaletteSection from '../components/PaletteSection';
 import LiveTryOn from '../components/LiveTryOn';
 import RadialBurst, { FrameOverlay } from '../components/RadialBurst';
@@ -14,11 +14,7 @@ import { saveToHistory, seasonOptions, useAnalysis } from '../context/AnalysisCo
 import { downloadColorReportPdf } from '../lib/exportPdf';
 import { api } from '../lib/api';
 
-const UNDERTONE_LABEL = { warm: 'Warm (Hangat)', cool: 'Cool (Dingin)', neutral: 'Neutral (Netral)' };
-const SOURCE_LABEL = {
-  wrist_model: 'pemindaian pergelangan tangan',
-  season_model: 'estimasi fitur wajah',
-};
+const UNDERTONE_LABEL = { warm: 'Undertone hangat', cool: 'Undertone dingin', neutral: 'Undertone netral' };
 
 const AXIS_NAME = { undertone: 'Undertone', value: 'Kedalaman', chroma: 'Kejernihan' };
 const AXIS_LABEL = {
@@ -79,11 +75,9 @@ const Result = () => {
 
   if (!result) {
     return (
-      <div className="py-24 max-w-md mx-auto text-center space-y-4">
-        <HiSparkles className="text-4xl text-glowmatch-primary mx-auto" />
-        <h1 className="text-2xl font-semibold text-glowmatch-secondary">Belum ada hasil analisis</h1>
-        <p className="text-gray-500 text-sm">Pindai wajah dan pergelangan tanganmu untuk mengetahui season warnamu.</p>
-        <Link to="/scan-wajah" className="inline-block bg-glowmatch-primary text-white px-6 py-3 rounded-xl font-medium">Mulai analisis</Link>
+      <div className="gm-rise py-28 max-w-xl mx-auto text-center space-y-8">
+        <h1 className="gm-display text-[56px] sm:text-[72px]">Belum ada <em>hasil.</em></h1>
+        <Link to="/scan-wajah" className="gm-btn">Mulai analisis <FiArrowRight /></Link>
       </div>
     );
   }
@@ -131,231 +125,142 @@ const Result = () => {
   };
 
   return (
-    <div className="py-8 max-w-5xl mx-auto space-y-10">
-      
-      {/* 1. Header & Ringkasan Personal */}
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-1">
-              <HiSparkles /> Hasil Analisis Personal
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-glowmatch-secondary">
-              Harmoni Warnamu Ditemukan
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              {profile?.name ? `Analisis khusus untuk ${profile.name}` : 'Palet yang menonjolkan warna alami kulitmu.'}
-            </p>
-          </div>
+    <div className="pt-8 pb-4 max-w-6xl mx-auto">
 
-          <Link
-            to="/profil"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-glowmatch-primary self-start sm:self-auto bg-gray-50 border border-gray-200 px-3.5 py-2 rounded-xl"
-          >
-            <FiUser /> {profile?.name || 'Setel Profil'}
-          </Link>
-        </div>
-
-        {/* 2 Banner Kartu Utama: Season Terdeteksi & Undertone */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-[#FFF0E0] border border-orange-200/60 rounded-2xl p-5 flex items-center gap-4 shadow-xs">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-orange-500 shadow-sm shrink-0">
-              <HiSparkles className="text-2xl" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                {selected.id === result.result.season.id ? 'Season Hasil Analisis' : 'Season Pilihanmu'}
-              </p>
-              <h2 className="text-lg font-bold text-glowmatch-secondary">{selected.name}</h2>
-              <span className="text-xs text-orange-600 font-medium">{keywords.join(' · ')}</span>
-            </div>
-          </div>
-
-          <div className="bg-[#E5F5F3] border border-teal-200/60 rounded-2xl p-5 flex items-center gap-4 shadow-xs">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-teal-600 shadow-sm shrink-0">
-              <FiCircle className="text-2xl" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                Undertone ({SOURCE_LABEL[gate.undertone_source] ?? 'terverifikasi'})
-              </p>
-              <h2 className="text-lg font-bold text-glowmatch-secondary">{undertoneText}</h2>
-              <span className="text-xs text-teal-700 font-medium">Rona Dasar Kulit Alami</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Penjelasan Karakteristik Season */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-xs text-xs sm:text-sm text-gray-600 space-y-2">
-          <h3 className="font-bold text-glowmatch-secondary text-base flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-glowmatch-primary" />
-            Kenapa Palet {selected.name} Cocok Untukmu?
-          </h3>
-          <p className="leading-relaxed">
-            {description} Saturasi dan suhu warna di palet ini sejalan dengan warna mata, bibir, dan undertone kulitmu. Hasilnya, wajah terlihat lebih segar tanpa perlu riasan tebal.
-          </p>
-          {selected.palette.rekomendasi?.axis && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {Object.entries(selected.palette.rekomendasi.axis).map(([key, a]) => (
-                <span key={key} className="bg-slate-50 border border-slate-100 rounded-full px-3 py-1 text-xs">
-                  <span className="text-slate-400">{AXIS_NAME[key] ?? key}:</span>{' '}
-                  <strong className="text-glowmatch-secondary font-semibold">{AXIS_LABEL[a.label] ?? a.label}</strong>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 2. Hero: foto + cincin palet / coba live */}
-      <div className="bg-gradient-to-br from-[#FFE8DD] to-[#F7E1E8] rounded-3xl flex flex-col md:flex-row overflow-hidden border border-rose-50 shadow-sm">
-        <div className="w-full md:w-[48%] p-4 space-y-3">
-          <div className="flex bg-white/70 rounded-full p-1 text-xs font-medium w-fit">
+      {/* 1. Hero: foto/live + nama season */}
+      <section className="grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
+        <div className="gm-rise order-2 lg:order-1 space-y-4" style={{ '--d': '120ms' }}>
+          <div className="gm-seg" role="group" aria-label="Mode tampilan">
             {[['foto', FiImage, 'Fotomu'], ['live', FiVideo, 'Coba live']].map(([m, Icon, label]) => (
-              <button key={m} onClick={() => setMode(m)}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition ${mode === m ? 'bg-white shadow text-glowmatch-secondary' : 'text-slate-500'}`}>
+              <button key={m} type="button" onClick={() => setMode(m)} aria-pressed={mode === m}>
                 <Icon /> {label}
               </button>
             ))}
           </div>
           {mode === 'live' ? (
-            <LiveTryOn options={options} selected={selected} onSelect={setSelectedId} />
+            <div key="live" className="gm-page">
+              <LiveTryOn options={options} selected={selected} onSelect={setSelectedId} />
+            </div>
           ) : (
-            <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden bg-gray-900">
+            <div key="foto" className="gm-page relative w-full aspect-[4/3] rounded-[30px] overflow-hidden bg-ink shadow-[0_30px_60px_-35px_rgba(42,29,59,.7)]">
               {face?.photo && (
                 <div className="absolute inset-0" style={{ transform: 'scaleX(-1)' }}>
-                  <img src={face.photo} alt="Foto Pengguna" className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={face.photo} alt="Foto pengguna" className="absolute inset-0 w-full h-full object-cover" />
                   <FrameOverlay frameSize={faceQ.frame_size}>
                     <RadialBurst box={faceQ.box} colors={palettes.utama} animationKey={selected.id} />
                   </FrameOverlay>
                 </div>
               )}
-              <p className="absolute bottom-4 left-5 text-white text-sm font-medium tracking-wide drop-shadow">{keywords.join(' · ')}</p>
             </div>
           )}
         </div>
 
-        <div className="w-full md:w-[52%] p-8 md:p-10 flex flex-col justify-center">
-          <p className="text-rose-400 text-xs font-bold tracking-widest uppercase mb-4 flex items-center gap-2">
-            <HiSparkles /> 12 SEASONAL COLOR HARMONY
+        <div className="order-1 lg:order-2">
+          <h1 key={selected.id} className="gm-display gm-rise text-[56px] sm:text-[84px]">
+            Kamu adalah<br /><em>{selected.name}.</em>
+          </h1>
+          <p className="gm-lead gm-rise text-[16px] mt-6 max-w-md" style={{ '--d': '120ms' }}>
+            {description}
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-glowmatch-secondary mb-4">
-            Kamu adalah <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-purple-600">{selected.name}</span>
-          </h2>
-          <p className="text-slate-500 leading-relaxed mb-8 font-normal text-sm md:text-base">{description}</p>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="gm-rise flex flex-wrap gap-2 mt-7" style={{ '--d': '200ms' }}>
+            <span className="gm-tag">
+              <span className="gm-dot" style={{ background: gate.undertone === 'warm' ? '#f69179' : gate.undertone === 'cool' ? '#96a8e0' : '#7e8a59' }} />
+              {undertoneText}
+            </span>
             {keywords.map((kw) => (
-              <span key={kw} className="bg-white border border-orange-100/60 text-slate-600 text-xs font-semibold px-4 py-2 rounded-full shadow-xs">{kw}</span>
+              <span key={kw} className="gm-tag">{kw}</span>
             ))}
           </div>
+          {selected.palette.rekomendasi?.axis && (
+            <dl className="gm-rise grid grid-cols-3 gap-4 mt-9 border-t border-line pt-6" style={{ '--d': '280ms' }}>
+              {Object.entries(selected.palette.rekomendasi.axis).map(([key, a]) => (
+                <div key={key}>
+                  <dt className="text-[14px] text-gray-500">{AXIS_NAME[key] ?? key}</dt>
+                  <dd className="font-serif text-[24px] leading-tight mt-1">{AXIS_LABEL[a.label] ?? a.label}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
-      </div>
+      </section>
 
-      {/* 3. Visual swapping season mendekati */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_20px_rgb(0,0,0,0.02)] space-y-5">
-        <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bandingkan</p>
-          <h3 className="text-xl font-bold text-glowmatch-secondary">Season Mendekati</h3>
-          <p className="text-sm text-slate-500 mt-1">
-            Season ini punya karakter yang mirip dengan hasilmu. Pilih salah satu untuk mengganti palet, lalu bandingkan langsung di wajahmu lewat <button onClick={() => setMode('live')} className="text-glowmatch-primary font-bold hover:underline">Coba Live</button>.
-          </p>
+      {/* 2. Season mendekati */}
+      <Reveal as="section" className="mt-28">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <h2 className="gm-display text-[44px] sm:text-[56px]">Season <em>terdekat.</em></h2>
+          <button type="button" onClick={() => setMode('live')} className="gm-btn-ghost gm-btn-sm self-start sm:self-auto">
+            <FiVideo /> Bandingkan live
+          </button>
         </div>
         <SeasonSwitcher options={options} selectedId={selected.id} onSelect={setSelectedId} />
-      </div>
+      </Reveal>
 
-      {/* 4. Warna rekomendasi (Utama, Netral, Palet Lengkap) */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-8 space-y-10 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-50 text-glowmatch-primary rounded-xl flex items-center justify-center">
-            <HiSparkles className="text-2xl" />
-          </div>
+      {/* 3. Warna rekomendasi */}
+      <Reveal as="section" className="mt-28 space-y-14">
+        <h2 className="gm-display text-[44px] sm:text-[56px]">Warna <em>terbaikmu.</em></h2>
+        <PaletteSection title="Warna utama" link="/full-palette/utama" colors={palettes.utama} limit={7} />
+        <PaletteSection title="Warna netral" link="/full-palette/netral" colors={palettes.netral} limit={7} />
+        <PaletteSection title="Palet lengkap" link="/full-palette/lengkap" colors={palettes.lengkap} limit={14} />
+      </Reveal>
+
+      {/* 4. Warna hindari */}
+      <Reveal as="section" className="mt-28 space-y-10">
+        <h2 className="gm-display text-[44px] sm:text-[56px]">Sebaiknya <em>dihindari.</em></h2>
+        <PaletteSection title={`Kurang cocok untuk ${selected.name}`} link="/full-palette/hindari" colors={palettes.hindari} limit={7} />
+      </Reveal>
+
+      {/* 5. Simpan & unduh */}
+      <Reveal as="section" className="mt-28 rounded-[36px] bg-ink text-paper px-7 py-12 sm:px-12 sm:py-14 relative overflow-hidden">
+        <span className="absolute -right-20 -top-28 w-80 h-80 rounded-full bg-accent/40 blur-[90px] animate-[gm-drift-b_18s_ease-in-out_infinite]" aria-hidden="true" />
+        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Palet yang Direkomendasikan</p>
-            <h3 className="text-xl font-bold text-glowmatch-secondary">Warna Terbaik Untuk Penampilanmu</h3>
+            <h2 className="gm-display text-paper text-[44px] sm:text-[56px]">
+              Bawa palet ini<br /><em>ke mana saja.</em>
+            </h2>
+            {saved && (
+              <Link to="/profil?tab=simpan" className="gm-link text-[#d9b6d4] text-[14px] mt-5">
+                Lihat di profil <FiArrowRight />
+              </Link>
+            )}
+            {saveError && <p className="text-[14px] text-[#f5c2b4] mt-4">{saveError}</p>}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => { reset(); navigate('/scan-wajah'); }}
+              className="gm-btn-ghost text-paper border-white/25 hover:bg-white/10 hover:border-white/40"
+            >
+              <FiRefreshCw /> Analisis ulang
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saved || saving}
+              className="gm-btn-ghost text-paper border-white/25 hover:bg-white/10 hover:border-white/40"
+            >
+              {saved ? <><BsBookmarkFill className="text-[#c9d6a0]" /> Tersimpan</> : <><FiBookmark /> {saving ? 'Menyimpan...' : 'Simpan hasil'}</>}
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isDownloadingPdf}
+              className="gm-btn bg-paper text-ink hover:bg-white"
+            >
+              <FiDownload /> {isDownloadingPdf ? 'Membuat PDF...' : 'Unduh PDF'}
+            </button>
           </div>
         </div>
-        <PaletteSection title="Warna Utama" subtitle="Warna yang paling mendukung. Pakai di dekat wajah: atasan, hijab, syal, atau lipstik." link="/full-palette/utama" colors={palettes.utama} limit={7} />
-        <PaletteSection title="Warna Netral" subtitle="Dasar lemari pakaian: celana, blazer, dan luaran." link="/full-palette/netral" colors={palettes.netral} limit={7} />
-        <PaletteSection title={`Palet Lengkap ${selected.name}`} subtitle="Semua warna season-mu. Klik warna untuk menyalin kodenya." link="/full-palette/lengkap" colors={palettes.lengkap} limit={14} />
-      </div>
+      </Reveal>
 
-      {/* 5. Warna hindari */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_20px_rgb(0,0,0,0.02)] space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-red-50 text-red-400 rounded-xl flex items-center justify-center">
-            <FiXCircle className="text-2xl" />
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Panduan Menghindari Tabrakan Warna</p>
-            <h3 className="text-xl font-bold text-glowmatch-secondary">Warna yang Sebaiknya Dihindari di Area Wajah</h3>
-          </div>
-        </div>
-        <PaletteSection title={`Kurang cocok untuk ${selected.name}`} subtitle="Warna ini cenderung membuat wajah tampak kusam atau lelah jika dipakai dekat wajah." link="/full-palette/hindari" colors={palettes.hindari} limit={7} />
-      </div>
-
-      {/* 6. Aksi Simpan & Download PDF */}
-      <div className="bg-purple-50/60 border border-purple-100 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
-        <div className="text-center md:text-left space-y-1">
-          <h4 className="text-lg font-bold text-glowmatch-secondary">Simpan & Unduh Laporan Lengkap</h4>
-          <p className="text-xs sm:text-sm text-slate-500 font-normal">
-            Hasil ini sudah otomatis tercatat di riwayat. Tandai dengan "Simpan Hasil" agar season dan warnanya tersimpan di Profil, atau unduh PDF untuk dibawa saat belanja baju, hijab, atau makeup.
-          </p>
-          {saved && (
-            <Link to="/profil?tab=simpan" className="inline-flex items-center gap-1 text-xs font-semibold text-glowmatch-primary hover:underline">
-              Lihat di Profil <FiArrowRight />
-            </Link>
-          )}
-          {saveError && <p className="text-xs text-red-500">{saveError}</p>}
-        </div>
-        <div className="flex flex-wrap w-full md:w-auto gap-3">
-          <button 
-            onClick={() => { reset(); navigate('/scan-wajah'); }}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-200 text-glowmatch-secondary px-5 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition shadow-xs text-sm"
-          >
-            <FiRefreshCw /> Analisis Ulang
-          </button>
-          
-          <button 
-            onClick={handleSave} 
-            disabled={saved || saving}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-200 text-glowmatch-secondary px-5 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition shadow-xs disabled:text-emerald-700 disabled:border-emerald-200 text-sm"
-          >
-            {saved ? <><BsBookmarkFill className="text-emerald-600" /> Tersimpan</> : <><FiBookmark /> {saving ? 'Menyimpan...' : 'Simpan Hasil'}</>}
-          </button>
-
-          {/* Download PDF Button */}
-          <button 
-            onClick={handleDownloadPdf}
-            disabled={isDownloadingPdf}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-glowmatch-primary text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-purple-800 transition shadow-md hover:shadow-lg disabled:opacity-70 text-sm active:scale-95"
-          >
-            <FiDownload className="text-base" /> 
-            {isDownloadingPdf ? 'Membuat PDF...' : 'Unduh Laporan PDF'}
-          </button>
-        </div>
-      </div>
-
-      {/* 8. BAGIAN INGIN LEBIH TAHU PENJELASAN SELANJUTNYA? (DIPINDAHKAN KE PALING BAWAH) */}
-      <div className="bg-gradient-to-r from-purple-50 via-indigo-50/60 to-purple-100/70 border border-purple-200/80 rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="space-y-2 max-w-xl text-center md:text-left">
-          <div className="inline-flex items-center gap-2 text-glowmatch-primary font-bold text-xs uppercase tracking-wider">
-            <FiBookOpen className="text-base" /> Penjelasan Lanjutan & Catatan Sistem
-          </div>
-          <h3 className="text-2xl sm:text-3xl font-bold text-glowmatch-secondary">
-            Ingin lebih tahu penjelasan selanjutnya?
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-            Baca cara undertone Warm dan Cool menentukan season warnamu, cara kerja Gatekeeper AI, dan catatan validasi lengkapnya di halaman penjelasan.
-          </p>
-        </div>
-        
-        <Link
-          to="/penjelasan-analisis"
-          className="inline-flex items-center gap-2.5 bg-glowmatch-primary hover:bg-purple-800 text-white px-8 py-4 rounded-2xl font-bold transition shadow-md hover:shadow-lg text-sm shrink-0 active:scale-95"
-        >
-          Masuk ke Halaman Penjelasan <FiArrowRight className="text-lg" />
+      {/* 6. Penjelasan lanjutan */}
+      <Reveal>
+        <Link to="/penjelasan-analisis" className="group mt-10 flex items-center justify-between gap-6 border-y border-line py-8">
+          <span className="gm-title text-[30px] sm:text-[40px] transition-colors group-hover:text-accent">
+            Cara analisis ini bekerja
+          </span>
+          <span className="gm-orb"><FiArrowUpRight /></span>
         </Link>
-      </div>
+      </Reveal>
 
     </div>
   );

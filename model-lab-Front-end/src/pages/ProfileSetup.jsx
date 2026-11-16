@@ -1,14 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  FiUser,
-  FiSave,
-  FiCheck,
-  FiArrowRight,
-  FiRefreshCw,
-} from 'react-icons/fi';
-import { HiSparkles } from 'react-icons/hi';
+import { FiSave, FiArrowRight, FiRefreshCw } from 'react-icons/fi';
 import { useAnalysis } from '../context/AnalysisContext';
 
 const INITIAL_FORM = {
@@ -140,221 +133,125 @@ const ProfileSetup = () => {
 
   if (profileLoading) {
     return (
-      <div className="py-24 max-w-md mx-auto text-center">
-        <p className="text-gray-500 text-sm">
-          Memeriksa profil pengguna...
-        </p>
+      <div className="py-32 flex justify-center">
+        <span className="gm-display text-[34px] text-gray-400 gm-breathe">Sebentar…</span>
       </div>
     );
   }
 
   if (profileError || !profile) {
     return (
-      <div className="py-24 max-w-md mx-auto text-center space-y-5">
-        <FiUser className="text-4xl text-glowmatch-primary mx-auto" />
-
-        <h1 className="text-2xl font-semibold text-glowmatch-secondary">
-          Profil belum dapat dimuat
+      <div className="gm-rise py-28 max-w-md mx-auto text-center space-y-6">
+        <h1 className="gm-display text-[48px]">
+          Profil belum <em>terbaca.</em>
         </h1>
-
-        <p className="text-sm text-gray-500">
-          Pastikan server backend GlowMatch berjalan dan koneksi
-          database tersedia.
+        <p className="gm-lead text-[15px]">
+          Pastikan server GlowMatch dan database sedang berjalan, lalu coba lagi.
         </p>
-
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
-
-        <button
-          type="button"
-          onClick={handleRetry}
-          className="inline-flex items-center gap-2 bg-glowmatch-primary text-white px-6 py-3 rounded-xl font-semibold"
-        >
-          <FiRefreshCw /> Coba Lagi
+        {error && <p className="text-sm text-accent">{error}</p>}
+        <button type="button" onClick={handleRetry} className="gm-btn">
+          <FiRefreshCw /> Coba lagi
         </button>
       </div>
     );
   }
 
   return (
-    <div className="py-10 max-w-4xl mx-auto space-y-8">
+    <div className="pt-8 pb-4 max-w-5xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-16 items-start">
 
-      {/* Header onboarding */}
-      <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-2 bg-purple-50 text-glowmatch-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-purple-100">
-          <HiSparkles />
-          Personal Color Profile
-        </div>
-
-        <h1 className="text-3xl sm:text-4xl font-bold text-glowmatch-secondary">
-          Kenali Dirimu Sebelum Analisis
+      <div className="lg:sticky lg:top-28">
+        <h1 className="gm-display gm-rise text-[56px] sm:text-[80px]">
+          Kenali dirimu <em>dulu.</em>
         </h1>
-
-        <p className="text-sm text-gray-500 leading-relaxed">
-          Lengkapi informasi profil terlebih dahulu agar hasil
-          analisis dan riwayat personal color dapat tersimpan
-          sesuai dengan identitasmu.
+        <p className="gm-lead gm-rise text-[16px] max-w-sm mt-7" style={{ '--d': '120ms' }}>
+          Nama dan preferensimu dipakai untuk riwayat dan laporan PDF.
         </p>
+        <div className="gm-rise flex gap-2 mt-10" style={{ '--d': '220ms' }} aria-hidden="true">
+          {['#f69179', '#96a8e0', '#aa2870', '#7e8a59'].map((c, i) => (
+            <span key={c} className="w-4 h-4 rounded-full gm-breathe" style={{ background: c, animationDelay: `${i * 220}ms` }} />
+          ))}
+        </div>
       </div>
 
-      {/* Form */}
-      <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-[0_4px_25px_rgb(0,0,0,0.03)] space-y-6">
+      <form onSubmit={handleSubmit} className="gm-card gm-rise p-7 sm:p-9 space-y-6" style={{ '--d': '180ms' }}>
+        <div>
+          <label htmlFor="setup-name" className="gm-label">Nama</label>
+          <input
+            id="setup-name"
+            name="name"
+            type="text"
+            required
+            maxLength={120}
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Contoh: Alya Maharani"
+            className="gm-input"
+          />
+        </div>
 
-        <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center text-2xl shadow-md shadow-purple-200">
-            <FiUser />
-          </div>
-
-          <div>
-            <h2 className="text-xl font-bold text-glowmatch-secondary">
-              Informasi Pengguna
-            </h2>
-
-            <p className="text-xs text-gray-400">
-              Data profil akan disimpan ke database GlowMatch.
-            </p>
+        <div>
+          <span className="gm-label">Gender</span>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: 'wanita', label: 'Wanita' },
+              { id: 'pria', label: 'Pria' },
+              { id: 'lainnya', label: 'Lainnya' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={formData.gender === item.id}
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, gender: item.id }));
+                  setError('');
+                }}
+                className="gm-choice"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label htmlFor="setup-age" className="gm-label">Umur</label>
+          <input
+            id="setup-age"
+            name="age"
+            type="number"
+            required
+            min="5"
+            max="100"
+            value={formData.age}
+            onChange={handleChange}
+            placeholder="Contoh: 23"
+            className="gm-input"
+          />
+        </div>
 
-          {/* Nama */}
-          <div>
-            <label
-              htmlFor="setup-name"
-              className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-            >
-              Nama Lengkap / Panggilan
-              <span className="text-red-400"> *</span>
-            </label>
+        <div>
+          <label htmlFor="setup-notes" className="gm-label">Preferensi gaya</label>
+          <textarea
+            id="setup-notes"
+            name="notes"
+            rows="3"
+            value={formData.notes}
+            onChange={handleChange}
+            placeholder="Contoh: minimalis, earthy tone..."
+            className="gm-input resize-none"
+          />
+        </div>
 
-            <input
-              id="setup-name"
-              name="name"
-              type="text"
-              required
-              maxLength={120}
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Contoh: Alya Maharani"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-            />
-          </div>
+        {error && <p className="gm-open text-[14px] text-accent">{error}</p>}
 
-          {/* Gender */}
-          <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
-              Gender <span className="text-red-400">*</span>
-            </label>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { id: 'wanita', label: 'Wanita' },
-                { id: 'pria', label: 'Pria' },
-                { id: 'lainnya', label: 'Lainnya' },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      gender: item.id,
-                    }));
-                    setError('');
-                  }}
-                  className={`py-3 px-3 rounded-xl border text-sm font-semibold transition text-center ${
-                    formData.gender === item.id
-                      ? 'border-glowmatch-primary bg-purple-50 text-glowmatch-primary shadow-sm'
-                      : 'border-gray-200 hover:bg-gray-50 text-gray-600'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Usia */}
-          <div>
-            <label
-              htmlFor="setup-age"
-              className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-            >
-              Umur (Tahun)
-              <span className="text-red-400"> *</span>
-            </label>
-
-            <input
-              id="setup-age"
-              name="age"
-              type="number"
-              required
-              min="5"
-              max="100"
-              value={formData.age}
-              onChange={handleChange}
-              placeholder="Contoh: 23"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-            />
-          </div>
-
-          {/* Catatan */}
-          <div>
-            <label
-              htmlFor="setup-notes"
-              className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2"
-            >
-              Catatan Personal / Preferensi Gaya (Opsional)
-            </label>
-
-            <textarea
-              id="setup-notes"
-              name="notes"
-              rows="3"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Contoh: Menyukai gaya minimalis dan warna earthy tone..."
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-glowmatch-primary/20 focus:border-glowmatch-primary transition text-sm"
-            />
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-              <p className="text-sm text-red-600">
-                {error}
-              </p>
-            </div>
+        <button type="submit" disabled={loading} className="gm-btn w-full py-4">
+          {loading ? (
+            <><FiSave /> Menyimpan...</>
+          ) : (
+            <>Simpan dan mulai <FiArrowRight /></>
           )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-glowmatch-primary hover:bg-purple-800 disabled:bg-gray-300 text-white py-4 px-6 rounded-xl font-semibold transition-all shadow-md flex items-center justify-center gap-2 text-sm"
-          >
-            {loading ? (
-              <>
-                <FiSave />
-                Menyimpan Profil...
-              </>
-            ) : (
-              <>
-                <FiCheck />
-                Simpan Profil dan Mulai Analisis
-                <FiArrowRight />
-              </>
-            )}
-          </button>
-        </form>
-      </div>
-
-      <p className="text-center text-xs text-gray-400">
-        Foto wajah dan gambar kamera tidak disimpan sebagai
-        data profil di database.
-      </p>
+        </button>
+      </form>
     </div>
   );
 };

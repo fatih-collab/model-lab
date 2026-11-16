@@ -20,7 +20,7 @@ function OutfitImage({ outfit }) {
   const [state, setState] = useState(outfit.image_url ? 'loading' : 'error');
 
   return (
-    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-gray-100">
+    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[12px] bg-gray-100">
       {state !== 'error' && (
         <img
           src={outfit.image_url}
@@ -32,9 +32,7 @@ function OutfitImage({ outfit }) {
         />
       )}
       {state === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 animate-pulse">
-          Membuat foto outfit...
-        </div>
+        <div className="absolute inset-0 gm-shimmer" />
       )}
       {state === 'error' && (
         <div className="absolute inset-0 flex flex-col">
@@ -49,9 +47,9 @@ function OutfitImage({ outfit }) {
 
 function OutfitCard({ outfit }) {
   return (
-    <div className="w-40 shrink-0 rounded-xl border border-gray-200 bg-white p-2">
+    <div className="w-40 shrink-0 rounded-[18px] border border-line bg-white p-2">
       <OutfitImage outfit={outfit} />
-      <p className="mt-2 text-xs font-semibold text-glowmatch-secondary">{outfit.name}</p>
+      <p className="mt-2 font-serif text-[17px] leading-tight text-ink">{outfit.name}</p>
       <div className="mt-1 flex gap-1">
         {outfit.colors.map((hex) => (
           <span
@@ -63,7 +61,7 @@ function OutfitCard({ outfit }) {
         ))}
       </div>
       {outfit.items.length > 0 && (
-        <ul className="mt-1 list-disc pl-4 text-[11px] leading-snug text-gray-600">
+        <ul className="mt-1 list-disc pl-4 text-[12px] leading-snug text-gray-600">
           {outfit.items.map((item) => <li key={item}>{item}</li>)}
         </ul>
       )}
@@ -158,27 +156,24 @@ export default function ChatBubble() {
       {open && (
         <section
           aria-label="Chat AI rekomendasi outfit"
-          className="flex h-[70vh] max-h-[600px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          className="gm-chat-in flex h-[70vh] max-h-[600px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-[28px] border border-line bg-paper shadow-[0_30px_70px_-30px_rgba(42,29,59,.55)]"
         >
-          <header className="flex items-center justify-between gap-2 bg-glowmatch-primary px-4 py-3 text-white">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold">Stylist AI GlowMatch</p>
-              <p className="truncate text-[11px] opacity-80">
-                {activeSeason ? `Season: ${activeSeason.name}` : 'Rekomendasi outfit sesuai season'}
-              </p>
-            </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Tutup chat" className="rounded-full p-1 hover:bg-white/20">
+          <header className="flex items-center justify-between gap-2 bg-ink px-5 py-4 text-paper">
+            <p className="min-w-0 truncate font-serif text-[22px] leading-none">
+              Stylist{activeSeason && <span className="italic text-[#d9b6d4]"> · {activeSeason.name}</span>}
+            </p>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Tutup chat" className="rounded-full p-1.5 hover:bg-white/15 transition">
               <FiX size={18} />
             </button>
           </header>
 
-          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
             {messages.length === 0 && (
-              <div className="space-y-2 text-sm text-gray-500">
+              <div className="gm-open space-y-3 text-[14px] text-gray-600 leading-relaxed">
                 {activeSeason ? (
                   <p>
                     Hai! Aku pakai season terbarumu,
-                    {' '}<b className="text-glowmatch-secondary">{activeSeason.name}</b>.
+                    {' '}<b className="font-normal text-ink">{activeSeason.name}</b>.
                     {' '}Mau season lain? Tulis saja namanya, misalnya &ldquo;outfit untuk Deep Autumn&rdquo;.
                   </p>
                 ) : (
@@ -194,7 +189,7 @@ export default function ChatBubble() {
                       type="button"
                       onClick={() => send(s)}
                       disabled={!activeSeason}
-                      className="rounded-full border border-glowmatch-primary/30 px-3 py-1 text-xs text-glowmatch-primary hover:bg-glowmatch-primary/5 disabled:opacity-50"
+                      className="rounded-full border border-line bg-white/60 px-3.5 py-1.5 text-[13px] text-ink transition hover:border-[#b498b8] hover:bg-chip disabled:opacity-50"
                     >
                       {s}
                     </button>
@@ -204,12 +199,12 @@ export default function ChatBubble() {
             )}
 
             {messages.map((m, i) => (
-              <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'space-y-2'}>
+              <div key={i} className={`gm-open ${m.role === 'user' ? 'flex justify-end' : 'space-y-2'}`}>
                 <p
-                  className={`max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm ${
+                  className={`max-w-[85%] whitespace-pre-line rounded-[20px] px-4 py-2.5 text-[14px] leading-relaxed ${
                     m.role === 'user'
-                      ? 'bg-glowmatch-primary text-white'
-                      : 'bg-gray-100 text-glowmatch-secondary'
+                      ? 'bg-ink text-paper rounded-br-md'
+                      : 'bg-white border border-line text-ink rounded-bl-md'
                   }`}
                 >
                   {m.content}
@@ -222,26 +217,32 @@ export default function ChatBubble() {
               </div>
             ))}
 
-            {loading && <p className="text-xs text-gray-400 animate-pulse">Stylist sedang mengetik...</p>}
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {loading && (
+              <div className="flex gap-1.5 px-1 py-2" aria-label="Stylist sedang mengetik">
+                {[0, 1, 2].map((d) => (
+                  <span key={d} className="w-2 h-2 rounded-full bg-[#b394b9] gm-breathe" style={{ animationDelay: `${d * 180}ms` }} />
+                ))}
+              </div>
+            )}
+            {error && <p className="text-[13px] text-accent">{error}</p>}
           </div>
 
           <form
             onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="flex items-center gap-2 border-t border-gray-100 p-3"
+            className="flex items-center gap-2 border-t border-line p-3"
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               maxLength={500}
               placeholder="Tanya outfit untuk season-mu..."
-              className="min-w-0 flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-glowmatch-primary focus:outline-none"
+              className="gm-input min-w-0 flex-1 rounded-full py-2.5"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
               aria-label="Kirim"
-              className="rounded-full bg-glowmatch-primary p-2.5 text-white disabled:opacity-50"
+              className="rounded-full bg-ink p-3 text-paper transition hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
             >
               <FiSend size={16} />
             </button>
@@ -253,7 +254,7 @@ export default function ChatBubble() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full bg-glowmatch-primary px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:scale-105"
+        className="gm-btn px-5 py-3"
       >
         {open ? <FiX size={18} /> : <FiMessageCircle size={18} />}
         Chat AI

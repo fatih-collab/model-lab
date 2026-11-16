@@ -4,68 +4,48 @@ import ColorSwatch from '../components/ColorSwatch';
 import { resultData } from '../data/colorData';
 import { seasonOptions, useAnalysis } from '../context/AnalysisContext';
 
+const TITLES = {
+  utama: ['Warna', 'utama.'],
+  netral: ['Warna', 'netral.'],
+  lengkap: ['Palet', 'lengkap.'],
+  hindari: ['Sebaiknya', 'dihindari.'],
+};
+
 const FullPalette = () => {
-  // Mengambil parameter 'type' dari URL (utama, netral, lengkap, atau hindari)
-  const { type } = useParams(); 
+  // Parameter 'type' dari URL: utama, netral, lengkap, atau hindari
+  const { type } = useParams();
   const { result, selectedId } = useAnalysis();
 
   // Palet season yang sedang dipilih di halaman hasil (fallback: data contoh bila belum ada analisis)
   const options = seasonOptions(result);
   const selected = options.find((o) => o.id === selectedId) ?? options[0];
   const palette = (selected ? selected.palette.palettes : resultData.palettes)[type] || [];
-  
-  // Menyesuaikan judul dan deskripsi berdasarkan tipe
-  let title;
-  let description;
-  
-  if (type === 'utama') {
-    title = "Warna Utama";
-    description = "Deretan warna terbaik yang akan memancarkan aura alami dan membuat wajahmu tampak segar.";
-  } else if (type === 'netral') {
-    title = "Warna Netral";
-    description = "Warna dasar yang elegan, aman, dan sangat mudah dipadukan dengan warna utamamu.";
-  } else if (type === 'lengkap') {
-    title = "Palet Lengkap";
-    description = "Semua warna season-mu, termasuk warna netralnya. Klik warna untuk menyalin kodenya.";
-  } else if (type === 'hindari') {
-    title = "Warna yang Dihindari";
-    description = "Warna yang sebaiknya dihindari untuk atasan atau hijab agar kulitmu tidak terlihat kusam atau pucat.";
-  } else {
-    title = "Palet Tidak Ditemukan";
-    description = "Kategori warna yang kamu cari tidak tersedia.";
-  }
+  const [title, accent] = TITLES[type] ?? ['Palet tidak', 'ditemukan.'];
 
   return (
-    <div className="py-8 max-w-5xl mx-auto space-y-8">
-      
-      {/* Tombol Kembali */}
-      <Link 
-        to="/hasil" 
-        className="inline-flex items-center gap-2 text-slate-500 hover:text-glowmatch-primary transition-colors font-medium text-sm"
-      >
-        <FiArrowLeft className="text-lg" /> Kembali ke Hasil Analisis
+    <div className="pt-8 pb-4 max-w-6xl mx-auto">
+      <Link to="/hasil" className="gm-link gm-rise text-[14px] text-gray-500">
+        <FiArrowLeft /> Kembali ke hasil
       </Link>
-      
-      {/* Header Halaman */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-        <h1 className="text-3xl font-semibold text-glowmatch-secondary mb-3 capitalize">{title}</h1>
-        {selected && <p className="text-sm font-medium text-glowmatch-primary mb-2">{selected.name}</p>}
-        <p className="text-slate-500 font-normal">{description}</p>
+
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-8 mb-14">
+        <h1 className="gm-display gm-rise text-[56px] sm:text-[84px]" style={{ '--d': '80ms' }}>
+          {title} <em>{accent}</em>
+        </h1>
+        {selected && (
+          <p className="gm-index gm-rise text-[36px]" style={{ '--d': '160ms' }}>{selected.name}</p>
+        )}
       </div>
-      
-      {/* Grid Seluruh Warna */}
-      <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-4">
-          {palette.length > 0 ? (
-            palette.map((color, idx) => (
-              <ColorSwatch key={idx} name={color.name} hex={color.hex} source={color.source} />
-            ))
-          ) : (
-            <p className="text-slate-400 col-span-full text-center py-10">Data warna tidak ditemukan.</p>
-          )}
+
+      {palette.length > 0 ? (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-x-4 gap-y-7">
+          {palette.map((color, idx) => (
+            <ColorSwatch key={`${color.hex}-${idx}`} name={color.name} hex={color.hex} index={idx} />
+          ))}
         </div>
-      </div>
-      
+      ) : (
+        <p className="gm-title text-[28px] text-gray-400 text-center py-16">Belum ada warna di sini.</p>
+      )}
     </div>
   );
 };

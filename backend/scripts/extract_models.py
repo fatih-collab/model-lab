@@ -8,23 +8,26 @@ Karena itu "ekstraksi" dibagi menjadi:
   code      Ambil fungsi pre-processing / fitur / post-processing dari sel notebook via AST (beserta
             dependensinya) -> ml/nb_generated/{undertone_nb,season_nb}.py. Kode inferensi memakai fungsi
             yang PERSIS sama dengan saat training (tidak ditulis ulang manual -> tidak ada train/serve skew).
+            Notebook season v3 menulis modulnya lewat sel `%%writefile` (armo_common/prep/train/driver.py);
+            baris magic dibuang sehingga isi sel itu terbaca sebagai kode biasa.
   manifest  Simpan konfigurasi, nama kelas, label 12-season, bobot ensemble & metrik yang dilaporkan
             notebook -> models/manifest.json.
   collect   Salin artefak dari folder output Kaggle (hasil `kaggle kernels output ...`) -> models/<modul>/.
-  repack    Muat ulang joblib (perbaiki referensi `__main__.SafePCA`), buang komponen berbobot 0
-            -> models/<modul>/<modul>_bundle.joblib.
+  repack    Undertone: muat ulang joblib (perbaiki `__main__.SafePCA`), buang komponen berbobot 0.
+            Season v3: pilih bobot convnext_t vs LightGBM, ambang 'yakin' & himpunan konformal dari prediksi
+            OOF (armo_v3_hasil.joblib + meta.csv) -> models/<modul>/<modul>_bundle.joblib.
   verify    Cek artefak lengkap, bobot ensemble cocok dengan notebook, kunci & shape checkpoint benar,
-            tulis models/artifacts.lock.json (sha256).
-  fetch     Unduh bobot pretrained (HF: DINOv2, DINOv3, SegFormer face-parsing) + detektor wajah YuNet.
+            booster LightGBM terbaca, bobot pyfacer utuh, tulis models/artifacts.lock.json (sha256).
+  fetch     Unduh bobot pretrained (HF: DINOv2) + detektor wajah YuNet + pyfacer (RetinaFace, FaRL LaPa).
   all       code + manifest (+ collect, repack, verify bila --src diberikan).
 
 Contoh:
   python scripts/extract_models.py all
   kaggle kernels output <user>/<kernel-undertone> -p ~/kaggle_out/undertone
-  kaggle kernels output <user>/<kernel-season>    -p ~/kaggle_out/season
-  python scripts/extract_models.py all --src ~/kaggle_out/undertone ~/kaggle_out/season
-  HF_TOKEN=hf_xxx python scripts/extract_models.py fetch
-  python scripts/extract_models.py fetch --skip-hf      # hanya YuNet
+  kaggle kernels output <user>/<kernel-season>    -p ~/kaggle_out/season_v3
+  python scripts/extract_models.py all --src ~/kaggle_out/undertone ~/kaggle_out/season_v3
+  python scripts/extract_models.py fetch
+  python scripts/extract_models.py fetch --skip-hf      # hanya YuNet + pyfacer
 """
 from __future__ import annotations
 
@@ -34,12 +37,15 @@ import builtins
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import shutil
 import sys
 import warnings
 from pathlib import Path
+
+import numpy as np
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_NB_DIR = BACKEND_DIR.parent / "Model"
@@ -49,6 +55,22 @@ HF_CACHE_DIR = MODELS_DIR / "hf_cache"
 YUNET_URL = ("https://github.com/opencv/opencv_zoo/raw/main/models/"
              "face_detection_yunet/face_detection_yunet_2023mar.onnx")
 YUNET_PATH = MODELS_DIR / "face_detection_yunet_2023mar.onnx"
+PYFACER_DIR = MODELS_DIR / "pyfacer"
+# Bobot pyfacer 0.0.5 (URL bawaan facer/face_detection/retinaface.py & facer/face_parsing/farl.py), di-pin sha256.
+PYFACER_FILES = {
+    "mobilenet0.25_Final.pth": (
+        "https://github.com/elliottzheng/face-detection/releases/download/0.0.1/mobilenet0.25_Final.pth",
+        "2979b33ffafda5d74b6948cd7a5b9a7a62f62b949cef24e95fd15d2883a65220"),
+    "face_parsing.farl.lapa.main_ema_136500_jit191.pt": (
+        "https://github.com/FacePerceiver/facer/releases/download/models-v1/"
+        "face_parsing.farl.lapa.main_ema_136500_jit191.pt",
+        "f5a874906795ef89fadd7cf3b5b218ed8550fa9dbb383b7c0f95726c3a352914"),
+}
+SEASON_FOLDS = 5
+SEASON_DEEP = "convnext_t"           # model deep yang dilayani (terbaik di OOF; ensemble 7 model terlalu lambat di CPU)
+LGB_FILES = ([f"lgb_flat_f{k}.txt" for k in range(SEASON_FOLDS)]
+             + [f"lgb_hier_season_f{k}.txt" for k in range(SEASON_FOLDS)]
+             + [f"lgb_hier_expert{s}_f{k}.txt" for s in range(4) for k in range(SEASON_FOLDS)])
 sys.path.insert(0, str(BACKEND_DIR))
 
 # Deep Armocromia memakai nama musim berbahasa Italia.
@@ -80,31 +102,33 @@ SPECS = {
                         "used_by": "svm (tuned) — fitur DINOv2 frozen"}],
     },
     "season": {
-        "notebook": "EXP-20261012-191927-3fc3.ipynb",
+        "notebook": "armocromia_season_detection_v3.ipynb",
         "module": "season_nb",
-        "input": "foto wajah + rambut, latar dihitamkan (format RGB-M Deep Armocromia)",
+        "input": "crop wajah -> masker organ pyfacer FaRL -> RGB-M (wajah + rambut, latar hitam) + fitur warna per organ",
         "prelude": (
+            "import math\n"
+            "import os\n"
             "import numpy as np\n"
-            "from PIL import Image, ImageOps\n"
+            "import cv2\n"
+            "import torch\n"
+            "import torch.nn as nn\n"
+            "import torch.nn.functional as F\n"
+            "import timm\n"
         ),
         "targets": [
-            "NUM_CLASSES", "NUM_SEASONS", "WARM_SEASONS", "BACKBONE_HF_ID", "PARSER_HF_ID",
-            "PARSE_SIZE", "CACHE_SIZE", "MASK_THRESH", "EMB_IMG_SIZE", "FT_IMG_SIZE", "EXTRA_MEAN_LAYERS",
-            "FT_DROPOUT", "IMNET_MEAN", "IMNET_STD",
-            "rgb2lab_np", "REGION_PARTS", "REGION_MIN_PIX", "REGION_COLS", "COL_IX",
-            "region_color_features", "load_squares",
-            "apply_temperature", "pool", "proba_full", "stack_features", "final_predict", "conformal_sets",
+            "SEASONS", "SUBCLASSES", "SUB_NAMES", "NUM_SEASONS", "NUM_CLASSES", "SUB2SEASON", "WARM_SEASONS",
+            "PART_ID", "N_PARTS", "PATCH", "CACHE_SIDE", "MODEL_ZOO",
+            "season_probs", "hierarchical_decode", "temp_scale",
+            "LAPA2ID", "heuristic_labelmap", "REGIONS", "srgb_to_lab", "region_pixels", "region_features",
+            "extract_color_features", "crop_bbox", "letterbox", "gpu_aug", "HierCls",
         ],
-        "config_keys": ["NUM_CLASSES", "NUM_SEASONS", "BACKBONE_HF_ID", "PARSER_HF_ID", "PARSE_SIZE", "CACHE_SIZE",
-                        "MASK_THRESH", "EMB_IMG_SIZE", "FT_IMG_SIZE", "EXTRA_MEAN_LAYERS", "FT_DROPOUT",
-                        "IMNET_MEAN", "IMNET_STD"],
-        "required": ["E12_artifacts.joblib"] + [f"ft_s42_f{k}.pt" for k in range(5)],
-        "optional": ["E12_summary.json"],
+        "config_keys": ["NUM_CLASSES", "NUM_SEASONS", "SUB_NAMES", "PART_ID", "REGIONS", "PATCH", "CACHE_SIDE",
+                        "MODEL_ZOO"],
+        "required": (["armo_v3_hasil.joblib", "meta.csv"] + [f"{SEASON_DEEP}_f{k}.pt" for k in range(SEASON_FOLDS)]
+                     + LGB_FILES),
+        "optional": ["ensemble_config.json"],
         "bundle": "season_bundle.joblib",
-        "pretrained": [{"repo": "facebook/dinov3-vits16-pretrain-lvd1689m", "gated": True,
-                        "used_by": "emb_lr (frozen) + arsitektur ArmoNet (ft)"},
-                       {"repo": "jonathandinu/face-parsing", "gated": False,
-                        "used_by": "SegFormer face parsing (mask wajah + fitur warna per region)"}],
+        "pretrained": [],                    # bobot timm ikut di checkpoint; face parsing = pyfacer (PYFACER_FILES)
     },
 }
 
@@ -263,15 +287,19 @@ def parse_reported(name: str, outputs: list[str]) -> dict:
         out["ensemble_weights"] = _literal_after(r"Bobot ensemble:\s*(\{.*?\})", text)
         out["test_accuracy_pct"] = _float_after(r"Test accuracy ([\d.]+)%", text)
     else:
-        out["class_names"] = _literal_after(r"Kelas\s*:\s*(\[.*?\])", text)
-        out["char_names"] = _literal_after(r"Karakteristik\s*:\s*(\[.*?\])", text)
-        out["component_temperatures"] = _literal_after(r"Temperature per komponen:\s*(\{.*?\})", text)
-        out["ensemble_weights"] = _literal_after(r"Bobot ensemble:\s*(\{.*?\})", text)
-        out["ensemble_temperature"] = _float_after(r"Temperature ensemble T = ([\d.]+)", text)
-        out["conf_high"] = _float_after(r"Ambang 'yakin' = ([\d.]+)", text)
-        m = re.search(r"METODE AKHIR: (\w+)", text)
-        out["final_method"] = m.group(1) if m else None
+        # Notebook v3 dijalankan di Kaggle; salinan lokal biasanya tanpa output -> nilai None. Angka yang benar-benar
+        # dipakai server (temperatur, bobot, ambang, metrik) dihitung `repack` dari armo_v3_hasil.joblib.
+        out["temperatures"] = _literal_after(r"Temperatur:\s*(\{.*?\})", text)
+        out["family_weights_optuna"] = _literal_after(r"Bobot family \(Optuna\):\s*(\{.*?\})", text)
+        m = re.search(r"METODE TERBAIK\s*:\s*(.+)", text)
+        out["final_method"] = m.group(1).strip() if m else None
+        out["official_test_season_acc"] = _float_after(r"OFFICIAL TEST\s*:\s*season acc ([\d.]+)", text)
     return out
+
+
+def season_ids(sub_names) -> list[str]:
+    """Nama kelas notebook v3 ('autunno-deep') -> id kelas backend ('autunno_deep'); urutan dipertahankan."""
+    return [str(n).replace("-", "_") for n in sub_names]
 
 
 def season_label_table(class_names: list[str]) -> dict:
@@ -305,16 +333,20 @@ def cmd_manifest(args) -> None:
         if name == "undertone":
             entry["class_names"] = list(mod.CLASS_NAMES)
         else:
-            entry["class_names"] = reported["class_names"]
-            entry["labels"] = season_label_table(reported["class_names"])
-            entry["region_cols"] = list(mod.REGION_COLS)
+            entry["class_names"] = season_ids(mod.SUB_NAMES)
+            entry["labels"] = season_label_table(entry["class_names"])
+            entry["serving"] = {"deep": SEASON_DEEP, "folds": SEASON_FOLDS, "lgb": ["lgb_flat", "lgb_hier"],
+                                "face_parser": "pyfacer retinaface/mobilenet + farl/lapa/448",
+                                "pyfacer_files": sorted(PYFACER_FILES)}
         manifest["modules"][name] = entry
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     path = MODELS_DIR / "manifest.json"
     path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, default=list), encoding="utf-8")
     print(f"[manifest] {path.relative_to(BACKEND_DIR)}")
     for name, e in manifest["modules"].items():
-        print(f"   {name:9s} kelas={len(e['class_names'])} | bobot ensemble notebook={e['reported']['ensemble_weights']}")
+        extra = (f"bobot ensemble notebook={e['reported']['ensemble_weights']}" if name == "undertone"
+                 else f"dilayani={e['serving']['deep']} + {'/'.join(e['serving']['lgb'])}")
+        print(f"   {name:9s} kelas={len(e['class_names'])} | {extra}")
 
 
 def load_manifest() -> dict:
@@ -342,8 +374,22 @@ def cmd_collect(args) -> None:
                 continue
             if len(hits) > 1:
                 print(f"[collect] {fname}: {len(hits)} salinan, dipakai yang terbaru: {hits[-1]}")
-            shutil.copy2(hits[-1], dest / fname)
-            print(f"[collect] {name}/{fname} <- {hits[-1]}")
+            how = _link_or_copy(hits[-1], dest / fname)
+            print(f"[collect] {name}/{fname} <- {hits[-1]} ({how})")
+
+
+def _link_or_copy(src: Path, dst: Path) -> str:
+    """Hardlink bila satu partisi (artefak read-only, tidak memakan ruang disk lagi), selain itu salin."""
+    if dst.exists() or dst.is_symlink():
+        if dst.exists() and os.path.samefile(src, dst):
+            return "sudah sama"
+        dst.unlink()
+    try:
+        os.link(src, dst)
+        return "hardlink"
+    except OSError:
+        shutil.copy2(src, dst)
+        return "salin"
 
 
 def _load_joblib_quiet(path: Path):
@@ -389,27 +435,120 @@ def cmd_repack(args) -> None:
     else:
         print(f"[repack] dilewati: {src.relative_to(BACKEND_DIR)} tidak ada")
 
-    # ---- Season: komponen berbobot 0 (mis. emb_lr_orig) tidak menyumbang ke pooling log-linear,
-    #      jadi aman dibuang -> foto RGB asli tidak lagi diperlukan saat inferensi.
-    src = MODELS_DIR / "season" / "E12_artifacts.joblib"
-    if src.exists():
+    # ---- Season v3: convnext_t + LightGBM, bobot & kalibrasi dari prediksi OOF.
+    src, meta_path = MODELS_DIR / "season" / "armo_v3_hasil.joblib", MODELS_DIR / "season" / "meta.csv"
+    if src.exists() and meta_path.exists():
+        import pandas as pd
+
         raw = _load_joblib_quiet(src)
-        bundle = dict(raw)
-        if raw["method"] == "ensemble":
-            keep = [(n, float(w)) for n, w in zip(raw["comp_names"], raw["ens_weights"]) if w > 0]
-            bundle["comp_names"] = [n for n, _ in keep]
-            bundle["ens_weights"] = tuple(w for _, w in keep)
-            bundle["models"] = {k: m for k, m in raw["models"].items() if k in bundle["comp_names"]}
-        else:
-            print("[repack] season memakai xgb_stack: semua komponen dipertahankan (stacker butuh semuanya).")
-        bundle["labels"] = manifest["season"]["labels"]
-        bundle["source"] = {"file": src.name, "sha256": sha256_file(src)}
+        bundle = build_season_bundle(raw, pd.read_csv(meta_path), manifest["season"])
+        bundle["source"] = {"file": src.name, "sha256": sha256_file(src), "meta_sha256": sha256_file(meta_path)}
         dst = MODELS_DIR / "season" / SPECS["season"]["bundle"]
         joblib.dump(bundle, dst)
-        print(f"[repack] {dst.relative_to(BACKEND_DIR)} | metode={bundle['method']} | komponen aktif: "
-              f"{dict(zip(bundle['comp_names'], bundle['ens_weights']))}")
+        m = bundle["metrics"]
+        print(f"[repack] {dst.relative_to(BACKEND_DIR)} | {bundle['deep']['tag']} {bundle['weights']['deep']:.2f} + "
+              f"LightGBM {bundle['weights']['lgb']:.2f} | ambang 'yakin'={bundle['conf_high']:.4f} | "
+              f"qhat={bundle['conformal_qhat']}")
+        print(f"   TEST season acc: dilayani={m['test']['served']['season_acc']:.4f} | "
+              f"{bundle['deep']['tag']} saja={m['test']['deep']['season_acc']:.4f} | "
+              f"LightGBM saja={m['test']['lgb']['season_acc']:.4f} | "
+              f"ensemble resmi notebook (7 model)={m['official_test'].get('season_acc', float('nan')):.4f}")
     else:
-        print(f"[repack] dilewati: {src.relative_to(BACKEND_DIR)} tidak ada")
+        print(f"[repack] dilewati: {src.relative_to(BACKEND_DIR)} atau meta.csv tidak ada")
+
+
+# Ambang 'yakin' & konformal: aturan yang sama dengan notebook season sebelumnya (sel 8.3), dihitung pada OOF
+# subset CelebA. Prediksi berlabel 'yakin' bila akurasinya >= 50% dan mencakup >= 5% gambar.
+TARGET_SELECTIVE_ACC, MIN_SELECTIVE_COVERAGE, CONFORMAL_ALPHAS = 0.50, 0.05, (0.10, 0.20)
+
+
+def _season_decision(p):
+    """Keputusan hierarkis (season dulu, lalu sub-season) — sama dengan notebook dan app/rules_engine.family_first."""
+    from ml.nb_generated import season_nb as snb
+
+    return snb.hierarchical_decode(p)[1]
+
+
+def _season_metrics(y, p) -> dict:
+    from sklearn.metrics import f1_score
+    from ml.nb_generated import season_nb as snb
+
+    sub = _season_decision(p)
+    return {"season_acc": float((snb.SUB2SEASON[sub] == snb.SUB2SEASON[y]).mean()),
+            "sub_acc": float((sub == y).mean()),
+            "sub_f1": float(f1_score(y, sub, average="macro", labels=list(range(snb.NUM_CLASSES)), zero_division=0))}
+
+
+def _selective_threshold(correct, conf, target, min_cov):
+    order = np.argsort(-conf, kind="stable")
+    k = np.arange(1, len(conf) + 1)
+    cov, acc = k / len(conf), np.cumsum(correct[order].astype(float)) / k
+    ok = np.where((acc >= target) & (cov >= min_cov))[0]
+    return (float(conf[order][ok.max()]), float(cov[ok.max()])) if len(ok) else (1.01, 0.0)
+
+
+def _conformal_qhat(y, p, alpha):
+    s = 1.0 - p[np.arange(len(y)), y]
+    n = len(s)
+    return float(np.quantile(s, min(1.0, math.ceil((n + 1) * (1 - alpha)) / n), method="higher"))
+
+
+def build_season_bundle(raw: dict, meta, manifest_season: dict, deep: str = SEASON_DEEP, step: float = 0.05) -> dict:
+    """Bundle siap-layani dari armo_v3_hasil.joblib + meta.csv:
+    P = w * T(deep) + (1-w) * mean(T(lgb_flat), T(lgb_hier)); w dipilih dari OOF dengan kriteria notebook
+    (sub-season macro F1, keputusan hierarkis), lalu ambang 'yakin' + qhat konformal dari OOF subset CelebA.
+    Test hanya dilaporkan, tidak dipakai memilih."""
+    from ml.nb_generated import season_nb as snb
+
+    class_names = season_ids(raw["class_names"])
+    if class_names != manifest_season["class_names"]:
+        raise ValueError(f"season: class_names joblib {class_names} != manifest {manifest_season['class_names']}")
+    tr, te = (meta.partition == "train").values, (meta.partition != "train").values
+    y_tr, y_te = meta.y_sub.values[tr], meta.y_sub.values[te]
+    celeba = meta.celeba.astype(str).str.lower().eq("true").values[tr]
+    if len(raw["pred_oof"][deep]) != len(y_tr) or not np.array_equal(np.asarray(raw["y_te"]), y_te):
+        raise ValueError("season: meta.csv tidak cocok dengan armo_v3_hasil.joblib (run Kaggle berbeda?)")
+    missing = [t for t in (deep, "lgb_flat", "lgb_hier") if t not in raw["models"]]
+    if missing or "lgb_models" not in raw:
+        raise ValueError(f"season: joblib tidak memuat {missing or 'lgb_models'} — jalankan notebook v3 terbaru")
+
+    T = {t: float(raw["temps"][t]) for t in (deep, "lgb_flat", "lgb_hier")}
+    cal = {t: (snb.temp_scale(np.asarray(raw["pred_oof"][t]), T[t]), snb.temp_scale(np.asarray(raw["pred_test"][t]), T[t]))
+           for t in T}
+    lgb = tuple((cal["lgb_flat"][i] + cal["lgb_hier"][i]) / 2 for i in (0, 1))
+    grid = np.round(np.arange(0.0, 1.0 + 1e-9, step), 4)
+    scores = [(_season_metrics(y_tr, w * cal[deep][0] + (1 - w) * lgb[0])["sub_f1"], w) for w in grid]
+    w = float(max(scores)[1])
+    P_oof, P_te = w * cal[deep][0] + (1 - w) * lgb[0], w * cal[deep][1] + (1 - w) * lgb[1]
+
+    pc, yc = P_oof[celeba], y_tr[celeba]
+    top = _season_decision(pc)
+    conf_high, coverage = _selective_threshold(top == yc, pc[np.arange(len(pc)), top], TARGET_SELECTIVE_ACC,
+                                               MIN_SELECTIVE_COVERAGE)
+    qhat = {a: _conformal_qhat(yc, pc, a) for a in CONFORMAL_ALPHAS}
+
+    zoo = raw["model_zoo"][deep]
+    base = lambda p: str(p).replace("\\", "/").rsplit("/", 1)[-1]
+    return {
+        "class_names": class_names, "labels": manifest_season["labels"],
+        "warm_of": np.array([int(manifest_season["labels"][c]["undertone"] == "warm") for c in class_names]),
+        "deep": {"tag": deep, "kind": zoo["kind"], "backbone": zoo["backbone"], "img_size": int(zoo["img_size"]),
+                 "ckpts": [f"{deep}_f{k}.pt" for k in range(len(raw["deep_ckpts"][deep]))]},
+        "lgb": {"flat": [base(f) for fold in raw["lgb_models"]["lgb_flat"] for f in fold],
+                "hier": [[base(f) for f in fold] for fold in raw["lgb_models"]["lgb_hier"]],
+                "feature_cols": list(raw["lgb_feature_cols"]),
+                "hier_kids": {int(s): [int(c) for c in kids] for s, kids in raw["lgb_hier_kids"].items()}},
+        "cache_side": int(snb.CACHE_SIDE), "temps": T, "weights": {"deep": w, "lgb": round(1.0 - w, 4)},
+        "conf_high": conf_high, "conf_high_coverage": coverage, "conformal_qhat": qhat,
+        "metrics": {
+            "oof": {"served": _season_metrics(y_tr, P_oof), "deep": _season_metrics(y_tr, cal[deep][0]),
+                    "lgb": _season_metrics(y_tr, lgb[0])},
+            "test": {"served": _season_metrics(y_te, P_te), "deep": _season_metrics(y_te, cal[deep][1]),
+                     "lgb": _season_metrics(y_te, lgb[1])},
+            "official_test": {k: float(v) for k, v in raw.get("official_test_metrics", {}).items()},
+            "official_method": raw.get("final_name"), "weight_grid_oof_sub_f1": {float(g): float(s) for s, g in scores},
+        },
+    }
 
 
 def _check_ckpt(path: Path, expect: dict[str, tuple], prefix: str | None = None) -> list[str]:
@@ -426,6 +565,39 @@ def _check_ckpt(path: Path, expect: dict[str, tuple], prefix: str | None = None)
             errors.append(f"{path.name}: shape {key} = {tuple(sd[key].shape)}, seharusnya {shape}")
     if prefix and not any(k.startswith(prefix) for k in sd):
         errors.append(f"{path.name}: tidak ada parameter berawalan '{prefix}'")
+    return errors
+
+
+def verify_season_bundle(b: dict, d: Path, manifest_season: dict) -> list[str]:
+    """Bundle season v3 konsisten dengan manifest, checkpoint HierCls & booster LightGBM terbaca dengan bentuk benar."""
+    import lightgbm as lgb
+    import timm
+
+    errors = []
+    n_cls = len(manifest_season["class_names"])
+    if list(b["class_names"]) != manifest_season["class_names"]:
+        errors.append(f"season: class_names {b['class_names']} != manifest")
+    if abs(b["weights"]["deep"] + b["weights"]["lgb"] - 1) > 1e-3:
+        errors.append(f"season: bobot {b['weights']} tidak berjumlah 1")
+    n_feat = timm.create_model(b["deep"]["backbone"], pretrained=False, num_classes=0).num_features
+    for name in b["deep"]["ckpts"]:
+        p = d / name
+        if p.exists():
+            errors += [f"season: {e}" for e in _check_ckpt(p, {"head_sub.weight": (n_cls, n_feat),
+                                                                "head_season.weight": (4, n_feat)}, prefix="backbone.")]
+    n_cols, kids = len(b["lgb"]["feature_cols"]), b["lgb"]["hier_kids"]
+    expect = [(f, n_cls) for f in b["lgb"]["flat"]]
+    for fold in b["lgb"]["hier"]:
+        expect += [(fold[0], len(kids))] + [(f, len(kids[s])) for s, f in enumerate(fold[1:])]
+    for fname, n_out in expect:
+        p = d / fname
+        if not p.exists():
+            continue                                            # sudah dilaporkan sebagai file hilang
+        booster = lgb.Booster(model_file=str(p))
+        if booster.num_feature() != n_cols:
+            errors.append(f"season: {fname} memakai {booster.num_feature()} fitur, bundle {n_cols}")
+        if booster.num_model_per_iteration() != n_out:
+            errors.append(f"season: {fname} keluaran {booster.num_model_per_iteration()} kelas, seharusnya {n_out}")
     return errors
 
 
@@ -463,30 +635,29 @@ def cmd_verify(args) -> int:
         if p.exists():
             errors += _check_ckpt(p, {"classifier.2.1.weight": (3, 768), "classifier.2.1.bias": (3,)})
 
-    # ---- Season
+    # ---- Season v3
     d = MODELS_DIR / "season"
     bpath = d / SPECS["season"]["bundle"]
-    bpath = bpath if bpath.exists() else d / "E12_artifacts.joblib"
     if bpath.exists():
         b = _load_joblib_quiet(bpath)
-        if list(b["class_names"]) != manifest["season"]["class_names"]:
-            errors.append(f"season: class_names {b['class_names']} != manifest")
-        w = dict(zip(b["comp_names"], map(float, b["ens_weights"])))
-        if b["method"] == "ensemble" and not _weights_match(w, manifest["season"]["reported"]["ensemble_weights"]):
-            errors.append(f"season: bobot ensemble {w} != notebook {manifest['season']['reported']['ensemble_weights']}")
-        rep_t = manifest["season"]["reported"]["ensemble_temperature"]
-        if b["method"] == "ensemble" and rep_t and abs(float(b["temperature"]) - rep_t) > 2e-3:
-            errors.append(f"season: temperature {b['temperature']:.4f} != notebook {rep_t}")
-        need = [n for n in b["comp_names"] if n != "ft" and n not in b["models"]]
-        if need:
-            errors.append(f"season: model komponen tidak ada di bundle: {need}")
-        print(f"[verify] season bundle OK: {bpath.name} | metode={b['method']} | {w} | T={float(b['temperature']):.3f}")
-    n_cls, d2 = len(manifest["season"]["class_names"]), 2 * 384      # head memakai concat(CLS, mean patch)
-    for k in range(5):
-        p = d / f"ft_s42_f{k}.pt"
-        if p.exists():
-            errors += _check_ckpt(p, {"head12.weight": (n_cls, d2), "headS.weight": (4, d2),
-                                      "headC.weight": (6, d2), "headU.weight": (2, d2)}, prefix="backbone.")
+        errors += verify_season_bundle(b, d, manifest["season"])
+        if not any(e.startswith("season") for e in errors):
+            print(f"[verify] season bundle OK: {bpath.name} | {b['deep']['tag']} {b['weights']['deep']:.2f} + "
+                  f"LightGBM {b['weights']['lgb']:.2f} | {len(b['deep']['ckpts'])} fold deep, "
+                  f"{len(b['lgb']['flat'])} fold LightGBM, {len(b['lgb']['feature_cols'])} fitur warna")
+    else:
+        errors.append(f"season/{bpath.name} tidak ada — jalankan `repack`")
+
+    # ---- pyfacer (face parsing modul season)
+    for fname, (_, sha) in PYFACER_FILES.items():
+        p = PYFACER_DIR / fname
+        if not p.exists():
+            errors.append(f"pyfacer/{fname} tidak ada — jalankan `fetch`")
+            continue
+        actual = sha256_file(p)
+        lock[f"pyfacer/{fname}"] = {"sha256": actual, "bytes": p.stat().st_size}
+        if actual != sha:
+            errors.append(f"pyfacer/{fname}: sha256 {actual[:12]}… != {sha[:12]}… (unduhan rusak?)")
 
     (MODELS_DIR / "artifacts.lock.json").write_text(json.dumps(lock, indent=2), encoding="utf-8")
     if errors:
@@ -501,6 +672,33 @@ def cmd_verify(args) -> int:
 # =====================================================================================================
 # Bobot pretrained
 # =====================================================================================================
+def fetch_pyfacer() -> bool:
+    """Unduh bobot pyfacer ke models/pyfacer/ (sekali, ±650 MB) dan cek sha256. Kembalikan True bila ada yang gagal."""
+    import urllib.request
+
+    PYFACER_DIR.mkdir(parents=True, exist_ok=True)
+    failed = False
+    for fname, (url, sha) in PYFACER_FILES.items():
+        dst = PYFACER_DIR / fname
+        if dst.exists() and sha256_file(dst) == sha:
+            print(f"[fetch] pyfacer/{fname} sudah ada (sha256 cocok)")
+            continue
+        tmp = dst.with_suffix(dst.suffix + ".part")
+        try:
+            print(f"[fetch] mengunduh {url}")
+            urllib.request.urlretrieve(url, tmp)
+            actual = sha256_file(tmp)
+            if actual != sha:
+                raise ValueError(f"sha256 {actual} != {sha}")
+            tmp.replace(dst)
+            print(f"[fetch] pyfacer/{fname} -> {dst.relative_to(BACKEND_DIR)}")
+        except Exception as e:
+            failed = True
+            tmp.unlink(missing_ok=True)
+            print(f"[fetch] GAGAL pyfacer/{fname}: {type(e).__name__}: {str(e)[:200]}")
+    return failed
+
+
 def cmd_fetch(args) -> int:
     from huggingface_hub import snapshot_download
 
@@ -527,6 +725,7 @@ def cmd_fetch(args) -> int:
         except Exception as e:
             failed = True
             print(f"[fetch] GAGAL YuNet ({e}); preprocess akan memakai Haar cascade sebagai fallback.")
+    failed |= fetch_pyfacer()
     if not args.skip_hf:
         (MODELS_DIR / "pretrained.json").write_text(json.dumps(resolved, indent=2), encoding="utf-8")
     return 1 if failed else 0

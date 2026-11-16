@@ -14,6 +14,10 @@ Deep Winter–Deep Autumn, Soft Autumn–Soft Summer.
 
 Gatekeeper hanya mengikat HASIL OTOMATIS. Tetangga lintas undertone tetap dikirim (ditandai
 matches_undertone=false) supaya pengguna bisa menukar secara manual (aturan bisnis #4).
+
+Pilihan musim bersifat hierarkis, sama dengan cara model season v3 dilatih & dievaluasi (hierarchical_decode):
+keluarga (Spring/Summer/Autumn/Winter) dengan massa probabilitas terbesar dipilih dulu, lalu sub-season terbaik di
+dalamnya. Di data test ini lebih akurat daripada argmax 12 kelas (season acc 58,9% vs 58,3%).
 """
 from __future__ import annotations
 
@@ -68,6 +72,15 @@ def wheel_neighbors(season_id: str) -> list[str]:
     return [WHEEL[(i - 1) % len(WHEEL)], WHEEL[(i + 1) % len(WHEEL)]]
 
 
+def family_first(scores: dict[str, float], labels: dict[str, dict]) -> str:
+    """Keluarga bermassa terbesar, lalu sub-season terbaik di dalamnya (== hierarchical_decode notebook v3)."""
+    mass: dict[str, float] = {}
+    for c, p in scores.items():
+        mass[labels[c]["family"]] = mass.get(labels[c]["family"], 0.0) + p
+    family = max(mass, key=mass.get)
+    return max((c for c in scores if labels[c]["family"] == family), key=scores.get)
+
+
 def decide(season_probs: dict[str, float], labels: dict[str, dict], undertone: str | None = None,
            conflict_threshold: float = 0.25) -> GateDecision:
     """
@@ -105,8 +118,8 @@ def decide(season_probs: dict[str, float], labels: dict[str, dict], undertone: s
                             probability=round(gated[c], 4), model_probability=round(season_probs[c], 4),
                             relation=relation, matches_undertone=c in allowed)
 
-    final_id = max(gated, key=gated.get)
-    model_choice = max(season_probs, key=season_probs.get)
+    final_id = family_first(gated, labels)
+    model_choice = family_first(season_probs, labels)
 
     neighbors = []
     for n in wheel_neighbors(final_id):
@@ -118,7 +131,7 @@ def decide(season_probs: dict[str, float], labels: dict[str, dict], undertone: s
         other = max((c for c in season_probs if side(c) != side(final_id)), key=season_probs.get)
         neighbors.append(option(other, "opposite_side_best"))
 
-    ranking = [option(c) for c in sorted(season_probs, key=lambda c: (-gated[c], -season_probs[c]))]
+    ranking = [option(c) for c in sorted(season_probs, key=lambda c: (c != final_id, -gated[c], -season_probs[c]))]
     return GateDecision(
         final=option(final_id, "final"), undertone=used, undertone_source=source, gate_applied=applied, rule=rule,
         allowed_families=families, model_choice=model_choice, overridden=final_id != model_choice,

@@ -7,7 +7,7 @@ Browser (kamera) ──HTTPS──▶ caddy (opsional, TLS otomatis)
                      web: nginx  ── file statis React (Vite build)
                               │  /api/*
                               ▼
-                     api: FastAPI + PyTorch CPU  ◀── volume: models/undertone, models/season, models/hf_cache
+                     api: FastAPI + PyTorch CPU  ◀── volume: models/undertone, models/season, models/pyfacer, models/hf_cache
 ```
 
 | Image | Isi | Ukuran perkiraan |
@@ -29,31 +29,38 @@ Artefak model **tidak** dimasukkan ke image (besar, sebagian berlisensi gated). 
 ```bash
 cd backend
 pip install -r requirements-dev.txt
+pip install --no-deps -r requirements-nodeps.txt   # pyfacer tanpa opencv-python (bentrok dengan versi headless)
 ```
 
 **a. Unduh output notebook dari Kaggle.** Isi slug kernel Anda.
 
 ```bash
 kaggle kernels output <user>/<kernel-undertone> -p ~/kaggle_out/undertone
-kaggle kernels output <user>/<kernel-season> -p ~/kaggle_out/season
+kaggle kernels output <user>/<kernel-season> -p ~/kaggle_out/season_v3 \
+  --file-pattern '(armo_v3_hasil\.joblib|meta\.csv|ensemble_config\.json|convnext_t_f[0-4]\.pt|lgb_.*\.txt)$'
 ```
 
-File yang dibutuhkan: `undertone_ensemble.joblib`, `convnext_ft_fold0-4.pth`, `E12_artifacts.joblib`, `ft_s42_f0-4.pt`.
+File yang dibutuhkan:
+
+- Undertone: `undertone_ensemble.joblib`, `convnext_ft_fold0-4.pth`.
+- Season v3 (notebook `Model/armocromia_season_detection_v3.ipynb`): `armo_v3_hasil.joblib`, `meta.csv`, `convnext_t_f0-4.pt`, dan 30 booster LightGBM `lgb_flat_f*.txt`, `lgb_hier_season_f*.txt`, `lgb_hier_expert{0-3}_f*.txt`. Model deep lain di folder `weights/` (resnet50, effnetv2_s, unet_r34, patch_attn) tidak dipakai.
 
 **b. Samakan versi scikit-learn** dengan versi di Kaggle (`import sklearn; print(sklearn.__version__)` di notebook). Pin versinya di `backend/requirements.txt`. Pickle sklearn tidak dijamin kompatibel lintas versi.
 
 **c. Kumpulkan, rapikan, dan verifikasi artefak.**
 
 ```bash
-python scripts/extract_models.py all --src ~/kaggle_out/undertone ~/kaggle_out/season
+python scripts/extract_models.py all --src ~/kaggle_out/undertone ~/kaggle_out/season_v3
 ```
 
 Output harus diakhiri `[verify] SEMUA OK`. Perintah ini juga memeriksa bahwa bobot ensemble dan nama kelas cocok dengan angka di notebook, sehingga artefak dari run yang salah akan tertangkap.
 
-**d. Unduh bobot pretrained** (DINOv2, DINOv3, SegFormer). Repo `facebook/dinov3-vits16-pretrain-lvd1689m` bersifat gated: setujui lisensinya di halaman Hugging Face dulu, lalu buat token baca.
+Untuk season, `repack` memilih bobot `convnext_t` vs LightGBM, ambang "yakin", dan himpunan kandidat dari prediksi OOF di `armo_v3_hasil.joblib` + `meta.csv`, lalu mencetak akurasi test sebagai pembanding (run 2026-11-17: `convnext_t` 0,90 + LightGBM 0,10, season acc test 58,9%; ensemble 7 model notebook 59,0%). `collect` membuat hardlink bila sumber dan tujuan satu partisi, jadi tidak memakan ruang disk dua kali.
+
+**d. Unduh bobot pretrained:** DINOv2 (Hugging Face, undertone), detektor YuNet, dan bobot pyfacer untuk face parsing season (RetinaFace 1,8 MB + FaRL LaPa 646 MB, dicek dengan sha256). Tidak butuh token.
 
 ```bash
-HF_TOKEN=hf_xxx python scripts/extract_models.py fetch
+python scripts/extract_models.py fetch
 ```
 
 Hasil akhirnya:
@@ -62,8 +69,9 @@ Hasil akhirnya:
 backend/models/
 ├── manifest.json                 (di-commit)
 ├── undertone/  undertone_bundle.joblib, convnext_ft_fold0-4.pth, ...
-├── season/     season_bundle.joblib, ft_s42_f0-4.pt, ...
-└── hf_cache/   hub/models--facebook--dinov3-..., models--jonathandinu--face-parsing, models--timm--...
+├── season/     season_bundle.joblib, convnext_t_f0-4.pt, lgb_*.txt (30), armo_v3_hasil.joblib, meta.csv
+├── pyfacer/    mobilenet0.25_Final.pth, face_parsing.farl.lapa.main_ema_136500_jit191.pt
+└── hf_cache/   hub/models--timm--vit_small_patch14_dinov2...
 ```
 
 ## 2. Jalankan
@@ -112,6 +120,7 @@ CORS tidak perlu diatur karena web dan API satu origin lewat nginx. Bila fronten
 - **Ganti model:** jalankan ulang langkah 1c, lalu `docker compose restart api`. Image tidak perlu di-build ulang.
 - **Skala:**
   - Tiap container memuat seluruh model, sekitar 2–3 GB RAM.
+  - Satu analisis wajah butuh ±30 detik di CPU 4 core. Bagian terberat adalah face parsing FaRL (±20 detik); `convnext_t` 5 fold sekitar 10 detik (`MAX_FOLDS` memangkasnya).
   - Inferensi diserialisasi per container, jadi untuk lebih banyak pengguna, tambah replika `api` di belakang load balancer.
   - Pengecekan frame kamera (`/api/frame/check`) ringan dan tidak ikut antre.
 - **GPU (opsional):**

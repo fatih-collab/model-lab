@@ -25,6 +25,9 @@ Model/**/*.pth
 Model/**/*.pt
 Model/**/*.joblib
 Model/**/*.h5
+# booster LightGBM (lgb_*.txt) + ringkasan ensemble model season v3
+Model/**/*.txt
+Model/**/ensemble_config.json
 # Local environment secrets
 .env
 .env.*

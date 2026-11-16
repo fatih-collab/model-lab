@@ -1,0 +1,4 @@
+# Pasang dengan:  pip install --no-deps -r requirements-nodeps.txt   (SETELAH requirements.txt)
+# pyfacer meminta opencv-python + ipywidgets; keduanya tidak dibutuhkan dan opencv-python merusak
+# opencv-python-headless. Dependensi yang benar-benar dipakai sudah ada di requirements.txt.
+pyfacer==0.0.5                     # face parsing FaRL LaPa + RetinaFace (modul season v3); bobot: extract_models.py fetch

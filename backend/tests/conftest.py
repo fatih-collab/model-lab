@@ -6,7 +6,7 @@ os.environ.setdefault("GLOWMATCH_LOAD_MODELS", "0")
 import pytest
 
 from tests import tiny_models as tm
-from tests.tiny_models import PARSER_LABELS, fake_label_map, fake_parse, tiny_segformer  # noqa: F401 (dipakai test)
+from tests.tiny_models import fake_label_map, fake_parse  # noqa: F401 (dipakai test)
 
 
 @pytest.fixture(scope="session")

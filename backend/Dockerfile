@@ -2,7 +2,8 @@
 # GlowMatch API — FastAPI + PyTorch CPU.
 # Artefak model TIDAK di-bake ke image (besar & sebagian gated); di-mount sebagai volume:
 #   /app/models/undertone   artefak Kaggle modul undertone   (hasil extract_models.py collect/repack)
-#   /app/models/season      artefak Kaggle modul season
+#   /app/models/season      artefak Kaggle modul season v3 (convnext_t + LightGBM)
+#   /app/models/pyfacer     bobot face parsing pyfacer (FaRL) (hasil extract_models.py fetch)
 #   /app/models/hf_cache    bobot pretrained Hugging Face     (hasil extract_models.py fetch)
 FROM python:3.12-slim
 
@@ -19,9 +20,10 @@ WORKDIR /app
 
 # PyTorch CPU-only lebih dulu (layer terbesar, jarang berubah). Ganti TORCH_INDEX ke .../whl/cu124 untuk GPU.
 ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
-COPY requirements.txt .
+COPY requirements.txt requirements-nodeps.txt ./
 RUN pip install --index-url ${TORCH_INDEX} torch torchvision \
-    && pip install -r requirements.txt
+    && pip install -r requirements.txt \
+    && pip install --no-deps -r requirements-nodeps.txt
 
 # Detektor wajah YuNet (OpenCV Zoo, publik, ~230 KB) — dikunci dengan checksum.
 ADD --checksum=sha256:8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4 \
@@ -36,7 +38,7 @@ COPY scripts/extract_models.py ./scripts/extract_models.py
 COPY models/manifest.json ./models/manifest.json
 
 RUN useradd --create-home --uid 10001 glowmatch \
-    && mkdir -p /app/models/undertone /app/models/season /app/models/hf_cache \
+    && mkdir -p /app/models/undertone /app/models/season /app/models/pyfacer /app/models/hf_cache \
     && chown -R glowmatch:glowmatch /app
 USER glowmatch
 

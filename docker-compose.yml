@@ -33,6 +33,7 @@ services:
       # Diisi di host dengan backend/scripts/extract_models.py (lihat DEPLOYMENT.md)
       - ./backend/models/undertone:/app/models/undertone:ro
       - ./backend/models/season:/app/models/season:ro
+      - ./backend/models/pyfacer:/app/models/pyfacer:ro
       - ./backend/models/hf_cache:/app/models/hf_cache
     expose:
       - "8000"

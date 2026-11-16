@@ -7,6 +7,7 @@ node_modules/
 models/undertone/
 models/season/
 models/hf_cache/
+models/pyfacer/
 models/*.onnx
 models/artifacts.lock.json
 models/pretrained.json

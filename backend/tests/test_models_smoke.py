@@ -1,12 +1,15 @@
 """Glue code inferensi diuji dengan model kecil berbobot acak (lihat conftest.py)."""
+import os
 import sys
 import types
+from pathlib import Path
 
 import joblib
 import numpy as np
 import pytest
 import torch
 
+from ml.nb_generated import season_nb as snb
 from ml.nb_generated import undertone_nb as unb
 
 
@@ -64,55 +67,95 @@ def test_compat_loads_pickle_from_notebook_main(tmp_path):
 
 
 # ---------------------------------------------------------------------------------------------- season
-def face_crop(seed=0):
-    rng = np.random.default_rng(seed)
-    return np.clip(rng.normal(150, 30, (360, 300, 3)), 0, 255).astype(np.uint8)
-
-
 def test_season_predict(season_model):
-    r = season_model.predict(face_crop())
+    from tests.tiny_models import fake_face
+
+    r = season_model.predict(fake_face())
     assert r.probs.shape == (12,) and abs(r.probs.sum() - 1) < 1e-6
-    assert r.top == r.class_names[int(r.probs.argmax())] and r.top in r.candidates
-    assert r.status in ("yakin", "perlu_konfirmasi")
-    assert 0 <= r.p_warm <= 1
-    assert set(r.components) == {"emb_lr", "color_hgb", "ft"}
+    assert r.top in r.candidates and r.candidates[0] == r.top
+    assert r.status in ("yakin", "perlu_konfirmasi") and 0 <= r.p_warm <= 1
+    assert set(r.components) == {"convnext_t", "lgb_flat", "lgb_hier"}
+    assert r.mask_source == "pyfacer" and r.rgbm.shape == (96, 96, 3)
 
 
-def test_rgbm_blackens_background(season_model):
-    from tests.tiny_models import PARSER_LABELS, fake_label_map
+def test_season_top_is_hierarchical_decision(season_model):
+    """Keputusan = season bermassa terbesar lalu sub terbaik (== hierarchical_decode notebook & rules engine)."""
+    from app.rules_engine import family_first
+    from tests.tiny_models import MANIFEST, fake_face
 
-    big, small, valid, _ = season_model.make_rgbm(face_crop())
-    lm = fake_label_map(512)
-    assert not big[lm == PARSER_LABELS["background"]].any()   # latar hitam seperti RGB-M
-    assert big[valid].any() and small.shape == (256, 256, 3)
-
-
-def test_embedder_keys_and_registers(season_model):
-    e = season_model.embedder(np.zeros((1, 256, 256, 3), np.uint8))
-    assert list(e) == ["cls_last", "mean_last", "mean_L4", "mean_L8"]
-    assert season_model.embedder.n_prefix == 1 + 4             # CLS + 4 register token DINOv3
-    assert all(v.shape == (1, 64) for v in e.values())
+    for seed in range(3):
+        r = season_model.predict(fake_face(seed=seed))
+        assert r.top == r.class_names[int(snb.hierarchical_decode(r.probs[None])[1][0])]
+        assert r.top == family_first(dict(zip(r.class_names, r.probs)), MANIFEST["season"]["labels"])
 
 
-def test_armonet_fp16_checkpoint_loaded_exactly(season_model, season_dir):
-    sd = torch.load(season_dir / "ft_s42_f0.pt", weights_only=True)
-    m = season_model.ft_models[0]
-    assert next(m.parameters()).dtype == torch.float32
-    assert torch.equal(m.head12.weight.half(), sd["head12.weight"])
+def test_season_matches_manual_combination(season_model):
+    from tests.tiny_models import fake_face
+
+    r = season_model.predict(fake_face(seed=1))
+    w, c = season_model.b["weights"], {k: np.array(v) for k, v in r.components.items()}
+    manual = w["deep"] * c["convnext_t"] + w["lgb"] * (c["lgb_flat"] + c["lgb_hier"]) / 2
+    assert np.allclose(manual / manual.sum(), r.probs, atol=2e-3)
 
 
-def test_segformer_parser_shapes(tmp_path):
-    from ml.season_model import SegformerParser
-    from tests.tiny_models import tiny_segformer
+def test_rgbm_blackens_background_like_training_cache(season_model):
+    from tests.tiny_models import fake_face, fake_label_map
 
-    p = SegformerParser(tiny_segformer())
-    out = p(np.zeros((2, 64, 64, 3), np.uint8))
-    assert out.shape == (2, 64, 64) and out.dtype == np.uint8 and p.label_ids["hair"] == 13
+    img = fake_face()
+    lm = fake_label_map(*img.shape[:2])
+    rgbm = season_model.make_rgbm(img, lm)
+    assert rgbm.shape == (96, 96, 3) and rgbm.dtype == np.uint8
+    assert rgbm[0, 0].sum() == 0 and rgbm[48, 48].sum() > 0            # sudut = latar hitam, tengah = wajah
+    assert (rgbm.max(-1) > 12).mean() > 0.3                             # crop_bbox memangkas latar sebelum letterbox
+
+
+def test_season_falls_back_to_heuristic_mask_without_face(season_dir):
+    from tests.tiny_models import fake_face, load_season
+
+    m = load_season(season_dir, parse_fn=lambda rgb: None)             # pyfacer tidak menemukan wajah
+    r = m.predict(fake_face())
+    assert r.mask_source == "heuristic" and abs(r.probs.sum() - 1) < 1e-6
+
+
+def test_lgb_features_follow_training_column_order(season_model):
+    from tests.tiny_models import fake_face, fake_label_map
+
+    img = fake_face()
+    lm = fake_label_map(*img.shape[:2])
+    X, f = season_model.features(img, lm), snb.extract_color_features(img, lm)
+    cols = season_model.feature_cols
+    assert X.shape == (1, len(cols)) and X.dtype == np.float32
+    assert X[0, cols.index("skin_L")] == np.float32(f["skin_L"]) and X[0, cols.index("hair_b")] == np.float32(f["hair_b"])
+
+
+def test_hiercls_checkpoint_loaded_exactly(season_model, season_dir):
+    sd = torch.load(season_dir / "convnext_t_f0.pt", weights_only=True)
+    m = season_model.deep_models[0]
+    assert not m.training and next(m.parameters()).dtype == torch.float32
+    assert torch.equal(m.head_sub.weight, sd["head_sub.weight"])
+    assert len(season_model.deep_models) == 2
 
 
 def test_season_rejects_missing_components(season_bundle):
     from ml.season_model import SeasonModel
-    from tests.tiny_models import PARSER_LABELS, fake_parse
+    from tests.tiny_models import fake_parse
 
     with pytest.raises(ValueError):
-        SeasonModel(season_bundle, fake_parse, PARSER_LABELS, embedder=None, ft_models=[])
+        SeasonModel(season_bundle, fake_parse, deep_models=[], boosters={"flat": [1], "hier": [[1]]})
+    with pytest.raises(ValueError):
+        SeasonModel(season_bundle, fake_parse, deep_models=[torch.nn.Identity()], boosters={"flat": [], "hier": []})
+
+
+@pytest.mark.skipif(not (Path(__file__).resolve().parents[1] / "models" / "pyfacer").exists()
+                    or os.environ.get("GLOWMATCH_SLOW_TESTS") != "1",
+                    reason="bobot pyfacer asli + GLOWMATCH_SLOW_TESTS=1 (±30 detik di CPU)")
+def test_pyfacer_parses_real_face():
+    from skimage import data
+
+    from ml.season_model import FaceParser
+
+    parser = FaceParser(Path(__file__).resolve().parents[1] / "models" / "pyfacer")
+    lm = parser(data.astronaut())
+    assert lm is not None and lm.shape == (512, 512)
+    present = set(np.unique(lm).tolist())
+    assert {snb.PART_ID[p] for p in ("skin", "hair", "eye", "lip")} <= present

@@ -3,7 +3,6 @@ Model KECIL berbobot acak dengan antarmuka & format artefak yang sama persis den
 Dipakai oleh test (glue code: urutan fitur, kunci checkpoint, dtype, pooling, loader) dan scripts/mock_server.py
 (demo frontend sebelum bobot asli tersedia). Angka prediksinya TIDAK bermakna.
 """
-import copy
 import json
 from pathlib import Path
 from unittest import mock
@@ -11,9 +10,7 @@ from unittest import mock
 import joblib
 import numpy as np
 import torch
-from sklearn.ensemble import HistGradientBoostingClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
@@ -22,12 +19,8 @@ from ml.nb_generated import undertone_nb as unb
 
 BACKEND = Path(__file__).resolve().parents[1]
 MANIFEST = json.loads((BACKEND / "models" / "manifest.json").read_text())["modules"]
-# id2label parser jonathandinu/face-parsing (dari output sel 3.3 notebook season)
-PARSER_LABELS = {"background": 0, "skin": 1, "nose": 2, "eye_g": 3, "l_eye": 4, "r_eye": 5, "l_brow": 6, "r_brow": 7,
-                 "l_ear": 8, "r_ear": 9, "mouth": 10, "u_lip": 11, "l_lip": 12, "hair": 13, "hat": 14, "ear_r": 15,
-                 "neck_l": 16, "neck": 17, "cloth": 18}
-TINY_DINOV3 = dict(hidden_size=64, num_hidden_layers=9, num_attention_heads=4, intermediate_size=128,
-                   num_register_tokens=4, patch_size=16, image_size=224)
+TINY_BACKBONE = "convnext_atto"      # arsitektur ConvNeXt kecil timm: format checkpoint HierCls sama dengan convnext_t
+TINY_FOLDS = 2
 
 
 # ------------------------------------------------------------------------------------------- undertone
@@ -66,81 +59,88 @@ def load_undertone(d: Path):
 
 
 # ---------------------------------------------------------------------------------------------- season
-def fake_label_map(size: int) -> np.ndarray:
-    """Tata letak wajah sintetis: rambut di atas, kulit oval, mata, alis, bibir."""
-    yy, xx = np.mgrid[:size, :size] / size
-    lm = np.zeros((size, size), np.uint8)
-    lm[((xx - .5) / .36) ** 2 + ((yy - .45) / .45) ** 2 < 1] = PARSER_LABELS["hair"]
-    lm[((xx - .5) / .28) ** 2 + ((yy - .55) / .36) ** 2 < 1] = PARSER_LABELS["skin"]
-    for cx, lab in ((.4, "l_eye"), (.6, "r_eye")):
-        lm[((xx - cx) / .04) ** 2 + ((yy - .5) / .02) ** 2 < 1] = PARSER_LABELS[lab]
-        lm[(abs(xx - cx) < .05) & (abs(yy - .45) < .008)] = PARSER_LABELS["l_brow"]
-    lm[((xx - .5) / .07) ** 2 + ((yy - .72) / .025) ** 2 < 1] = PARSER_LABELS["u_lip"]
+def fake_label_map(h: int, w: int | None = None) -> np.ndarray:
+    """Tata letak wajah sintetis berlabel PART_ID: rambut di atas, kulit oval, mata, alis, bibir, latar 0."""
+    w = h if w is None else w
+    yy, xx = np.mgrid[:h, :w]
+    yy, xx = yy / h, xx / w
+    P = snb.PART_ID
+    lm = np.zeros((h, w), np.uint8)
+    lm[((xx - .5) / .36) ** 2 + ((yy - .45) / .45) ** 2 < 1] = P["hair"]
+    lm[((xx - .5) / .28) ** 2 + ((yy - .55) / .36) ** 2 < 1] = P["skin"]
+    for cx in (.4, .6):
+        lm[((xx - cx) / .04) ** 2 + ((yy - .5) / .02) ** 2 < 1] = P["eye"]
+        lm[(abs(xx - cx) < .05) & (abs(yy - .45) < .008)] = P["brow"]
+    lm[((xx - .5) / .07) ** 2 + ((yy - .72) / .025) ** 2 < 1] = P["lip"]
     return lm
 
 
-def fake_parse(batch: np.ndarray) -> np.ndarray:
-    return np.stack([fake_label_map(b.shape[0]) for b in batch])
+def fake_parse(rgb: np.ndarray) -> np.ndarray:
+    """Pengganti pyfacer (bobot 650 MB): selalu 'menemukan' wajah sintetis seukuran gambar."""
+    return fake_label_map(*rgb.shape[:2])
 
 
-def tiny_dinov3():
-    from transformers import DINOv3ViTConfig, DINOv3ViTModel
-    torch.manual_seed(0)
-    return DINOv3ViTModel(DINOv3ViTConfig(**TINY_DINOV3)).eval()
+def fake_face(h: int = 360, w: int = 300, seed: int = 0) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    img = np.clip(rng.normal(150, 30, (h, w, 3)), 0, 255).astype(np.uint8)
+    lm = fake_label_map(h, w)
+    for part, rgb in (("skin", (215, 165, 135)), ("hair", (60, 40, 30)), ("lip", (190, 90, 90))):
+        img[lm == snb.PART_ID[part]] = rgb
+    return img
 
 
-def tiny_segformer():
-    from transformers import SegformerConfig, SegformerForSemanticSegmentation
-    cfg = SegformerConfig(num_labels=19, id2label={v: k for k, v in PARSER_LABELS.items()},
-                          label2id=PARSER_LABELS, depths=[1, 1, 1, 1], hidden_sizes=[8, 16, 32, 64],
-                          num_attention_heads=[1, 1, 2, 4], decoder_hidden_size=32)
-    return SegformerForSemanticSegmentation(cfg).eval()
+def feature_cols() -> list[str]:
+    """Urutan kolom fitur seperti color_features.parquet: urutan kunci extract_color_features pada wajah lengkap."""
+    img = fake_face()
+    return list(snb.extract_color_features(img, fake_label_map(*img.shape[:2])))
 
 
 def build_season_bundle() -> dict:
     classes = MANIFEST["season"]["class_names"]
-    seasons, chars = sorted({c.split("_")[0] for c in classes}), sorted({c.split("_")[1] for c in classes})
-    rng = np.random.default_rng(0)
-    y = np.arange(96) % 12
-    Xe, Xr = rng.normal(size=(96, 4 * 64)), rng.normal(size=(96, 53))
-    Xr[rng.random(Xr.shape) < 0.1] = np.nan
+    kids = {s: np.where(snb.SUB2SEASON == s)[0].tolist() for s in range(snb.NUM_SEASONS)}
     return {
-        "class_names": classes, "season_names": seasons, "char_names": chars,
-        "season_of": np.array([seasons.index(c.split("_")[0]) for c in classes]),
-        "char_of": np.array([chars.index(c.split("_")[1]) for c in classes]),
-        "warm_of": np.array([int(c.split("_")[0] in snb.WARM_SEASONS) for c in classes]),
-        "method": "ensemble", "comp_names": ["emb_lr", "color_hgb", "ft"],
-        "comp_temps": {"emb_lr": 1.063, "color_hgb": 1.322, "ft": 1.118}, "ens_weights": (0.1, 0.3, 0.6),
-        "temperature": 0.854, "stacker": None, "conf_high": 0.4139, "conformal_qhat": {0.1: 0.93, 0.2: 0.9},
-        "models": {"emb_lr": make_pipeline(StandardScaler(), LogisticRegression(C=1e-3, max_iter=500)).fit(Xe, y),
-                   "color_hgb": HistGradientBoostingClassifier(max_iter=20).fit(Xr, y)},
-        "emb_keys": ["cls_last", "mean_last", "mean_L4", "mean_L8"], "region_parts": snb.REGION_PARTS,
-        "reg_keep": np.arange(53), "parse_size": 512, "cache_size": 256, "emb_img_size": 224, "ft_img_size": 224,
-        "extra_mean_layers": [4, 8], "ft_input": "masked", "ft_ckpts": ["ft_s42_f0.pt"], "ft_dropout": 0.2,
-        "parser": "jonathandinu/face-parsing", "backbone": "facebook/dinov3-vits16-pretrain-lvd1689m",
+        "class_names": classes, "labels": MANIFEST["season"]["labels"],
+        "warm_of": np.array([int(MANIFEST["season"]["labels"][c]["undertone"] == "warm") for c in classes]),
+        "deep": {"tag": "convnext_t", "kind": "cls", "backbone": TINY_BACKBONE, "img_size": 64,
+                 "ckpts": [f"convnext_t_f{k}.pt" for k in range(TINY_FOLDS)]},
+        "lgb": {"flat": [f"lgb_flat_f{k}.txt" for k in range(TINY_FOLDS)],
+                "hier": [[f"lgb_hier_season_f{k}.txt"] + [f"lgb_hier_expert{s}_f{k}.txt" for s in kids]
+                         for k in range(TINY_FOLDS)],
+                "feature_cols": feature_cols(), "hier_kids": kids},
+        "cache_side": 96, "temps": {"convnext_t": 3.0, "lgb_flat": 1.08, "lgb_hier": 1.07},
+        "weights": {"deep": 0.9, "lgb": 0.1}, "conf_high": 0.5, "conformal_qhat": {0.1: 0.97, 0.2: 0.94},
     }
 
 
+def _tiny_booster(n_features: int, n_class: int, seed: int, path: Path) -> None:
+    import lightgbm as lgb
+
+    rng = np.random.default_rng(seed)
+    y = np.arange(30 * n_class) % n_class
+    X = rng.normal(size=(len(y), n_features)) + y[:, None] * 0.1
+    params = dict(objective="multiclass", num_class=n_class, num_leaves=4, min_data_in_leaf=2, verbose=-1, seed=seed)
+    lgb.train(params, lgb.Dataset(X, y), 3).save_model(str(path))
+
+
 def build_season_dir(d: Path, season_bundle: dict) -> Path:
-    from ml.season_model import ArmoNet
+    from ml.season_model import build_hiercls
 
     d.mkdir(parents=True, exist_ok=True)
     joblib.dump(season_bundle, d / "season_bundle.joblib")
     torch.manual_seed(1)
-    net = ArmoNet(copy.deepcopy(tiny_dinov3()), 12, 4, 6, 0.2)
-    torch.save({n: (v.half() if v.is_floating_point() else v) for n, v in net.state_dict().items()},  # == notebook
-               d / "ft_s42_f0.pt")
+    for name in season_bundle["deep"]["ckpts"]:
+        torch.save(build_hiercls(TINY_BACKBONE).state_dict(), d / name)        # == torch.save di armo_train.py
+    n_feat, kids = len(season_bundle["lgb"]["feature_cols"]), season_bundle["lgb"]["hier_kids"]
+    for k, name in enumerate(season_bundle["lgb"]["flat"]):
+        _tiny_booster(n_feat, snb.NUM_CLASSES, k, d / name)
+    for k, (season_file, *experts) in enumerate(season_bundle["lgb"]["hier"]):
+        _tiny_booster(n_feat, snb.NUM_SEASONS, 10 + k, d / season_file)
+        for s, name in enumerate(experts):
+            _tiny_booster(n_feat, len(kids[s]), 20 + 10 * k + s, d / name)
     return d
 
 
-def load_season(d: Path):
-    import transformers
-
+def load_season(d: Path, parse_fn=fake_parse):
     from ml.season_model import SeasonModel
 
-    with mock.patch.object(transformers.AutoModel, "from_pretrained", lambda *a, **k: tiny_dinov3()), \
-            mock.patch.object(transformers.SegformerForSemanticSegmentation, "from_pretrained",
-                              lambda *a, **k: tiny_segformer()):
-        m = SeasonModel.load(d)
-    m.parse = fake_parse                                       # parser acak tak menghasilkan wajah -> pakai tata letak sintetis
-    return m
+    return SeasonModel.load(d, parse_fn=parse_fn)

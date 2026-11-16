@@ -556,3 +556,37 @@ def test_history_endpoints(client):
     )
 
     assert delete_response.status_code == 200
+
+
+def test_saved_results_endpoints(client):
+    complete_profile(client)
+
+    body = {
+        "season_id": "primavera_warm",
+        "season_name": "True Spring",
+        "palette": ["#FF7F5E", "#FFC93C"],
+    }
+
+    first = client.post("/api/saved", json=body)
+    assert first.status_code == 200, first.text
+    saved = first.json()
+    assert saved["season_name"] == "True Spring"
+    assert saved["palette"] == ["#FF7F5E", "#FFC93C"]
+    assert "created_at" not in saved
+
+    # Season yang sama tidak digandakan, hanya diperbarui.
+    body["palette"] = ["#000000"]
+    second = client.post("/api/saved", json=body)
+    assert second.status_code == 200
+    assert second.json()["id"] == saved["id"]
+
+    listing = client.get("/api/saved").json()
+    assert len(listing) == 1
+    assert listing[0]["palette"] == ["#000000"]
+
+    # Tidak masuk ke riwayat.
+    assert client.get("/api/history").json() == []
+
+    assert client.delete(f"/api/saved/{saved['id']}").status_code == 200
+    assert client.get("/api/saved").json() == []
+    assert client.delete(f"/api/saved/{saved['id']}").status_code == 404

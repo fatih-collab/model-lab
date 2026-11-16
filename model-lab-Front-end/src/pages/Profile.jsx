@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
-  FiUser,
   FiSave,
   FiCheck,
   FiArrowRight,
@@ -10,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
 import { useAnalysis } from '../context/AnalysisContext';
+import SavedResults from '../components/SavedResults';
 
 const DEFAULT_FORM = {
   name: 'Pengguna GlowMatch',
@@ -19,6 +19,10 @@ const DEFAULT_FORM = {
 };
 
 const Profile = () => {
+  // Bagian dipilih dari dropdown profil di navbar.
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'simpan' ? 'simpan' : 'profil';
+
   const {
     profile,
     profileLoading,
@@ -102,18 +106,28 @@ const Profile = () => {
       {/* Header Halaman */}
       <div>
         <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-2">
-          Profil Pengguna
+          {activeTab === 'profil' ? 'Profil Pengguna' : 'Simpan Hasil'}
         </p>
 
         <h1 className="text-3xl font-semibold text-glowmatch-secondary mb-2">
-          Identitas Personal
+          {activeTab === 'profil' ? 'Identitas Personal' : 'Hasil yang Disimpan'}
         </h1>
 
         <p className="text-gray-500 text-sm">
-          Informasi ini digunakan untuk mempersonalisasi laporan dan
-          sertifikat PDF analisis warna pribadimu.
+          {activeTab === 'profil'
+            ? 'Informasi ini digunakan untuk mempersonalisasi laporan dan sertifikat PDF analisis warna pribadimu.'
+            : 'Season dan warna yang kamu tandai lewat tombol "Simpan Hasil".'}
         </p>
       </div>
+
+      {activeTab === 'simpan' && (
+        <div>
+          <SavedResults />
+        </div>
+      )}
+
+      {activeTab === 'profil' && (
+      <div className="space-y-8">
 
       {/* Status pemuatan profil */}
       {profileLoading && (
@@ -412,6 +426,8 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      </div>
+      )}
     </div>
   );
 };

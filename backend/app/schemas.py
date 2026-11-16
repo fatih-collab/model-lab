@@ -292,3 +292,20 @@ class HistoryCreate(BaseModel):
     # Kepemilikan tetap ditentukan dari session cookie.
     profile_id: Optional[int] = None
 
+
+
+class SavedResultCreate(BaseModel):
+    """Request "Simpan Hasil": cukup nama season dan warnanya."""
+
+    season_id: str = Field(min_length=1, max_length=100)
+    season_name: str = Field(min_length=1, max_length=120)
+    palette: list[str] = Field(default_factory=list, max_length=50)
+
+
+class SavedResultItem(BaseModel):
+    """Hasil tersimpan (bookmark) tanpa tanggal."""
+
+    id: int
+    season_id: str
+    season_name: str
+    palette: list[str] = Field(default_factory=list)

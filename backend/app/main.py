@@ -16,6 +16,10 @@ Endpoints:
     POST   /api/history
     DELETE /api/history/{item_id}
 
+    GET    /api/saved
+    POST   /api/saved
+    DELETE /api/saved/{saved_id}
+
 Database:
     Production: Neon PostgreSQL
     Testing: SQLite sementara melalui dependency injection
@@ -746,6 +750,67 @@ def create_app(
             "status": "ok",
             "deleted_id": item_id,
         }
+
+    # ========================================================
+    # SAVED RESULTS (SIMPAN HASIL / BOOKMARK)
+    # ========================================================
+
+    @app.get(
+        "/api/saved",
+        response_model=list[schemas.SavedResultItem],
+    )
+    def get_saved_results(
+        request: Request,
+        session_id: int = Depends(current_session_id),
+    ):
+        """Hasil yang sengaja disimpan pengguna."""
+
+        database_instance: Database = request.app.state.database
+        return database_instance.get_saved_results(session_id=session_id)
+
+    @app.post(
+        "/api/saved",
+        response_model=schemas.SavedResultItem,
+    )
+    def create_saved_result(
+        body: schemas.SavedResultCreate,
+        request: Request,
+        session_id: int = Depends(current_session_id),
+    ):
+        """Menyimpan season beserta warnanya (tanpa tanggal)."""
+
+        database_instance: Database = request.app.state.database
+
+        try:
+            return database_instance.save_result(
+                session_id=session_id,
+                season_id=body.season_id,
+                season_name=body.season_name,
+                palette=body.palette,
+            )
+        except LookupError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.delete("/api/saved/{saved_id}")
+    def delete_saved_result(
+        saved_id: int,
+        request: Request,
+        session_id: int = Depends(current_session_id),
+    ):
+        """Menghapus hasil tersimpan milik pengguna."""
+
+        database_instance: Database = request.app.state.database
+
+        if not database_instance.delete_saved_result(
+            session_id=session_id,
+            saved_id=saved_id,
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail="Hasil tersimpan tidak ditemukan.",
+            )
+
+        return {"status": "ok", "deleted_id": saved_id}
 
     # --------------------------------------------------------
     # RETURN APPLICATION

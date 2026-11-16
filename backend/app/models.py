@@ -19,6 +19,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     func,
     text,
 )
@@ -151,6 +152,12 @@ class Profile(Base):
         passive_deletes=True,
     )
 
+    saved_results: Mapped[list[SavedResult]] = relationship(
+        back_populates="profile",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
 
 class AnalysisHistory(Base):
     """Riwayat analisis personal color pengguna."""
@@ -260,5 +267,62 @@ class AnalysisHistory(Base):
             "ix_analysis_history_profile_created_at",
             "profile_id",
             "created_at",
+        ),
+    )
+
+
+class SavedResult(Base):
+    """
+    Hasil yang sengaja disimpan pengguna (penanda/bookmark).
+
+    Berbeda dengan riwayat yang tercatat otomatis, data ini
+    hanya berisi nama season dan warnanya. Satu season hanya
+    disimpan sekali per profil.
+    """
+
+    __tablename__ = "saved_results"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+    )
+
+    profile_id: Mapped[int] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    season_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    season_name: Mapped[str] = mapped_column(
+        String(120),
+        nullable=False,
+    )
+
+    palette_json: Mapped[list[Any]] = mapped_column(
+        JSONDocument,
+        nullable=False,
+        default=list,
+        server_default=text("'[]'"),
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    profile: Mapped[Profile] = relationship(
+        back_populates="saved_results",
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "profile_id",
+            "season_id",
+            name="uq_saved_results_profile_season",
         ),
     )

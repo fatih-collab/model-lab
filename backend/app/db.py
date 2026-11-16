@@ -37,6 +37,7 @@ from app.models import (
     AnalysisHistory,
     Base,
     Profile,
+    SavedResult,
     UserSession,
 )
 
@@ -635,6 +636,100 @@ class Database:
                 return False
 
             session.delete(history)
+            session.commit()
+
+            return True
+
+    # --------------------------------------------------------
+    # SAVED RESULTS (BOOKMARK)
+    # --------------------------------------------------------
+
+    @staticmethod
+    def _saved_dict(saved: SavedResult) -> dict:
+        """Hanya nama season dan warnanya, tanpa tanggal."""
+
+        return {
+            "id": saved.id,
+            "season_id": saved.season_id,
+            "season_name": saved.season_name,
+            "palette": saved.palette_json or [],
+        }
+
+    def _session_profile(self, session, session_id: int) -> Profile | None:
+        return session.scalar(
+            select(Profile).where(Profile.session_id == session_id)
+        )
+
+    def get_saved_results(self, session_id: int) -> list[dict]:
+        """Mengambil hasil yang disimpan pengguna."""
+
+        with self.session_factory() as session:
+            rows = session.scalars(
+                select(SavedResult)
+                .join(Profile, SavedResult.profile_id == Profile.id)
+                .where(Profile.session_id == session_id)
+                .order_by(SavedResult.created_at.desc(), SavedResult.id.desc())
+            ).all()
+
+            return [self._saved_dict(row) for row in rows]
+
+    def save_result(
+        self,
+        session_id: int,
+        season_id: str,
+        season_name: str,
+        palette: list | None = None,
+    ) -> dict:
+        """Menyimpan season; season yang sama diperbarui, tidak digandakan."""
+
+        with self.session_factory() as session:
+            profile = self._session_profile(session, session_id)
+
+            if profile is None:
+                raise LookupError("Profil pengguna tidak ditemukan.")
+
+            saved = session.scalar(
+                select(SavedResult).where(
+                    SavedResult.profile_id == profile.id,
+                    SavedResult.season_id == season_id,
+                )
+            )
+
+            if saved is None:
+                saved = SavedResult(
+                    profile_id=profile.id,
+                    season_id=season_id,
+                )
+                session.add(saved)
+
+            saved.season_name = season_name
+            saved.palette_json = palette or []
+
+            session.commit()
+            session.refresh(saved)
+
+            return self._saved_dict(saved)
+
+    def delete_saved_result(self, session_id: int, saved_id: int) -> bool:
+        """Menghapus hasil tersimpan milik sesi pengguna."""
+
+        with self.session_factory() as session:
+            profile = self._session_profile(session, session_id)
+
+            if profile is None:
+                return False
+
+            saved = session.scalar(
+                select(SavedResult).where(
+                    SavedResult.profile_id == profile.id,
+                    SavedResult.id == saved_id,
+                )
+            )
+
+            if saved is None:
+                return False
+
+            session.delete(saved)
             session.commit()
 
             return True

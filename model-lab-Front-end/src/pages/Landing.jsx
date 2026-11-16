@@ -17,9 +17,6 @@ const SITE_LINKS = [
   { label: 'Profil', to: '/profil' },
 ];
 
-// Urutan proses analisis (informasi, bukan tautan).
-const FLOW_STEPS = ['Pindai wajah', 'Cek undertone', 'Palet season', 'Unduh PDF'];
-
 const CLOSE_DELAY_MS = 320;
 
 // Menu tambahan yang muncul saat kursor menyentuh logo 3D (atau logo diketuk di layar sentuh).
@@ -106,14 +103,8 @@ export default function Landing() {
 
   useEffect(() => () => window.clearTimeout(closeTimer.current), []);
 
-  // Logo bisa diputar dengan diseret; petunjuk ini menggantikan tombol "Putar logo" dan "Menu".
-  const sculptureHint = (
-    <p className="drag-hint">
-      <span className="hint-hover">Seret logo untuk memutarnya</span>
-      <span className="hint-touch">Geser untuk memutar, ketuk untuk menu</span>
-    </p>
-  );
-
+  // Prinsip halaman ini: satu pesan (judul), satu kalimat penjelas, satu aksi utama.
+  // Tanpa eyebrow, pill status, slogan kedua, atau petunjuk interaksi dekoratif.
   return (
     <div className="gm-landing">
       <main className="studio-footer" aria-label="GlowMatch — analisis warna personal">
@@ -129,16 +120,14 @@ export default function Landing() {
               ))}
             </ul>
           </nav>
-          <div className="availability"><span aria-hidden="true" />AI siap memindai</div>
         </header>
 
         <div className="studio-main">
           <div className="studio-story">
-            <div className="eyebrow"><span className="eyebrow-line" /> Personal color analysis bertenaga AI</div>
             <h1>Temukan warnamu.<br />Pancarkan <em>cahayamu.</em></h1>
             <p className="studio-intro">
-              Kenali season warnamu lewat analisis AI. Dari wajah, kulit, hingga undertone
-              pergelangan tangan, hasilnya personal dan siap dipakai.
+              Foto wajah dan pergelangan tanganmu, lalu AI menentukan season dan palet warna
+              yang paling cocok.
             </p>
             <div className="hero-actions">
               <Link to="/scan-wajah" className="gm-btn">
@@ -160,25 +149,11 @@ export default function Landing() {
                 </div>
               )}
             >
-              <LogoSculpture menuOpen={open} onHoverChange={onLogoHover} onTap={togglePinned} showSpinButton={false} controls={sculptureHint} />
+              <LogoSculpture menuOpen={open} onHoverChange={onLogoHover} onTap={togglePinned} showSpinButton={false} />
             </Suspense>
             <LogoMenu open={open} onEnter={onMenuEnter} onLeave={onMenuLeave} onBlur={onBlurMenu} />
           </div>
         </div>
-
-        <footer className="footer-bottom">
-          <div className="footer-bottom-main">
-            <p className="bottom-manifesto">Kenali warna.<br /><em>Percaya diri.</em></p>
-            <ol className="flow-steps" aria-label="Alur analisis">
-              {FLOW_STEPS.map((step, i) => (
-                <li key={step}>
-                  <span className="step-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </div>
-        </footer>
       </main>
     </div>
   );

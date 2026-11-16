@@ -59,9 +59,9 @@ export default function AnalysisExplanation() {
                 <span key={c} className="w-11 h-11 rounded-full ring-[3px] ring-paper" style={{ background: c }} />
               ))}
             </div>
-            <h2 className="mt-8 flex items-baseline gap-3">
-              <span className="text-title-lg">{f.name}</span>
-              <span className="text-small text-gray-600">{f.en}</span>
+            <h2 className="mt-8 flex items-baseline gap-3 text-title-lg">
+              {f.name}
+              <span className="text-small font-normal text-gray-600">{f.en}</span>
             </h2>
             <p className="text-body text-gray-600 mt-3">{f.desc}</p>
             <dl className="mt-6 border-t border-line divide-y divide-line">

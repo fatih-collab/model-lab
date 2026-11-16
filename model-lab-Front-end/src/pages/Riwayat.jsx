@@ -68,12 +68,12 @@ const Riwayat = () => {
     <div className="pt-8 pb-4 max-w-5xl mx-auto">
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
-        <h1 className="gm-display gm-rise text-[56px] sm:text-[84px]">
-          Riwayat <em>analisis.</em>
-        </h1>
-        <Link to="/scan-wajah" className="gm-btn gm-rise self-start sm:self-auto" style={{ '--d': '120ms' }}>
-          Analisis baru <FiArrowRight />
-        </Link>
+        <h1 className="gm-display gm-rise text-display">Riwayat analisis</h1>
+        {historyList.length > 0 && (
+          <Link to="/scan-wajah" className="gm-btn gm-rise self-start sm:self-auto" style={{ '--d': '120ms' }}>
+            Analisis baru <FiArrowRight aria-hidden="true" />
+          </Link>
+        )}
       </div>
 
       {loading && historyList.length === 0 && (
@@ -86,8 +86,8 @@ const Riwayat = () => {
 
       {!loading && historyList.length === 0 && (
         <div className="gm-rise text-center py-20 space-y-8 border-y border-line">
-          <p className="gm-title text-[34px] text-gray-500">Belum ada riwayat.</p>
-          <Link to="/scan-wajah" className="gm-btn">Mulai analisis pertama <FiArrowRight /></Link>
+          <p className="text-title-lg text-gray-600">Belum ada riwayat</p>
+          <Link to="/scan-wajah" className="gm-btn">Mulai analisis <FiArrowRight aria-hidden="true" /></Link>
         </div>
       )}
 
@@ -105,19 +105,19 @@ const Riwayat = () => {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center px-6 sm:px-8 py-6">
 
                 <div className="md:col-span-4">
-                  <p className="font-serif text-[26px] leading-tight">{item.date}</p>
-                  <p className="text-[14px] text-gray-500 mt-1">
+                  <p className="text-body font-medium">{item.date}</p>
+                  <p className="text-small text-gray-600 mt-0.5">
                     {item.time}
                     {item.user_name && <> · {item.user_name}</>}
                   </p>
                 </div>
 
                 <div className="md:col-span-4">
-                  <p className="font-serif text-[26px] leading-tight">{item.season || item.season_name}</p>
+                  <p className="text-title">{item.season || item.season_name}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {item.undertone && <span className="gm-tag py-1 capitalize">{item.undertone}</span>}
                     {item.detected && item.detected !== item.season && (
-                      <span className="gm-tag py-1 text-gray-500">awal: {item.detected}</span>
+                      <span className="gm-tag py-1 text-gray-600">awal: {item.detected}</span>
                     )}
                   </div>
                 </div>
@@ -153,7 +153,7 @@ const Riwayat = () => {
                     <button
                       type="button"
                       onClick={(e) => handleDelete(item.id || item.request_id, e)}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-accent hover:bg-chip transition"
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:text-accent hover:bg-chip transition"
                       aria-label="Hapus riwayat ini"
                     >
                       <FiTrash2 />
@@ -167,7 +167,6 @@ const Riwayat = () => {
                   <div className="pt-8 space-y-12">
                     <PaletteSection title="Warna utama" colors={item.palettes.utama} />
                     <PaletteSection title="Warna netral" colors={item.palettes.netral} />
-                    <PaletteSection title="Palet lengkap" colors={item.palettes.lengkap} />
                     <PaletteSection title="Sebaiknya dihindari" colors={item.palettes.hindari} />
                   </div>
                 </div>

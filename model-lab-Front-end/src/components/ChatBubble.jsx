@@ -49,7 +49,7 @@ function OutfitCard({ outfit }) {
   return (
     <div className="w-40 shrink-0 rounded-[18px] border border-line bg-white p-2">
       <OutfitImage outfit={outfit} />
-      <p className="mt-2 font-serif text-[17px] leading-tight text-ink">{outfit.name}</p>
+      <p className="mt-2 text-body font-medium text-ink">{outfit.name}</p>
       <div className="mt-1 flex gap-1">
         {outfit.colors.map((hex) => (
           <span
@@ -61,7 +61,7 @@ function OutfitCard({ outfit }) {
         ))}
       </div>
       {outfit.items.length > 0 && (
-        <ul className="mt-1 list-disc pl-4 text-[12px] leading-snug text-gray-600">
+        <ul className="mt-1 list-disc pl-4 text-small text-gray-600">
           {outfit.items.map((item) => <li key={item}>{item}</li>)}
         </ul>
       )}
@@ -159,7 +159,7 @@ export default function ChatBubble() {
           className="gm-chat-in flex h-[70vh] max-h-[600px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-[28px] border border-line bg-paper shadow-[0_30px_70px_-30px_rgba(42,29,59,.55)]"
         >
           <header className="flex items-center justify-between gap-2 bg-ink px-5 py-4 text-paper">
-            <p className="min-w-0 truncate font-serif text-[22px] leading-none">
+            <p className="min-w-0 truncate text-title leading-none">
               Stylist{activeSeason && <span className="italic text-[#d9b6d4]"> · {activeSeason.name}</span>}
             </p>
             <button type="button" onClick={() => setOpen(false)} aria-label="Tutup chat" className="rounded-full p-1.5 hover:bg-white/15 transition">
@@ -169,7 +169,7 @@ export default function ChatBubble() {
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
             {messages.length === 0 && (
-              <div className="gm-open space-y-3 text-[14px] text-gray-600 leading-relaxed">
+              <div className="gm-open space-y-3 text-small text-gray-600">
                 {activeSeason ? (
                   <p>
                     Hai! Aku pakai season terbarumu,
@@ -189,7 +189,7 @@ export default function ChatBubble() {
                       type="button"
                       onClick={() => send(s)}
                       disabled={!activeSeason}
-                      className="rounded-full border border-line bg-white/60 px-3.5 py-1.5 text-[13px] text-ink transition hover:border-[#b498b8] hover:bg-chip disabled:opacity-50"
+                      className="rounded-full border border-line bg-white/60 px-3.5 py-1.5 text-small text-ink transition hover:border-[#b498b8] hover:bg-chip disabled:opacity-50"
                     >
                       {s}
                     </button>
@@ -201,7 +201,7 @@ export default function ChatBubble() {
             {messages.map((m, i) => (
               <div key={i} className={`gm-open ${m.role === 'user' ? 'flex justify-end' : 'space-y-2'}`}>
                 <p
-                  className={`max-w-[85%] whitespace-pre-line rounded-[20px] px-4 py-2.5 text-[14px] leading-relaxed ${
+                  className={`max-w-[85%] whitespace-pre-line rounded-[20px] px-4 py-2.5 text-small ${
                     m.role === 'user'
                       ? 'bg-ink text-paper rounded-br-md'
                       : 'bg-white border border-line text-ink rounded-bl-md'
@@ -224,7 +224,7 @@ export default function ChatBubble() {
                 ))}
               </div>
             )}
-            {error && <p className="text-[13px] text-accent">{error}</p>}
+            {error && <p className="text-small text-accent">{error}</p>}
           </div>
 
           <form

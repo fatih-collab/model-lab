@@ -100,7 +100,7 @@ const ScanUndertone = () => {
   if (!face) {
     return (
       <div className="gm-rise py-28 max-w-lg mx-auto text-center space-y-8">
-        <h1 className="gm-display text-[52px] sm:text-[64px]">Foto wajah <em>belum ada.</em></h1>
+        <h1 className="gm-display text-display">Foto wajah belum ada</h1>
         <Link to="/scan-wajah" className="gm-btn">Ke langkah pertama <FiArrowRight /></Link>
       </div>
     );
@@ -110,7 +110,7 @@ const ScanUndertone = () => {
 
   return (
     <div className="pt-8 pb-4 max-w-6xl mx-auto">
-      <ScanHeader title="Verifikasi" accent="undertone." step="02" />
+      <ScanHeader title="Foto pergelangan tangan" step={2} />
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
         <div className="gm-rise space-y-4" style={{ '--d': '160ms' }}>
@@ -145,7 +145,7 @@ const ScanUndertone = () => {
           <ScanTips tips={TIPS} />
 
           {failure && (
-            <div className="gm-open mt-6 rounded-2xl border border-[#ecc3d6] bg-[#fbeef3] text-accent text-[14px] p-4 leading-relaxed">
+            <div className="gm-open mt-6 rounded-2xl border border-[#ecc3d6] bg-[#fbeef3] text-accent text-small p-4">
               {failure.message}
               {failure.backToFace && <Link to="/scan-wajah" className="gm-link block mt-2 text-accent">Ulangi foto wajah</Link>}
             </div>
@@ -178,7 +178,7 @@ const ScanUndertone = () => {
                 Analisis dari wajah saja
               </button>
             )}
-            <Link to="/scan-wajah" className="gm-link self-center text-[14px] text-gray-500 mt-2">Kembali</Link>
+            <Link to="/scan-wajah" className="gm-link self-center text-small text-gray-600 mt-2">Kembali</Link>
           </div>
         </aside>
       </div>

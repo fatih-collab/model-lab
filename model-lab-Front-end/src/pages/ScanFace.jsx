@@ -58,7 +58,7 @@ const ScanFace = () => {
 
   return (
     <div className="pt-8 pb-4 max-w-6xl mx-auto">
-      <ScanHeader title="Analisis" accent="wajahmu." step="01" />
+      <ScanHeader title="Foto wajah" step={1} />
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
         <div className="gm-rise" style={{ '--d': '160ms' }}>
@@ -103,7 +103,7 @@ const ScanFace = () => {
                 </button>
               </div>
             )}
-            <Link to="/beranda" className="gm-link self-center text-[14px] text-gray-500 mt-2">Kembali</Link>
+            <Link to="/beranda" className="gm-link self-center text-small text-gray-600 mt-2">Kembali</Link>
           </div>
         </aside>
       </div>

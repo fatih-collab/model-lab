@@ -134,7 +134,7 @@ const ProfileSetup = () => {
   if (profileLoading) {
     return (
       <div className="py-32 flex justify-center">
-        <span className="gm-display text-[34px] text-gray-400 gm-breathe">Sebentar…</span>
+        <span className="text-title text-gray-600 gm-breathe">Memuat profil…</span>
       </div>
     );
   }
@@ -142,10 +142,8 @@ const ProfileSetup = () => {
   if (profileError || !profile) {
     return (
       <div className="gm-rise py-28 max-w-md mx-auto text-center space-y-6">
-        <h1 className="gm-display text-[48px]">
-          Profil belum <em>terbaca.</em>
-        </h1>
-        <p className="gm-lead text-[15px]">
+        <h1 className="gm-display text-headline">Profil belum terbaca</h1>
+        <p className="gm-lead text-body">
           Pastikan server GlowMatch dan database sedang berjalan, lalu coba lagi.
         </p>
         {error && <p className="text-sm text-accent">{error}</p>}
@@ -160,10 +158,8 @@ const ProfileSetup = () => {
     <div className="pt-8 pb-4 max-w-5xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-16 items-start">
 
       <div className="lg:sticky lg:top-28">
-        <h1 className="gm-display gm-rise text-[56px] sm:text-[80px]">
-          Kenali dirimu <em>dulu.</em>
-        </h1>
-        <p className="gm-lead gm-rise text-[16px] max-w-sm mt-7" style={{ '--d': '120ms' }}>
+        <h1 className="gm-display gm-rise text-display">Lengkapi profil</h1>
+        <p className="gm-lead gm-rise text-body-lg max-w-sm mt-5" style={{ '--d': '120ms' }}>
           Nama dan preferensimu dipakai untuk riwayat dan laporan PDF.
         </p>
         <div className="gm-rise flex gap-2 mt-10" style={{ '--d': '220ms' }} aria-hidden="true">
@@ -242,7 +238,7 @@ const ProfileSetup = () => {
           />
         </div>
 
-        {error && <p className="gm-open text-[14px] text-accent">{error}</p>}
+        {error && <p className="gm-open text-small text-accent">{error}</p>}
 
         <button type="submit" disabled={loading} className="gm-btn w-full py-4">
           {loading ? (

@@ -52,12 +52,12 @@ export default function CameraStage({
       {cameraStatus === 'error' && !frozenSrc && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center text-paper px-10">
           <FiCameraOff className="text-4xl opacity-70" />
-          <p className="text-[15px] max-w-sm opacity-90">{cameraError}</p>
+          <p className="text-body max-w-sm opacity-90">{cameraError}</p>
         </div>
       )}
 
       {chip && (
-        <div className="gm-open absolute top-4 left-4 bg-ink/55 backdrop-blur-md text-paper text-[13px] px-3.5 py-1.5 rounded-full flex items-center gap-2 z-10">
+        <div className="gm-open absolute top-4 left-4 bg-ink/55 backdrop-blur-md text-paper text-small px-3.5 py-1.5 rounded-full flex items-center gap-2 z-10">
           {chip}
         </div>
       )}
@@ -68,7 +68,7 @@ export default function CameraStage({
             onClick={() => onToggleTorch && onToggleTorch(!torchOn)}
             type="button"
             aria-pressed={torchOn}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] backdrop-blur-md transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-small backdrop-blur-md transition-all ${
               torchOn ? 'bg-paper text-ink' : 'bg-ink/55 text-paper hover:bg-ink/75'
             }`}
           >
@@ -81,7 +81,7 @@ export default function CameraStage({
       {messages.length > 0 && (
         <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-center gap-1.5" aria-live="polite">
           {messages.slice(0, 2).map((m) => (
-            <p key={m} className="gm-open bg-ink/65 backdrop-blur-md text-paper text-[13px] sm:text-sm px-4 py-2 rounded-full flex items-center gap-2">
+            <p key={m} className="gm-open bg-ink/65 backdrop-blur-md text-paper text-small px-4 py-2 rounded-full flex items-center gap-2">
               <FiAlertTriangle className="text-coral shrink-0" /> {m}
             </p>
           ))}
@@ -104,7 +104,7 @@ export function LoadingOverlay({ title }) {
   return (
     <div className="absolute inset-0 bg-ink/75 backdrop-blur-sm flex flex-col items-center justify-center text-paper z-20 text-center px-6 gm-page">
       <span className="gm-spinner mb-6" />
-      <h3 key={title} className="gm-rise font-serif text-[28px] leading-tight">{title}</h3>
+      <h3 key={title} className="gm-rise text-title-lg">{title}</h3>
     </div>
   );
 }

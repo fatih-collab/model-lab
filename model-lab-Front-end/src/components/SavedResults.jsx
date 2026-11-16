@@ -43,7 +43,7 @@ const SavedResults = () => {
 
   return (
     <section className="space-y-5">
-      {error && <p className="gm-open text-[14px] text-accent">{error}</p>}
+      {error && <p className="gm-open text-small text-accent">{error}</p>}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -53,7 +53,7 @@ const SavedResults = () => {
         </div>
       ) : items.length === 0 ? (
         <div className="gm-rise text-center py-20 space-y-8 border-y border-line">
-          <p className="gm-title text-[34px] text-gray-500">Belum ada yang disimpan.</p>
+          <p className="text-title-lg text-gray-600">Belum ada hasil tersimpan</p>
           <Link to="/hasil" className="gm-btn">Buka hasil analisis <FiArrowRight /></Link>
         </div>
       ) : (
@@ -61,7 +61,7 @@ const SavedResults = () => {
           {items.map((item, i) => (
             <li
               key={item.id}
-              className="gm-card gm-card-hover gm-rise p-6 group"
+              className="gm-card gm-rise p-6 group"
               style={{ '--d': `${Math.min(i, 8) * 70}ms` }}
             >
               <div className="flex h-16 rounded-[18px] overflow-hidden">
@@ -75,8 +75,8 @@ const SavedResults = () => {
                 ))}
               </div>
               <div className="flex items-center justify-between gap-3 mt-5">
-                <h3 className="gm-title text-[28px] flex items-center gap-2.5">
-                  <BsBookmarkFill className="text-accent text-[14px] shrink-0" />
+                <h3 className="text-title flex items-center gap-2.5">
+                  <BsBookmarkFill className="text-accent text-small shrink-0" aria-hidden="true" />
                   {item.season_name}
                 </h3>
                 <button

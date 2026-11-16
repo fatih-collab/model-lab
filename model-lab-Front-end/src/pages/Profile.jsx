@@ -103,12 +103,10 @@ const Profile = () => {
   return (
     <div className="pt-8 pb-4 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
-        <h1 key={activeTab} className="gm-display gm-rise text-[56px] sm:text-[84px]">
-          {activeTab === 'profil' ? <>Identitas <em>personal.</em></> : <>Hasil <em>tersimpan.</em></>}
-        </h1>
+        <h1 className="gm-display gm-rise text-display">Profil</h1>
         <nav className="gm-seg gm-rise self-start sm:self-auto" style={{ '--d': '120ms' }} aria-label="Bagian profil">
-          <Link to="/profil" aria-current={activeTab === 'profil' ? 'page' : undefined}>Profil</Link>
-          <Link to="/profil?tab=simpan" aria-current={activeTab === 'simpan' ? 'page' : undefined}>Simpan hasil</Link>
+          <Link to="/profil" aria-current={activeTab === 'profil' ? 'page' : undefined}>Identitas</Link>
+          <Link to="/profil?tab=simpan" aria-current={activeTab === 'simpan' ? 'page' : undefined}>Hasil tersimpan</Link>
         </nav>
       </div>
 
@@ -123,10 +121,10 @@ const Profile = () => {
 
           {!profileLoading && profileError && (
             <div className="gm-open rounded-2xl border border-[#ecc3d6] bg-[#fbeef3] p-5 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[14px] text-accent">
+              <p className="text-small text-accent">
                 Gagal mengambil profil: {profileError.message}
               </p>
-              <button type="button" onClick={handleRetry} className="gm-link text-[14px] text-accent">
+              <button type="button" onClick={handleRetry} className="gm-link text-small font-medium text-accent">
                 Muat ulang
               </button>
             </div>
@@ -137,12 +135,12 @@ const Profile = () => {
             {/* Form profil */}
             <div className="md:col-span-7 gm-card gm-rise p-7 sm:p-9" style={{ '--d': '160ms' }}>
               <div className="flex items-center gap-5 pb-7 border-b border-line">
-                <span className="w-16 h-16 rounded-full bg-ink text-paper flex items-center justify-center font-serif text-[34px]">
+                <span className="w-16 h-16 rounded-full bg-ink text-paper flex items-center justify-center text-title-lg">
                   {formData.name ? formData.name.charAt(0).toUpperCase() : 'G'}
                 </span>
                 <div className="min-w-0">
-                  <h2 className="gm-title text-[32px] truncate">{formData.name || 'Tanpa nama'}</h2>
-                  <p className="text-[14px] text-gray-500 capitalize">
+                  <h2 className="text-title-lg truncate">{formData.name || 'Tanpa nama'}</h2>
+                  <p className="text-small text-gray-600 capitalize">
                     {formData.gender}{formData.age ? ` · ${formData.age} tahun` : ''}
                   </p>
                 </div>
@@ -214,7 +212,7 @@ const Profile = () => {
                 </div>
 
                 {saveError && (
-                  <p className="gm-open text-[14px] text-accent">{saveError}</p>
+                  <p className="gm-open text-small text-accent">{saveError}</p>
                 )}
 
                 <button
@@ -238,9 +236,9 @@ const Profile = () => {
               <span className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-accent/45 blur-[70px] animate-[gm-drift-b_16s_ease-in-out_infinite]" aria-hidden="true" />
               {result ? (
                 <div className="relative">
-                  <p className="font-serif italic text-[22px] text-[#d9b6d4]">Season kamu</p>
-                  <h3 className="gm-display text-paper text-[52px] mt-2">{result.result.season.name}</h3>
-                  <p className="text-[14px] text-[#cdbfdc] capitalize mt-2">{result.result.gate.undertone}</p>
+                  <p className="text-small font-medium text-[#d9b6d4]">Season kamu</p>
+                  <h3 className="gm-display text-paper text-headline mt-2">{result.result.season.name}</h3>
+                  <p className="text-small text-[#cdbfdc] capitalize mt-2">{result.result.gate.undertone}</p>
                   <div className="flex -space-x-2 mt-7">
                     {result.result.season.palette.palettes.utama.slice(0, 6).map((color, i) => (
                       <span
@@ -257,7 +255,7 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="relative">
-                  <h3 className="gm-display text-paper text-[44px]">Belum ada <em>season.</em></h3>
+                  <h3 className="gm-display text-paper text-headline">Belum ada season</h3>
                   <Link to="/scan-wajah" className="gm-btn bg-paper text-ink hover:bg-white mt-9">
                     Mulai analisis <FiArrowRight />
                   </Link>

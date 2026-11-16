@@ -47,7 +47,7 @@ function RequireCompleteProfile({ children }) {
   if (profileLoading) {
     return (
       <div className="py-32 flex justify-center">
-        <span className="gm-display text-[34px] text-gray-400 gm-breathe">Sebentar…</span>
+        <span className="text-title text-gray-600 gm-breathe">Memuat profil…</span>
       </div>
     );
   }
@@ -71,11 +71,9 @@ function RequireCompleteProfile({ children }) {
 
     return (
       <div className="gm-rise py-28 max-w-md mx-auto text-center space-y-6">
-        <h1 className="gm-display text-[48px]">
-          Profil belum <em>terbaca.</em>
-        </h1>
+        <h1 className="gm-display text-headline">Profil belum terbaca</h1>
 
-        <p className="gm-lead text-[15px]">
+        <p className="gm-lead text-body">
           Pastikan server GlowMatch dan database sedang berjalan, lalu coba lagi.
         </p>
 

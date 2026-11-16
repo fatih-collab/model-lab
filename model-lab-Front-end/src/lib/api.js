@@ -190,4 +190,24 @@ export const api = {
       method: 'DELETE',
       signal,
     }),
+
+  // ----------------------------------------------------------
+  // SIMPAN HASIL (BOOKMARK): hanya nama season dan warna
+  // ----------------------------------------------------------
+
+  getSaved: (signal) =>
+    request('/saved', { signal }),
+
+  saveResult: ({ season_id, season_name, palette }, signal) =>
+    request('/saved', {
+      method: 'POST',
+      json: { season_id, season_name, palette },
+      signal,
+    }),
+
+  deleteSaved: (id, signal) =>
+    request(`/saved/${id}`, {
+      method: 'DELETE',
+      signal,
+    }),
 };

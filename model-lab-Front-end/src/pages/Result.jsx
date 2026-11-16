@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FiBookmark, FiDownload, FiArrowRight, FiXCircle, FiCircle, 
-  FiVideo, FiImage, FiRefreshCw, FiCheck, FiBookOpen, FiUser
+  FiVideo, FiImage, FiRefreshCw, FiBookOpen, FiUser
 } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
+import { BsBookmarkFill } from 'react-icons/bs';
 import PaletteSection from '../components/PaletteSection';
 import LiveTryOn from '../components/LiveTryOn';
 import RadialBurst, { FrameOverlay } from '../components/RadialBurst';
 import SeasonSwitcher from '../components/SeasonSwitcher';
 import { saveToHistory, seasonOptions, useAnalysis } from '../context/AnalysisContext';
 import { downloadColorReportPdf } from '../lib/exportPdf';
+import { api } from '../lib/api';
 
 const UNDERTONE_LABEL = { warm: 'Warm (Hangat)', cool: 'Cool (Dingin)', neutral: 'Neutral (Netral)' };
 const SOURCE_LABEL = {
@@ -28,13 +30,52 @@ const AXIS_LABEL = {
   'slight muting': 'sedikit redup', 'strong muting': 'sangat redup',
 };
 
+// request_id analisis yang sudah disimpan otomatis ke riwayat.
+// Di level modul agar tidak tersimpan ulang saat halaman dibuka kembali.
+const autoSavedRequests = new Set();
+
 const Result = () => {
   const { result, face, selectedId, setSelectedId, reset, profile } = useAnalysis();
   const [mode, setMode] = useState('foto'); // foto | live
-  const [savedId, setSavedId] = useState(null);
+  // Season yang sudah ada di "Simpan Hasil" (bookmark).
+  const [savedSeasonIds, setSavedSeasonIds] = useState(() => new Set());
+  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const navigate = useNavigate();
+
+  // Simpan otomatis ke riwayat begitu analisis selesai.
+  // Backend meng-upsert berdasarkan request_id, sehingga tombol
+  // "Simpan Hasil" hanya memperbarui season pada record yang sama.
+  useEffect(() => {
+    const requestId = result?.request_id;
+    if (!requestId || autoSavedRequests.has(requestId)) return;
+
+    const options = seasonOptions(result);
+    const season = options.find((o) => o.id === selectedId) ?? options[0];
+    if (!season) return;
+
+    autoSavedRequests.add(requestId);
+    saveToHistory(result, season, profile).catch((err) => {
+      // Dicoba lagi saat efek berjalan berikutnya.
+      autoSavedRequests.delete(requestId);
+      console.error('Gagal mencatat riwayat:', err);
+    });
+  }, [result, selectedId, profile]);
+
+  // Tandai season yang sudah pernah disimpan.
+  useEffect(() => {
+    const controller = new AbortController();
+    api
+      .getSaved(controller.signal)
+      .then((items) => {
+        if (Array.isArray(items)) {
+          setSavedSeasonIds(new Set(items.map((item) => item.season_id)));
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   if (!result) {
     return (
@@ -52,16 +93,24 @@ const Result = () => {
   const { gate } = result.result;
   const { description, keywords, palettes } = selected.palette;
   const faceQ = result.quality.face;
-  const saved = savedId === selected.id;
+  const saved = savedSeasonIds.has(selected.id);
   const undertoneText = `${UNDERTONE_LABEL[gate.undertone]}${result.undertone?.confidence ? ` · ${Math.round(result.undertone.confidence * 100)}%` : ''}`;
 
+  // "Simpan Hasil": bookmark nama season dan warnanya ke halaman Profil.
   const handleSave = async () => {
     setSaveError(null);
+    setSaving(true);
     try {
-      await saveToHistory(result, selected, profile);
-      setSavedId(selected.id);
+      await api.saveResult({
+        season_id: selected.id,
+        season_name: selected.name,
+        palette: palettes.utama.map((color) => color.hex),
+      });
+      setSavedSeasonIds((prev) => new Set(prev).add(selected.id));
     } catch (err) {
       setSaveError(err?.message || 'Hasil belum tersimpan. Coba lagi sebentar lagi.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -249,8 +298,13 @@ const Result = () => {
         <div className="text-center md:text-left space-y-1">
           <h4 className="text-lg font-bold text-glowmatch-secondary">Simpan & Unduh Laporan Lengkap</h4>
           <p className="text-xs sm:text-sm text-slate-500 font-normal">
-            Simpan hasil dan rekomendasi warnanya ke riwayat, atau unduh PDF untuk dibawa saat belanja baju, hijab, atau makeup.
+            Hasil ini sudah otomatis tercatat di riwayat. Tandai dengan "Simpan Hasil" agar season dan warnanya tersimpan di Profil, atau unduh PDF untuk dibawa saat belanja baju, hijab, atau makeup.
           </p>
+          {saved && (
+            <Link to="/profil?tab=simpan" className="inline-flex items-center gap-1 text-xs font-semibold text-glowmatch-primary hover:underline">
+              Lihat di Profil <FiArrowRight />
+            </Link>
+          )}
           {saveError && <p className="text-xs text-red-500">{saveError}</p>}
         </div>
         <div className="flex flex-wrap w-full md:w-auto gap-3">
@@ -263,10 +317,10 @@ const Result = () => {
           
           <button 
             onClick={handleSave} 
-            disabled={saved}
+            disabled={saved || saving}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-gray-200 text-glowmatch-secondary px-5 py-3.5 rounded-xl font-semibold hover:bg-gray-50 transition shadow-xs disabled:text-emerald-700 disabled:border-emerald-200 text-sm"
           >
-            {saved ? <><FiCheck className="text-emerald-600" /> Tersimpan ke Database</> : <><FiBookmark /> Simpan Hasil</>}
+            {saved ? <><BsBookmarkFill className="text-emerald-600" /> Tersimpan</> : <><FiBookmark /> {saving ? 'Menyimpan...' : 'Simpan Hasil'}</>}
           </button>
 
           {/* Download PDF Button */}

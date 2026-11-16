@@ -73,7 +73,7 @@ export function FaceGuide({ box, frameSize, ok, progress = 0 }) {
   const { cx, cy, r0 } = ringGeometry(box);
   const r = r0 * 0.95;
   const circ = 2 * Math.PI * r;
-  const color = ok ? '#88BCA0' : '#F6B26B';
+  const color = ok ? '#c9d6a0' : '#f69179';
   return (
     <g>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeOpacity="0.45" strokeWidth={r * 0.03} />

@@ -1,24 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FiCamera, FiRefreshCw, FiCheck, FiArrowRight, FiRepeat, FiAlertCircle } from 'react-icons/fi';
+import { FiCamera, FiRefreshCw, FiArrowRight, FiRepeat } from 'react-icons/fi';
 import CameraStage, { LiveChip, LoadingOverlay } from '../components/CameraStage';
+import { ScanHeader, ScanTips } from '../components/ScanParts';
 import { useAnalysis } from '../context/AnalysisContext';
 import { api } from '../lib/api';
 import { blobToDataURL, useCamera } from '../hooks/useCamera';
 import { useFrameCheck } from '../hooks/useFrameCheck';
 
-const AUTO_CAPTURE_MS = 1250;
 const LOADING_STEPS = [
   'Membaca undertone pergelangan...',
   'Memetakan warna kulit, rambut, mata, dan bibir...',
   'Mencocokkan dengan 12 season warna...',
 ];
 
+const TIPS = [
+  'Cahaya cukup dari lampu HP atau lampu sendiri.',
+  'Lepas jam tangan dan gelang.',
+  'Buka telapak tangan menghadap atas.',
+];
+
 /** Panduan area pergelangan (oval bawah) + progres auto-capture. */
 function WristGuide({ frameSize, ok, progress }) {
   if (!frameSize) return null;
   const [w, h] = frameSize;
-  const color = ok ? '#88BCA0' : 'white';
+  const color = ok ? '#c9d6a0' : '#fbf7ec';
   const props = { cx: w / 2, cy: h * 0.62, rx: w * 0.25, ry: h * 0.24, fill: 'none' };
   return (
     <g>
@@ -44,7 +50,7 @@ const ScanUndertone = () => {
   const camera = useCamera({ facingMode: facing, enabled: Boolean(face) });
   const { captureFrame } = camera;
   const live = status === 'kamera' && camera.status === 'ready';
-  const { check, stableMs, error } = useFrameCheck({ captureFrame, kind: 'wrist', active: live });
+  const { check, error } = useFrameCheck({ captureFrame, kind: 'wrist', active: live });
   const frameSize = check?.frame_size ?? (camera.videoSize && [camera.videoSize.w, camera.videoSize.h]);
 
   const ambilFoto = useCallback(async () => {
@@ -93,28 +99,21 @@ const ScanUndertone = () => {
 
   if (!face) {
     return (
-      <div className="py-24 max-w-md mx-auto text-center space-y-4">
-        <FiAlertCircle className="text-4xl text-glowmatch-primary mx-auto" />
-        <h1 className="text-2xl font-semibold text-glowmatch-secondary">Foto wajah belum ada</h1>
-        <p className="text-gray-500 text-sm">Selesaikan langkah 1 terlebih dahulu.</p>
-        <Link to="/scan-wajah" className="inline-block bg-glowmatch-primary text-white px-6 py-3 rounded-xl font-medium">Ke langkah 1</Link>
+      <div className="gm-rise py-28 max-w-lg mx-auto text-center space-y-8">
+        <h1 className="gm-display text-[52px] sm:text-[64px]">Foto wajah <em>belum ada.</em></h1>
+        <Link to="/scan-wajah" className="gm-btn">Ke langkah pertama <FiArrowRight /></Link>
       </div>
     );
   }
 
   const messages = status === 'kamera' ? (error ? [error] : check?.messages ?? []) : [];
-  const ready = live && (check?.ok || camera.status === 'ready');
 
   return (
-    <div className="py-10 max-w-5xl mx-auto">
-      <div className="text-center mb-10">
-        <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-3">Langkah 2 Dari 2</p>
-        <h1 className="text-4xl font-semibold text-glowmatch-secondary mb-4">Verifikasi undertone</h1>
-        <p className="text-gray-500">Arahkan bagian dalam pergelangan tangan ke area panduan, lalu tekan tombol ambil foto.</p>
-      </div>
+    <div className="pt-8 pb-4 max-w-6xl mx-auto">
+      <ScanHeader title="Verifikasi" accent="undertone." step="02" />
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <div className="flex-1 w-full space-y-3">
+      <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
+        <div className="gm-rise space-y-4" style={{ '--d': '160ms' }}>
           <CameraStage
             videoRef={camera.videoRef} cameraStatus={camera.status} cameraError={camera.error}
             mirrored={facing === 'user'}
@@ -125,73 +124,63 @@ const ScanUndertone = () => {
             torchOn={camera.torchOn}
             onToggleTorch={camera.setTorch}
             chip={live && (check?.ok ? <LiveChip label="Pergelangan terdeteksi" />
-              : <LiveChip label="Posisikan pergelangan di oval" color="bg-amber-400" />)}
+              : <LiveChip label="Posisikan pergelangan di oval" color="bg-coral" />)}
             messages={messages}
             overlay={status === 'kamera' && <WristGuide frameSize={frameSize} ok={check?.ok} progress={0} />}
           >
-            {status === 'loading' && <LoadingOverlay title={LOADING_STEPS[step]} subtitle="Biasanya beberapa detik" />}
+            {status === 'loading' && <LoadingOverlay title={LOADING_STEPS[step]} />}
           </CameraStage>
           {status === 'kamera' && (
-            <button onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))}
-              className="text-sm text-gray-500 hover:text-glowmatch-primary inline-flex items-center gap-2">
-              <FiRepeat /> Ganti kamera depan/belakang
+            <button
+              type="button"
+              onClick={() => setFacing((f) => (f === 'user' ? 'environment' : 'user'))}
+              className="gm-btn-ghost gm-btn-sm"
+            >
+              <FiRepeat /> Ganti kamera
             </button>
           )}
         </div>
 
-        <div className="w-full md:w-[340px] bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
-          <div className="w-12 h-12 bg-purple-50 text-glowmatch-primary rounded-2xl flex items-center justify-center mb-6">
-            <FiCamera className="text-2xl" />
-          </div>
-          <h3 className="text-lg font-semibold text-glowmatch-secondary mb-5">Panduan Pengambilan Foto</h3>
-          <ul className="space-y-4 mb-6 text-sm text-gray-500">
-            <li className="flex items-start gap-3"><FiCheck className="text-[#88BCA0] text-lg mt-0.5 shrink-0" /> Pastikan cahaya cukup: gunakan <strong>lampu HP</strong> atau <strong>bawa lighting sendiri</strong></li>
-            <li className="flex items-start gap-3"><FiCheck className="text-[#88BCA0] text-lg mt-0.5 shrink-0" /> Hindari jam tangan atau aksesori gelang</li>
-            <li className="flex items-start gap-3"><FiCheck className="text-[#88BCA0] text-lg mt-0.5 shrink-0" /> Buka telapak tangan menghadap atas dengan santai</li>
-          </ul>
-
-          {status === 'kamera' && (
-            <p className="text-xs text-gray-500 bg-purple-50/70 p-3 rounded-xl mb-6 border border-purple-100">
-              📸 <strong>Manual Capture:</strong> Posisikan pergelangan tanganmu, lalu klik tombol ungu di bawah.
-            </p>
-          )}
+        <aside className="gm-card gm-rise p-7 sm:p-8" style={{ '--d': '260ms' }}>
+          <ScanTips tips={TIPS} />
 
           {failure && (
-            <div className="mb-5 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl p-3">
+            <div className="gm-open mt-6 rounded-2xl border border-[#ecc3d6] bg-[#fbeef3] text-accent text-[14px] p-4 leading-relaxed">
               {failure.message}
-              {failure.backToFace && <Link to="/scan-wajah" className="block mt-2 font-semibold underline">Ulangi foto wajah</Link>}
+              {failure.backToFace && <Link to="/scan-wajah" className="gm-link block mt-2 text-accent">Ulangi foto wajah</Link>}
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 mt-8">
             {status === 'kamera' ? (
-              <button 
-                onClick={ambilFoto} 
+              <button
+                type="button"
+                onClick={ambilFoto}
                 disabled={camera.status !== 'ready'}
-                className="w-full bg-glowmatch-primary hover:bg-purple-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-base active:scale-95"
+                className="gm-btn w-full py-4"
               >
-                <FiCamera className="text-xl" /> Ambil Foto Sekarang
+                <FiCamera className="text-lg" /> Ambil foto
               </button>
             ) : status === 'diambil' ? (
-              <div className="flex gap-3">
-                <button onClick={() => setStatus('kamera')} className="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm">
-                  <FiRefreshCw className="text-base" /> Ulangi
+              <div className="gm-open flex gap-3">
+                <button type="button" onClick={() => setStatus('kamera')} className="gm-btn-ghost flex-1">
+                  <FiRefreshCw /> Ulangi
                 </button>
-                <button onClick={() => analyze(true)} className="flex-[1.2] bg-glowmatch-primary hover:bg-purple-800 text-white py-3.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm">
-                  Analisis <FiArrowRight className="text-base" />
+                <button type="button" onClick={() => analyze(true)} className="gm-btn flex-[1.3]">
+                  Analisis <FiArrowRight />
                 </button>
               </div>
             ) : (
-              <button disabled className="w-full bg-gray-200 text-gray-400 py-3.5 rounded-xl font-semibold cursor-not-allowed">Memproses...</button>
+              <button type="button" disabled className="gm-btn w-full py-4">Memproses...</button>
             )}
             {status !== 'loading' && (
-              <button onClick={() => analyze(false)} className="text-center text-sm text-gray-500 hover:text-glowmatch-primary font-medium">
-                Lewati, analisis dari wajah saja
+              <button type="button" onClick={() => analyze(false)} className="gm-btn-ghost w-full">
+                Analisis dari wajah saja
               </button>
             )}
-            <Link to="/scan-wajah" className="text-center text-sm text-gray-400 hover:text-gray-600 mt-1 font-medium">Kembali ke langkah 1</Link>
+            <Link to="/scan-wajah" className="gm-link self-center text-[14px] text-gray-500 mt-2">Kembali</Link>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

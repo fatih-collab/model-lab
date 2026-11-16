@@ -1,21 +1,143 @@
+@font-face{font-family:'DM Sans';src:url('/fonts/DMSans-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Instrument Serif';src:url('/fonts/InstrumentSerif-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Instrument Serif';src:url('/fonts/InstrumentSerif-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-glowmatch-background text-glowmatch-secondary font-sans antialiased;
-  }
+/* ==========================================================================
+   Tema GlowMatch: diturunkan dari landing page (krem, ungu tua, empat warna logo).
+   ========================================================================== */
+
+:root{
+  --paper:#fbf7ec;
+  --ink:#2a1d3b;
+  --ink-soft:#3d2a54;
+  --brand:#6b46c1;
+  --accent:#aa2870;
+  --coral:#f69179;
+  --peri:#96a8e0;
+  --olive:#7e8a59;
+  --muted:#7d6b88;
+  --line:#e7ddd0;
+  --chip:#f0e4ee;
+  --btn-line:#d6c6d6;
+  --btn-hover:#f0e5ef;
+  --card:rgba(255,253,247,.72);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-spring:cubic-bezier(.22,1.2,.36,1);
 }
 
+@layer base{
+  body{
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+  ::selection{background:#efc6dd;color:var(--ink)}
+  h1,h2,h3,h4{font-weight:400}
+  :focus-visible{outline:2px solid var(--brand);outline-offset:4px}
+}
+
+@layer components{
+  /* --- Tipografi --- */
+  .gm-display{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.035em;line-height:.98;color:var(--ink)}
+  .gm-display em,.gm-grad{font-style:italic;display:inline-block;padding-right:.08em;background:linear-gradient(95deg,#ef6f58 0%,var(--accent) 52%,var(--brand) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .gm-title{font-family:'Instrument Serif',Georgia,serif;font-weight:400;letter-spacing:-.02em;line-height:1.05;color:var(--ink)}
+  .gm-lead{color:var(--muted);line-height:1.75}
+  .gm-index{font-family:'Instrument Serif',Georgia,serif;font-style:italic;color:#b394b9;line-height:1}
+
+  /* --- Permukaan --- */
+  .gm-card{background:var(--card);border:1px solid var(--line);border-radius:28px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .gm-card-hover{transition:transform .45s var(--ease-out),box-shadow .45s var(--ease-out),border-color .3s}
+  .gm-card-hover:hover{transform:translateY(-4px);border-color:#d8c4d4;box-shadow:0 18px 40px -22px rgba(90,40,100,.35)}
+  .gm-rule{height:1px;background:var(--line);border:0}
+
+  /* --- Tombol --- */
+  .gm-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:999px;background:var(--ink);color:var(--paper);padding:14px 26px;font-size:14px;letter-spacing:-.1px;transition:background .2s,transform .25s var(--ease-out),box-shadow .25s;box-shadow:0 10px 24px -14px rgba(42,29,59,.7)}
+  .gm-btn:hover{background:var(--ink-soft);transform:translateY(-2px)}
+  .gm-btn:active{transform:translateY(0) scale(.97)}
+  .gm-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .gm-btn svg{transition:transform .25s var(--ease-out)}
+  .gm-btn:hover svg:last-child{transform:translateX(3px)}
+  .gm-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:999px;border:1px solid var(--btn-line);background:transparent;color:var(--ink);padding:13px 22px;font-size:14px;transition:background .2s,border-color .2s,transform .25s var(--ease-out)}
+  .gm-btn-ghost:hover{background:var(--btn-hover);border-color:#b498b8;transform:translateY(-2px)}
+  .gm-btn-ghost:active{transform:translateY(0) scale(.97)}
+  .gm-btn-ghost:disabled{opacity:.6;cursor:default;transform:none}
+  .gm-btn-sm{padding:9px 16px;font-size:13px}
+
+  /* Tautan dengan garis bawah yang tumbuh */
+  .gm-link{position:relative;display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+  .gm-link::after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease-out)}
+  .gm-link:hover::after{transform:scaleX(1);transform-origin:left}
+
+  /* Tombol bulat bergaya "conversation" di landing */
+  .gm-orb{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--chip);flex-shrink:0;transition:background .2s,color .2s,transform .25s var(--ease-out)}
+  .group:hover .gm-orb{background:var(--ink);color:var(--paper);transform:translate(2px,-2px)}
+
+  /* --- Form --- */
+  .gm-input{width:100%;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.6);padding:13px 16px;font-size:14px;color:var(--ink);transition:border-color .2s,box-shadow .2s,background .2s}
+  .gm-input::placeholder{color:#a591ad}
+  .gm-input:focus{outline:none;border-color:#b498b8;background:#fff;box-shadow:0 0 0 4px rgba(170,40,112,.08)}
+  .gm-label{display:block;font-size:14px;color:var(--ink);margin-bottom:8px}
+
+  /* Segmented control */
+  .gm-seg{display:inline-flex;padding:4px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.5)}
+  .gm-seg>button,.gm-seg>a{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:8px 16px;font-size:13px;color:var(--muted);transition:background .25s,color .25s,box-shadow .25s}
+  .gm-seg>button:hover,.gm-seg>a:hover{color:var(--ink)}
+  .gm-seg>button[aria-pressed="true"],.gm-seg>a[aria-current="page"]{background:var(--ink);color:var(--paper);box-shadow:0 6px 16px -10px rgba(42,29,59,.8)}
+
+  /* Pilihan berbentuk pil (gender, dll.) */
+  .gm-choice{border-radius:999px;border:1px solid var(--line);padding:11px 14px;font-size:14px;color:var(--muted);transition:all .25s var(--ease-out)}
+  .gm-choice:hover{border-color:#b498b8;color:var(--ink)}
+  .gm-choice[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+  .gm-tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;border:1px solid var(--line);padding:6px 14px;font-size:13px;color:var(--ink);background:rgba(255,255,255,.55)}
+  .gm-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+}
+
+/* ==========================================================================
+   Animasi
+   ========================================================================== */
+
+@keyframes gm-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes gm-fade{from{opacity:0}to{opacity:1}}
+@keyframes gm-pop{from{opacity:0;transform:scale(.82) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes gm-drift-a{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vw,4vh) scale(1.12)}}
+@keyframes gm-drift-b{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5vw,-6vh) scale(.92)}}
+@keyframes gm-spin{to{transform:rotate(360deg)}}
+@keyframes gm-breathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.25)}}
+@keyframes gm-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes gm-open{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes gm-chat-in{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+
+/* Masuk saat halaman dibuka; --d mengatur jeda bertahap */
+.gm-rise{animation:gm-rise .8s var(--ease-out) both;animation-delay:var(--d,0ms)}
+.gm-page{animation:gm-fade .5s ease both}
+.gm-pop{animation:gm-pop .55s var(--ease-spring) both;animation-delay:var(--d,0ms)}
+.gm-open{animation:gm-open .35s var(--ease-out) both}
+.gm-chat-in{animation:gm-chat-in .45s var(--ease-spring) both;transform-origin:bottom right}
+.gm-breathe{animation:gm-breathe 1.8s ease-in-out infinite}
+.gm-spinner{width:44px;height:44px;border-radius:50%;border:3px solid rgba(251,247,236,.25);border-top-color:var(--paper);animation:gm-spin .9s linear infinite}
+.gm-shimmer{background:linear-gradient(90deg,#efe6dc 25%,#f8f2ea 50%,#efe6dc 75%);background-size:200% 100%;animation:gm-shimmer 1.6s linear infinite}
+
+/* Muncul saat digulir ke layar (lihat components/Reveal.jsx) */
+.gm-reveal{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out);transition-delay:var(--d,0ms)}
+.gm-reveal.is-in{opacity:1;transform:none}
+
+/* Bola warna lembut di latar (empat warna logo) */
+.gm-ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.gm-ambient span{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28}
+.gm-ambient .a1{width:38vw;height:38vw;left:-12vw;top:-10vw;background:var(--coral);animation:gm-drift-a 26s ease-in-out infinite}
+.gm-ambient .a2{width:32vw;height:32vw;right:-10vw;top:18vh;background:var(--peri);animation:gm-drift-b 30s ease-in-out infinite}
+.gm-ambient .a3{width:28vw;height:28vw;left:30vw;bottom:-14vw;background:#e3a3c6;animation:gm-drift-b 34s ease-in-out infinite}
+.gm-ambient .a4{width:20vw;height:20vw;right:12vw;bottom:-6vw;background:#c4cba7;animation:gm-drift-a 38s ease-in-out infinite}
+
 /* Cincin palet radial burst: tiap irisan "meletup" dari pusat wajah secara berurutan. */
-@keyframes burst-in {
-  from { transform: scale(0.55) rotate(-12deg); opacity: 0; }
-  to   { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-.burst-wedge {
-  animation: burst-in 520ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .burst-wedge { animation: none; }
+@keyframes burst-in{from{transform:scale(.55) rotate(-12deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+.burst-wedge{animation:burst-in 520ms var(--ease-spring) both}
+
+@media (prefers-reduced-motion:reduce){
+  .gm-rise,.gm-page,.gm-pop,.gm-open,.gm-chat-in,.gm-breathe,.burst-wedge,.gm-ambient span,[class*="animate-"]{animation:none!important}
+  .gm-reveal{opacity:1;transform:none;transition:none}
+  .gm-card-hover,.gm-btn,.gm-btn-ghost{transition:none}
 }

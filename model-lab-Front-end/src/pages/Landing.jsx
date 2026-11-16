@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiChevronDown, FiShield } from 'react-icons/fi';
+import { FiChevronDown } from 'react-icons/fi';
 import logoTile from '../assets/logo-tile.webp';
 import '../landing.css';
 
@@ -9,24 +9,16 @@ const LogoSculpture = lazy(() => import('../components/LogoSculpture'));
 
 // Menu yang muncul saat kursor menyentuh logo. Warna titik = empat lingkaran di logo.
 const MENU_ITEMS = [
-  { label: 'Mulai Analisis', desc: 'Pindai wajah & undertone', to: '/scan-wajah', color: '#f69179', primary: true },
-  { label: 'Hasil Warna', desc: 'Palet season kamu', to: '/hasil', color: '#96a8e0' },
-  { label: 'Riwayat', desc: 'Analisis sebelumnya', to: '/riwayat', color: '#aa2870' },
-  { label: 'Simpan Hasil', desc: 'Season & warna tersimpan', to: '/profil?tab=simpan', color: '#7e8a59' },
-  { label: 'Profil', desc: 'Identitas & preferensi', to: '/profil', color: '#f69179' },
-  { label: 'Teori Warna', desc: '12 season & undertone', to: '/penjelasan-analisis', color: '#96a8e0' },
-  { label: 'Tentang GlowMatch', desc: 'Fitur & tanya jawab', to: '/beranda', color: '#aa2870' },
+  { label: 'Mulai Analisis', to: '/scan-wajah', color: '#f69179', primary: true },
+  { label: 'Hasil Warna', to: '/hasil', color: '#96a8e0' },
+  { label: 'Riwayat', to: '/riwayat', color: '#aa2870' },
+  { label: 'Simpan Hasil', to: '/profil?tab=simpan', color: '#7e8a59' },
+  { label: 'Profil', to: '/profil', color: '#f69179' },
+  { label: 'Teori Warna', to: '/penjelasan-analisis', color: '#96a8e0' },
+  { label: 'Tentang GlowMatch', to: '/beranda', color: '#aa2870' },
 ];
 
 const CLOSE_DELAY_MS = 320;
-
-function Spark({ className = '' }) {
-  return (
-    <svg className={className} width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M16 2v28M2 16h28M6.1 6.1l19.8 19.8M6.1 25.9 25.9 6.1" stroke="currentColor" strokeWidth="3.4" />
-    </svg>
-  );
-}
 
 function LogoMenu({ open, onEnter, onLeave, onBlur }) {
   const count = MENU_ITEMS.length;
@@ -41,10 +33,7 @@ function LogoMenu({ open, onEnter, onLeave, onBlur }) {
             <li key={item.label} style={style}>
               <Link to={item.to} className={item.primary ? 'is-primary' : undefined} tabIndex={open ? 0 : -1}>
                 <span className="menu-dot" style={{ background: item.color }} aria-hidden="true" />
-                <span>
-                  <span className="menu-label">{item.label}</span>
-                  <span className="menu-desc">{item.desc}</span>
-                </span>
+                <span className="menu-label">{item.label}</span>
               </Link>
             </li>
           );
@@ -182,15 +171,6 @@ export default function Landing() {
             <div className="display-navigation" aria-label="Alur analisis">
               <span>Pindai wajah</span><span>Cek undertone</span><span>Palet season</span><span>Unduh PDF</span>
             </div>
-            <div className="privacy-note">
-              <FiShield aria-hidden="true" />
-              <span>Citra wajah diproses aman dan tidak disimpan ke server publik.</span>
-            </div>
-          </div>
-          <div className="footer-fineprint">
-            <span>© {new Date().getFullYear()} GLOWMATCH</span>
-            <span className="fineprint-center">SEASONAL COLOR ANALYSIS. 12 SEASON.</span>
-            <span>DIBUAT DENGAN PERASAAN <Spark /></span>
           </div>
         </footer>
       </main>

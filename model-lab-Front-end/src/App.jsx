@@ -1,12 +1,14 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from 'react-router-dom';
+import { FiRefreshCw } from 'react-icons/fi';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -44,10 +46,8 @@ function RequireCompleteProfile({ children }) {
   // Tunggu sampai status profil dari backend tersedia.
   if (profileLoading) {
     return (
-      <div className="py-24 max-w-md mx-auto text-center space-y-3">
-        <p className="text-sm text-gray-500">
-          Memeriksa profil pengguna...
-        </p>
+      <div className="py-32 flex justify-center">
+        <span className="gm-display text-[34px] text-gray-400 gm-breathe">Sebentar…</span>
       </div>
     );
   }
@@ -70,18 +70,17 @@ function RequireCompleteProfile({ children }) {
     };
 
     return (
-      <div className="py-24 max-w-md mx-auto text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-glowmatch-secondary">
-          Profil belum dapat diperiksa
+      <div className="gm-rise py-28 max-w-md mx-auto text-center space-y-6">
+        <h1 className="gm-display text-[48px]">
+          Profil belum <em>terbaca.</em>
         </h1>
 
-        <p className="text-sm text-gray-500">
-          Pastikan backend GlowMatch berjalan dan koneksi
-          database tersedia sebelum memulai analisis.
+        <p className="gm-lead text-[15px]">
+          Pastikan server GlowMatch dan database sedang berjalan, lalu coba lagi.
         </p>
 
         {retryError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-accent">
             {retryError}
           </p>
         )}
@@ -90,9 +89,10 @@ function RequireCompleteProfile({ children }) {
           type="button"
           onClick={handleRetry}
           disabled={retrying}
-          className="bg-glowmatch-primary text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-60"
+          className="gm-btn"
         >
-          {retrying ? 'Memeriksa...' : 'Coba Lagi'}
+          <FiRefreshCw className={retrying ? 'animate-spin' : ''} />
+          {retrying ? 'Memeriksa...' : 'Coba lagi'}
         </button>
       </div>
     );
@@ -118,13 +118,23 @@ function RequireCompleteProfile({ children }) {
 // ============================================================
 
 function SiteLayout() {
-  return (
-    <div className="min-h-screen bg-glowmatch-background flex flex-col justify-between">
+  const location = useLocation();
 
-      <div>
+  // Halaman baru selalu dibuka dari atas.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [location.pathname]);
+
+  return (
+    <div className="relative min-h-screen bg-paper flex flex-col justify-between overflow-x-clip">
+      <div className="gm-ambient" aria-hidden="true">
+        <span className="a1" /><span className="a2" /><span className="a3" /><span className="a4" />
+      </div>
+
+      <div className="relative z-[1]">
         <Navbar />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main key={location.pathname} className="gm-page max-w-7xl mx-auto px-5 sm:px-8">
           <Outlet />
         </main>
       </div>

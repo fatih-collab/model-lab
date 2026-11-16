@@ -412,7 +412,6 @@ export default function LogoSculpture({ menuOpen = false, onHoverChange, onTap, 
 
   return (
     <div className="sculpture-wrap">
-      <span className="art-caption">FIG. 01 — WARNA, MENEMUKAN BENTUKNYA</span>
       <div className="sculpture-shadow" aria-hidden="true" />
       <div
         ref={hostRef}
@@ -443,10 +442,6 @@ export default function LogoSculpture({ menuOpen = false, onHoverChange, onTap, 
           )}
           {controls}
         </div>
-        <span className="drag-hint">
-          <span className="hint-hover">arahkan kursor ke logo untuk membuka menu</span>
-          <span className="hint-touch">ketuk logo untuk membuka menu</span>
-        </span>
       </div>
       <span className="sr-only" aria-live="polite">{spins > 0 ? `Logo diputar ${spins} kali.` : ''}</span>
     </div>

@@ -1,257 +1,176 @@
 import { Link } from 'react-router-dom';
-import { 
-  FiArrowLeft, FiInfo, FiAlertTriangle, FiCheck, FiSun, FiDroplet, 
-  FiShield, FiBookOpen, FiLayers, FiHelpCircle, FiCheckCircle 
-} from 'react-icons/fi';
-import { HiSparkles } from 'react-icons/hi';
-import { useAnalysis, seasonOptions } from '../context/AnalysisContext';
+import { FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import Reveal from '../components/Reveal';
+import { useAnalysis } from '../context/AnalysisContext';
 
-const UNDERTONE_LABEL = { warm: 'Warm (Hangat)', cool: 'Cool (Dingin)', neutral: 'Neutral (Netral)' };
+const UNDERTONE_LABEL = { warm: 'hangat (warm)', cool: 'dingin (cool)', neutral: 'netral (neutral)' };
+
+const FAMILIES = [
+  {
+    name: 'Warm',
+    accent: 'hangat.',
+    colors: ['#f7b267', '#f69179', '#d4a24c', '#c0663f'],
+    desc: 'Rona dasar keemasan, persik, dan kuning. Kulit tampak paling hidup dengan warna berpigmen kuning atau oranye.',
+    seasons: [['Spring', 'cerah, jernih, ringan'], ['Autumn', 'hangat, pekat, membumi']],
+  },
+  {
+    name: 'Cool',
+    accent: 'dingin.',
+    colors: ['#96a8e0', '#c3aed6', '#e6b8cf', '#1f3a93'],
+    desc: 'Rona dasar biru dan merah muda. Warna berpigmen biru atau ungu menetralkan kemerahan dan menonjolkan kejernihan kulit.',
+    seasons: [['Summer', 'sejuk, lembut, redup'], ['Winter', 'kontras, tegas, jernih']],
+  },
+];
+
+const GATEKEEPER = [
+  {
+    title: 'Menghindari bias kemerahan wajah',
+    desc: 'Sunburn, jerawat, rosacea, atau cuaca panas bisa membuat undertone Warm terbaca sebagai Cool bila AI hanya melihat wajah.',
+  },
+  {
+    title: 'Mengunci keluarga season',
+    desc: 'Pergelangan Warm membatasi hasil ke Spring & Autumn. Pergelangan Cool membatasinya ke Summer & Winter.',
+  },
+  {
+    title: 'Wajah menentukan season spesifik',
+    desc: 'Setelah keluarga terkunci, model wajah (DINOv3 + SegFormer) membaca mata, bibir, rambut, dan kontras untuk memilih season yang paling pas.',
+  },
+];
 
 export default function AnalysisExplanation() {
-  const { result, selectedId } = useAnalysis();
-  const options = seasonOptions(result);
-  const selected = options.find((o) => o.id === selectedId) ?? options[0];
-
+  const { result } = useAnalysis();
   const gate = result?.result?.gate;
   const season = result?.result?.season;
 
   return (
-    <div className="py-10 max-w-4xl mx-auto space-y-12">
-      
-      {/* Tombol Navigasi Kembali */}
-      <div>
-        <Link
-          to="/hasil"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-glowmatch-primary transition-colors"
-        >
-          <FiArrowLeft className="text-lg" /> Kembali ke Halaman Hasil
-        </Link>
-      </div>
+    <div className="pt-8 pb-4 max-w-5xl mx-auto">
 
-      {/* Header Halaman */}
-      <div className="space-y-3">
-        <div className="inline-flex items-center gap-2 bg-purple-50 text-glowmatch-primary px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border border-purple-100">
-          <FiBookOpen /> Panduan Lengkap & Catatan Analisis
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-glowmatch-secondary tracking-tight">
-          Penjelasan Lanjutan Teori Warna & Catatan Sistem
-        </h1>
-        <p className="text-gray-500 text-sm sm:text-base leading-relaxed">
-          Pahami bagaimana kombinasi rona dasar kulit (undertone) dan fitur wajahmu menentukan season warnamu dari 12 pilihan.
-        </p>
-      </div>
+      <Link to="/hasil" className="gm-link gm-rise text-[14px] text-gray-500">
+        <FiArrowLeft /> Kembali ke hasil
+      </Link>
 
-      {/* SECTION 1: KELUARGA WARM VS COOL */}
-      <section className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-[0_4px_30px_rgb(0,0,0,0.02)] space-y-8">
-        <div>
-          <span className="text-xs font-bold text-glowmatch-primary uppercase tracking-wider block mb-1">
-            Dasar Pembagian Suhu Warna
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-glowmatch-secondary mb-3">
-            Mengapa Ada Keluarga Warm dan Cool?
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-            Dalam teori warna personal, setiap manusia memiliki rona dasar kulit (undertone) yang ditentukan oleh kadar hemoglobin (merah kebiruan) dan karoten/melanin (kuning keemasan) di bawah lapisan epidermis kulit.
-          </p>
-        </div>
+      <h1 className="gm-display gm-rise text-[56px] sm:text-[88px] mt-8 max-w-4xl" style={{ '--d': '80ms' }}>
+        Di balik <em>season warnamu.</em>
+      </h1>
+      <p className="gm-lead gm-rise text-[16px] sm:text-[17px] max-w-xl mt-8" style={{ '--d': '180ms' }}>
+        Undertone kulit ditentukan oleh hemoglobin (merah kebiruan) dan karoten serta melanin (kuning keemasan) di bawah lapisan kulit.
+        Kombinasinya dengan fitur wajah menentukan satu dari dua belas season.
+      </p>
 
-        {/* Perbandingan Warm vs Cool */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Card Warm */}
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50/70 border border-amber-200/60 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-400 text-white flex items-center justify-center text-xl shadow-sm">
-                <FiSun />
-              </div>
-              <div>
-                <h3 className="font-bold text-glowmatch-secondary text-lg">Keluarga Warm (Hangat)</h3>
-                <span className="text-xs text-amber-700 font-semibold">Rona dasar keemasan, persik, & kuning</span>
-              </div>
+      {/* WARM VS COOL */}
+      <section className="mt-28 grid md:grid-cols-2 gap-5">
+        {FAMILIES.map((f, i) => (
+          <Reveal key={f.name} delay={i * 120} className="gm-card gm-card-hover p-8 sm:p-10 group">
+            <div className="flex -space-x-2 mb-10">
+              {f.colors.map((c, j) => (
+                <span
+                  key={c}
+                  className="w-11 h-11 rounded-full ring-[3px] ring-paper transition-transform duration-500 group-hover:-translate-y-1.5"
+                  style={{ background: c, transitionDelay: `${j * 60}ms` }}
+                />
+              ))}
             </div>
-
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Orang dengan undertone warm tampak paling memukau saat mengenakan warna-warna dengan pigmen kuning atau oranye. Rona kulit mereka akan terlihat bercahaya dan sehat.
-            </p>
-
-            <div className="bg-white/80 p-4 rounded-xl border border-amber-100 text-xs space-y-1.5">
-              <strong className="text-amber-900 block font-bold">Mengarah ke 2 Season:</strong>
-              <p className="text-gray-600">• <strong>Spring:</strong> Karakter cerah, jernih, dan ringan.</p>
-              <p className="text-gray-600">• <strong>Autumn:</strong> Karakter hangat, pekat, dan membumi (earthy).</p>
-            </div>
-          </div>
-
-          {/* Card Cool */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 border border-blue-200/60 p-6 rounded-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center text-xl shadow-sm">
-                <FiDroplet />
-              </div>
-              <div>
-                <h3 className="font-bold text-glowmatch-secondary text-lg">Keluarga Cool (Dingin)</h3>
-                <span className="text-xs text-blue-700 font-semibold">Rona dasar biru, merah muda, & sejuk</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Orang dengan undertone cool tampak paling menawan dengan warna-warna dengan pigmen biru atau ungu. Warna ini menetralisir kemerahan dan menonjolkan kejernihan kulit.
-            </p>
-
-            <div className="bg-white/80 p-4 rounded-xl border border-blue-100 text-xs space-y-1.5">
-              <strong className="text-blue-900 block font-bold">Mengarah ke 2 Season:</strong>
-              <p className="text-gray-600">• <strong>Summer:</strong> Karakter sejuk, lembut, dan berdebu (muted).</p>
-              <p className="text-gray-600">• <strong>Winter:</strong> Karakter kontras tinggi, tegas, dan jernih.</p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Penjelasan Neutral */}
-        <div className="bg-purple-50/50 border border-purple-100 p-5 rounded-2xl text-xs text-gray-600 space-y-2">
-          <h4 className="font-bold text-glowmatch-secondary text-sm flex items-center gap-2">
-            <HiSparkles className="text-glowmatch-primary" /> Bagaimana dengan Undertone Netral (Neutral)?
-          </h4>
-          <p className="leading-relaxed">
-            Jika undertone Anda netral, kulit Anda memiliki keseimbangan antara pigmen keemasan dan merah muda kebiruan. Anda memiliki kebebasan mengeksplorasi warna dari kedua keluarga, dengan fokus utama pada tingkat kontras (terang vs gelap) dan kejernihan warna (jernih vs redup).
-          </p>
-        </div>
-      </section>
-
-      {/* SECTION 2: SISTEM GATEKEEPER GLOWMATCH */}
-      <section className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-[0_4px_30px_rgb(0,0,0,0.02)] space-y-6">
-        <div>
-          <span className="text-xs font-bold text-glowmatch-primary uppercase tracking-wider block mb-1">
-            Mekanisme Kecerdasan Buatan
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-glowmatch-secondary mb-3">
-            Sistem Gatekeeper GlowMatch
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-            Mengapa model kami menggunakan foto pergelangan tangan selain wajah? Ini adalah inovasi penting yang membedakan GlowMatch dari aplikasi biasa.
-          </p>
-        </div>
-
-        <div className="space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed">
-          <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100">
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 font-bold">
-              1
-            </div>
-            <div>
-              <strong className="text-glowmatch-secondary block font-bold mb-1">Menghindari Bias Kemerahan Wajah Sementara</strong>
-              Wajah manusia sering mengalami sunburn (terbakar sinar matahari), kemerahan akibat jerawat, rosacea, atau cuaca panas. Jika AI hanya melihat wajah, seseorang yang sebenarnya memiliki undertone Warm bisa salah diklasifikasikan sebagai Cool karena warna merah di permukaan pipi.
-            </div>
-          </div>
-
-          <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100">
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 font-bold">
-              2
-            </div>
-            <div>
-              <strong className="text-glowmatch-secondary block font-bold mb-1">Penguncian Keluarga Season (Rule-based Gatekeeper)</strong>
-              Ketika pergelangan tangan terdeteksi <strong>Warm</strong>, Gatekeeper secara ketat membatasi hasil akhir hanya pada keluarga <strong>Spring & Autumn</strong>. Begitu pula jika <strong>Cool</strong>, hasil dikunci ke <strong>Summer & Winter</strong>.
-            </div>
-          </div>
-
-          <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100">
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 font-bold">
-              3
-            </div>
-            <div>
-              <strong className="text-glowmatch-secondary block font-bold mb-1">Fitur Wajah Menentukan Subtipe & Season Spesifik</strong>
-              Setelah keluarga season dikunci lewat pergelangan tangan, model AI wajah (DINOv3 + SegFormer) membaca warna mata, bibir, rambut, dan kontras wajah untuk memilih season yang paling pas.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: CATATAN TEKNIS & PERINGATAN ANALISIS PENGGUNA */}
-      {result && gate && (
-        <section className="bg-white rounded-3xl p-8 sm:p-10 border border-gray-100 shadow-[0_4px_30px_rgb(0,0,0,0.02)] space-y-6">
-          <div>
-            <span className="text-xs font-bold text-glowmatch-primary uppercase tracking-wider block mb-1">
-              Status Khusus Sesi Anda
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-glowmatch-secondary mb-3">
-              Catatan Diagnostik Hasil Analisis Anda
+            <h2 className="gm-display text-[48px]">
+              {f.name}, <em>{f.accent}</em>
             </h2>
-            <p className="text-gray-500 text-xs sm:text-sm">
-              Berikut adalah transparansi hasil pembacaan sensor dan model AI untuk foto yang baru saja Anda ambil:
-            </p>
-          </div>
+            <p className="text-[15px] text-gray-500 leading-relaxed mt-5">{f.desc}</p>
+            <dl className="mt-8 border-t border-line divide-y divide-line">
+              {f.seasons.map(([name, trait]) => (
+                <div key={name} className="flex items-baseline justify-between gap-4 py-4">
+                  <dt className="font-serif text-[26px]">{name}</dt>
+                  <dd className="text-[14px] text-gray-500 text-right">{trait}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        ))}
+      </section>
 
-          <div className="space-y-4">
-            {/* Status Gatekeeper */}
-            <div className="border border-purple-100 bg-purple-50/50 rounded-2xl p-5 flex items-start gap-3.5">
-              <FiInfo className="text-glowmatch-primary text-xl shrink-0 mt-0.5" />
-              <div className="space-y-1 text-xs sm:text-sm">
-                <strong className="text-glowmatch-secondary font-bold block">Status Penguncian Undertone</strong>
-                <p className="text-gray-600 leading-relaxed">
-                  Undertone Anda terdeteksi <strong>{UNDERTONE_LABEL[gate.undertone] || gate.undertone}</strong>.
-                  {gate.applied ? (
-                    ` Hasil ini mengunci palet Anda ke keluarga season ${gate.allowed_families.join(' / ')}.`
-                  ) : (
-                    ` Hasil mengikuti kecenderungan alami fitur wajah (${UNDERTONE_LABEL[gate.lean] || gate.lean}).`
-                  )}
-                </p>
+      <Reveal className="mt-5 rounded-[28px] border border-dashed border-[#d6c6d6] p-8 sm:p-10">
+        <h2 className="gm-title text-[32px]">Bagaimana dengan undertone netral?</h2>
+        <p className="text-[15px] text-gray-500 leading-relaxed mt-4 max-w-3xl">
+          Kulit netral menyeimbangkan pigmen keemasan dan merah muda kebiruan. Kamu bebas menjelajah kedua keluarga,
+          dengan fokus pada tingkat kontras (terang atau gelap) dan kejernihan warna (jernih atau redup).
+        </p>
+      </Reveal>
+
+      {/* GATEKEEPER */}
+      <section className="mt-32 grid lg:grid-cols-[1fr_1.4fr] gap-12">
+        <Reveal>
+          <h2 className="gm-display text-[48px] sm:text-[60px]">
+            Kenapa <em>pergelangan tangan?</em>
+          </h2>
+        </Reveal>
+        <div className="border-t border-line">
+          {GATEKEEPER.map((g, i) => (
+            <Reveal key={g.title} delay={i * 100} className="border-b border-line py-8 grid grid-cols-[56px_1fr] gap-4 group">
+              <span className="gm-index text-[38px] transition-colors group-hover:text-accent">0{i + 1}</span>
+              <div>
+                <h3 className="gm-title text-[28px]">{g.title}</h3>
+                <p className="text-[15px] text-gray-500 leading-relaxed mt-3">{g.desc}</p>
               </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* CATATAN SESI */}
+      {result && gate && (
+        <Reveal as="section" className="mt-32 rounded-[36px] bg-ink text-paper px-7 py-12 sm:px-12 sm:py-14 relative overflow-hidden">
+          <span className="absolute -left-24 -bottom-28 w-80 h-80 rounded-full bg-[#6b46c1]/45 blur-[90px] animate-[gm-drift-a_20s_ease-in-out_infinite]" aria-hidden="true" />
+          <h2 className="gm-display text-paper text-[44px] sm:text-[56px] relative">
+            Catatan untuk <em>hasilmu.</em>
+          </h2>
+
+          <div className="relative mt-10 grid md:grid-cols-2 gap-x-10 gap-y-8">
+            <div className="border-t border-white/15 pt-6">
+              <h3 className="font-serif text-[26px]">Undertone</h3>
+              <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
+                Terdeteksi {UNDERTONE_LABEL[gate.undertone] || gate.undertone}.
+                {gate.applied
+                  ? ` Palet dikunci ke keluarga ${gate.allowed_families.join(' / ')}.`
+                  : ` Hasil mengikuti kecenderungan fitur wajah (${UNDERTONE_LABEL[gate.lean] || gate.lean}).`}
+              </p>
             </div>
 
-            {/* Jika Ada Peringatan Konflik atau Konfirmasi */}
             {gate.conflict && (
-              <div className="border border-amber-200 bg-amber-50/80 rounded-2xl p-5 flex items-start gap-3.5">
-                <FiAlertTriangle className="text-amber-600 text-xl shrink-0 mt-0.5" />
-                <div className="space-y-1 text-xs sm:text-sm">
-                  <strong className="text-amber-900 font-bold block">Catatan Pencahayaan: Potensi Konflik Wajah & Tangan</strong>
-                  <p className="text-amber-800 leading-relaxed">
-                    Sistem mendeteksi sedikit perbedaan rona temperatur antara foto pergelangan tangan dan wajah. Hal ini umumnya disebabkan oleh sudut pantulan lampu ruangan atau bayangan ponsel. Anda dapat mencoba analisis ulang dengan pencahayaan alami di dekat jendela untuk hasil yang semakin presisi.
-                  </p>
-                </div>
+              <div className="border-t border-coral/50 pt-6">
+                <h3 className="font-serif text-[26px] text-[#f5c2b4]">Wajah dan tangan berbeda</h3>
+                <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
+                  Rona wajah dan pergelangan sedikit berbeda, biasanya karena pantulan lampu atau bayangan ponsel.
+                  Coba ulangi di dekat jendela untuk hasil yang lebih presisi.
+                </p>
               </div>
             )}
 
             {season?.confidence_status === 'perlu_konfirmasi' && !gate.conflict && (
-              <div className="border border-amber-200 bg-amber-50/80 rounded-2xl p-5 flex items-start gap-3.5">
-                <FiAlertTriangle className="text-amber-600 text-xl shrink-0 mt-0.5" />
-                <div className="space-y-1 text-xs sm:text-sm">
-                  <strong className="text-amber-900 font-bold block">Coba Season Mendekati</strong>
-                  <p className="text-amber-800 leading-relaxed">
-                    Fitur wajahmu cukup fleksibel dan juga cocok dengan season mendekati. Coba fitur <strong>"Coba Live"</strong> di halaman hasil untuk membandingkan palet season mendekati langsung di wajahmu.
-                  </p>
-                </div>
+              <div className="border-t border-coral/50 pt-6">
+                <h3 className="font-serif text-[26px] text-[#f5c2b4]">Coba season terdekat</h3>
+                <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
+                  Fitur wajahmu cukup fleksibel. Pakai &ldquo;Coba live&rdquo; di halaman hasil untuk membandingkan palet season terdekat langsung di wajahmu.
+                </p>
               </div>
             )}
 
-            {/* Info Validasi Mandiri (Draping Kain) */}
-            <div className="border border-emerald-100 bg-emerald-50/50 rounded-2xl p-5 flex items-start gap-3.5">
-              <FiCheckCircle className="text-emerald-600 text-xl shrink-0 mt-0.5" />
-              <div className="space-y-1 text-xs sm:text-sm">
-                <strong className="text-emerald-950 font-bold block">Tips Validasi Mandiri di Rumah (Fabric Draping)</strong>
-                <p className="text-emerald-900 leading-relaxed">
-                  Ambil kain atau baju berwarna emas kuning dan perak (atau oranye dan fuchsia). Dekatkan ke bawah dagu di depan cermin saat pagi hari. Warna yang membuat kantung mata memudar dan bibir terlihat lebih segar adalah konfirmasi nyata dari keluarga warnamu!
-                </p>
-              </div>
+            <div className="border-t border-white/15 pt-6">
+              <h3 className="font-serif text-[26px]">Uji sendiri di cermin</h3>
+              <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
+                Dekatkan kain emas dan perak (atau oranye dan fuchsia) ke bawah dagu di pagi hari.
+                Warna yang membuat kantung mata memudar dan bibir tampak segar adalah keluargamu.
+              </p>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
-      {/* Tombol Aksi Bawah */}
-      <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Link
-          to="/hasil"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-glowmatch-primary hover:bg-purple-800 text-white px-8 py-4 rounded-xl font-bold transition shadow-md"
-        >
-          <FiArrowLeft /> Kembali ke Palet Hasil Analisis
+      <Reveal className="mt-20 flex flex-wrap items-center justify-between gap-6 border-t border-line pt-10">
+        <Link to="/hasil" className="gm-btn">
+          <FiArrowLeft /> Kembali ke palet
         </Link>
-        <Link
-          to="/scan-wajah"
-          className="text-xs text-gray-500 hover:text-glowmatch-primary font-medium"
-        >
-          Ingin mencoba pemindaian foto baru? Klik di sini
+        <Link to="/scan-wajah" className="gm-link text-[15px]">
+          Pindai foto baru <FiArrowRight />
         </Link>
-      </div>
-
+      </Reveal>
     </div>
   );
 }

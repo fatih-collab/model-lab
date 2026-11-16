@@ -1,51 +1,39 @@
-// src/components/ColorSwatch.jsx
 import { useState } from 'react';
 import { FiCopy, FiCheck } from 'react-icons/fi';
 
 // name boleh kosong (warna palet lengkap hanya punya kode hex).
-// source "estimasi" = kode hex diperkirakan dari nama warna.
-const ColorSwatch = ({ name, hex, source }) => {
+const ColorSwatch = ({ name, hex, index = 0 }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(hex).catch(() => {});
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000); // Kembali ke icon copy setelah 2 detik
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div
-      className="flex flex-col group cursor-pointer"
+    <button
+      type="button"
+      className="gm-pop flex flex-col text-left group"
+      style={{ '--d': `${Math.min(index, 14) * 35}ms` }}
       onClick={handleCopy}
-      title="Klik untuk menyalin kode Hex"
+      aria-label={`Salin ${name ? `${name} ` : ''}${hex}`}
     >
-      <div
-        className="w-full h-24 md:h-28 rounded-xl shadow-sm relative transition-transform transform group-hover:-translate-y-1"
+      <span
+        className="relative block w-full aspect-[4/5] rounded-[20px] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5 group-hover:shadow-[0_18px_30px_-18px_rgba(42,29,59,.55)]"
         style={{ backgroundColor: hex }}
       >
-        {/* Tombol Copy yang muncul saat di-hover */}
-        <div className={`absolute top-2 right-2 bg-white/90 text-gray-700 p-1.5 rounded-lg transition-opacity ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-          {copied ? <FiCheck className="text-green-600" /> : <FiCopy />}
-        </div>
-      </div>
-      <div className="mt-2">
-        {name ? (
-          <>
-            <p className="text-sm font-semibold text-glowmatch-secondary">{name}</p>
-            <p className="text-xs text-gray-400">
-              {hex}
-              {source === 'estimasi' && (
-                <span className="ml-1.5 text-[10px] bg-gray-100 text-gray-500 px-1.5 rounded" title="Kode hex diperkirakan dari nama warna">
-                  perkiraan
-                </span>
-              )}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm font-semibold text-glowmatch-secondary">{hex}</p>
-        )}
-      </div>
-    </div>
+        <span
+          className={`absolute left-2 right-2 bottom-2 flex items-center justify-between gap-1 rounded-full bg-paper/90 backdrop-blur px-2.5 py-1 text-[12px] text-ink transition-all duration-300 ${
+            copied ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0'
+          }`}
+        >
+          <span className="uppercase tracking-wide">{hex}</span>
+          {copied ? <FiCheck className="text-olive" /> : <FiCopy />}
+        </span>
+      </span>
+      <span className="mt-2.5 text-[14px] text-ink leading-snug">{name || hex}</span>
+    </button>
   );
 };
 

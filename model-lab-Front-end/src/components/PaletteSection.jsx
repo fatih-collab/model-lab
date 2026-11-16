@@ -7,26 +7,23 @@ import ColorSwatch from './ColorSwatch';
  * (warna utama, netral, palet lengkap, warna yang dihindari).
  * link + limit: tampilkan sebagian dan tautan "Lihat semua".
  */
-export default function PaletteSection({ title, subtitle, colors = [], link, limit }) {
+export default function PaletteSection({ title, colors = [], link, limit }) {
   const shown = limit ? colors.slice(0, limit) : colors;
   if (colors.length === 0) return null;
 
   return (
     <div>
-      <div className="flex justify-between items-end gap-4 mb-4 border-b border-gray-100 pb-3">
-        <div>
-          <h4 className="font-medium text-slate-700">{title}</h4>
-          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
-        </div>
+      <div className="flex justify-between items-end gap-4 mb-5 border-b border-line pb-3">
+        <h4 className="gm-title text-[26px]">{title}</h4>
         {link && colors.length > shown.length && (
-          <Link to={link} className="text-sm font-medium text-glowmatch-primary flex items-center gap-1 hover:underline shrink-0">
+          <Link to={link} className="gm-link text-[14px] shrink-0">
             Lihat semua ({colors.length}) <FiArrowRight />
           </Link>
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-x-4 gap-y-6">
         {shown.map((c, i) => (
-          <ColorSwatch key={`${c.hex}-${i}`} name={c.name} hex={c.hex} source={c.source} />
+          <ColorSwatch key={`${c.hex}-${i}`} name={c.name} hex={c.hex} index={i} />
         ))}
       </div>
     </div>

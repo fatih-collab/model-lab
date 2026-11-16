@@ -1,400 +1,254 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FiArrowRight, FiCheck, FiCamera, FiSun, FiLayers, FiShield, 
-  FiChevronDown, FiBookOpen, FiSmile, FiTrendingUp, FiShoppingBag, FiAward 
-} from 'react-icons/fi';
-import { HiSparkles } from 'react-icons/hi';
+import { FiArrowRight, FiArrowUpRight, FiPlus } from 'react-icons/fi';
 import HeroModel from '../assets/hero-model.jpg';
+import Reveal from '../components/Reveal';
 
 const FAQS = [
   {
-    q: 'Apa itu Seasonal Color Analysis (Analisis 12 Season Warna)?',
-    a: 'Seasonal Color Analysis adalah metode pengelompokan warna berdasarkan teori warna alamiah manusia (suhu undertone, kejernihan, dan kedalaman kontras). Sistem ini membagi warna menjadi 12 season (Spring, Summer, Autumn, Winter, masing-masing dengan tiga varian) untuk menentukan palet busana dan riasan yang paling cocok dengan warna kulit alami Anda.',
+    q: 'Apa itu Seasonal Color Analysis?',
+    a: 'Seasonal Color Analysis adalah metode pengelompokan warna berdasarkan suhu undertone, kejernihan, dan kedalaman kontras. Sistem ini membagi warna menjadi 12 season (Spring, Summer, Autumn, Winter, masing-masing dengan tiga varian) untuk menentukan palet busana dan riasan yang paling cocok dengan warna kulit alamimu.',
   },
   {
-    q: 'Apakah warna personal saya bisa berubah seiring bertambahnya usia?',
-    a: 'Undertone dasar kulit Anda (Warm, Cool, atau Neutral) bersifat genetik dan cenderung permanen sepanjang hidup. Namun, tingkat kontras rambut atau kecerahan kulit bisa mengalami sedikit penyesuaian, sehingga hasil Anda bisa bergeser ke season mendekati dalam keluarga yang sama.',
+    q: 'Apakah warna personal bisa berubah seiring usia?',
+    a: 'Undertone dasar kulit (Warm, Cool, atau Neutral) bersifat genetik dan cenderung permanen. Kontras rambut atau kecerahan kulit bisa sedikit berubah, sehingga hasilmu bisa bergeser ke season terdekat dalam keluarga yang sama.',
   },
   {
-    q: 'Mengapa GlowMatch memverifikasi pergelangan tangan selain wajah?',
-    a: 'Wajah manusia sering mengalami kemerahan sementara (sunburn, bekas jerawat, rosacea) atau pigmentasi luar yang bisa menipu kamera. Vena dan bagian dalam pergelangan tangan merupakan area paling terlindung yang mencerminkan rona dasar darah dan melanin sejati Anda, sehingga undertone dapat terkunci dengan akurat.',
+    q: 'Kenapa pergelangan tangan juga dipindai?',
+    a: 'Wajah sering mengalami kemerahan sementara (sunburn, bekas jerawat, rosacea) yang bisa menipu kamera. Bagian dalam pergelangan tangan lebih terlindung, sehingga rona dasar kulitmu terbaca lebih jujur dan undertone bisa dikunci dengan akurat.',
   },
   {
-    q: 'Bagaimana jika ruangan saya kurang terang saat mengambil foto?',
-    a: 'Anda dapat memanfaatkan lampu kilat/torch dari HP atau membawa lighting sendiri (seperti ring light atau lampu meja) dengan pencahayaan putih netral merata ke arah wajah, serta algoritma Gray-World White Balance kami yang siap mengoreksi bias temperatur warna.',
+    q: 'Bagaimana kalau ruangan kurang terang?',
+    a: 'Gunakan lampu HP atau lampu sendiri (ring light, lampu meja) dengan cahaya putih netral yang merata ke wajah. Algoritma Gray-World White Balance kami akan mengoreksi sisa bias temperatur warna.',
   },
   {
-    q: 'Apakah hasil analisis warna ini bisa diunduh?',
-    a: 'Tentu saja! Anda dapat langsung mengunduh Dokumen Laporan Analisis Warna Lengkap dalam format PDF berkualitas tinggi, yang mencakup identitas profil, palet warna utama, warna netral, serta warna yang sebaiknya dihindari untuk panduan praktis.',
+    q: 'Apakah hasil analisis bisa diunduh?',
+    a: 'Bisa. Kamu dapat mengunduh laporan PDF yang berisi profil, palet warna utama, warna netral, dan warna yang sebaiknya dihindari.',
   },
 ];
 
-const SEASONS_OVERVIEW = [
-  {
-    name: 'Spring',
-    family: 'Warm & Clear',
-    color: 'from-amber-400 to-rose-400',
-    desc: 'Cerah, hangat, dan berenergi. Cocok dengan warna peach, coral cerah, warm turquoise, dan emas kuning berkilau.',
-    tags: ['Light Spring', 'True Spring', 'Bright Spring'],
-  },
-  {
-    name: 'Summer',
-    family: 'Cool & Soft',
-    color: 'from-sky-400 to-pink-400',
-    desc: 'Sejuk, lembut, dan elegan. Menyatu indah dengan lavender, baby pink, powder blue, soft navy, dan perak.',
-    tags: ['Light Summer', 'True Summer', 'Soft Summer'],
-  },
-  {
-    name: 'Autumn',
-    family: 'Warm & Muted',
-    color: 'from-amber-600 to-orange-700',
-    desc: 'Hangat, kaya, dan membumi. Memancarkan aura mewah dengan terracotta, olive, mustard, rust, dan bronze.',
-    tags: ['Soft Autumn', 'True Autumn', 'Deep Autumn'],
-  },
-  {
-    name: 'Winter',
-    family: 'Cool & Deep / Bright',
-    color: 'from-blue-600 to-fuchsia-600',
-    desc: 'Kontras tajam, tegas, dan jernih. Sempurna dengan warna permata seperti ruby, sapphire, emerald, true black, dan icy white.',
-    tags: ['Bright Winter', 'True Winter', 'Deep Winter'],
-  },
+const SEASONS = [
+  { name: 'Spring', family: 'Hangat & cerah', colors: ['#f7b267', '#f79d84', '#f25c54', '#7bc9a6'], desc: 'Peach, coral cerah, warm turquoise, dan emas kuning.' },
+  { name: 'Summer', family: 'Sejuk & lembut', colors: ['#b8c4e8', '#e6b8cf', '#9fb7c9', '#c3aed6'], desc: 'Lavender, baby pink, powder blue, dan soft navy.' },
+  { name: 'Autumn', family: 'Hangat & redup', colors: ['#c0663f', '#8a8a4a', '#d4a24c', '#7a4a32'], desc: 'Terracotta, olive, mustard, rust, dan bronze.' },
+  { name: 'Winter', family: 'Sejuk & kontras', colors: ['#9b1d3a', '#1f3a93', '#0f7b5f', '#1b1b2f'], desc: 'Ruby, sapphire, emerald, hitam pekat, dan icy white.' },
+];
+
+const BENEFITS = [
+  { title: 'Wajah tampak cerah', desc: 'Warna yang tepat memantulkan cahaya ke wajah dan menyamarkan lingkar mata.', color: '#f69179' },
+  { title: 'Belanja lebih tepat', desc: 'Tidak ada lagi baju, hijab, atau lipstik yang akhirnya mengendap di lemari.', color: '#96a8e0' },
+  { title: 'Padu padan mudah', desc: 'Warna utama dan netralmu saling menyatu, jadi capsule wardrobe terbentuk sendiri.', color: '#aa2870' },
+  { title: 'Lebih percaya diri', desc: 'Tampil meyakinkan di presentasi, wawancara, kencan, sampai foto formal.', color: '#7e8a59' },
+];
+
+const STEPS = [
+  { title: 'Deteksi wajah & white balance', desc: 'YuNet memetakan kontur wajah, Gray-World menetralkan bias lampu ruangan.' },
+  { title: 'Verifikasi undertone', desc: 'Pergelangan tangan mengonfirmasi Warm, Cool, atau Neutral lalu mengunci keluarga season.' },
+  { title: 'Season & palet', desc: 'Model ensemble memilih season terbaik, lengkap dengan palet, busana, dan PDF.' },
+];
+
+const TIPS = [
+  { title: 'Cahaya merata', desc: 'Dekat jendela, ring light, atau lampu HP. Hindari bayangan gelap di wajah.' },
+  { title: 'Wajah natural', desc: 'Tanpa foundation tebal supaya warna asli kulit terbaca jelas.' },
+  { title: 'Lepas kacamata', desc: 'Rapikan rambut dari dahi agar proporsi wajah terlihat utuh.' },
 ];
 
 const Home = () => {
-  const [openFaq, setOpenFaq] = useState(null);
-
-  const toggleFaq = (idx) => {
-    setOpenFaq((prev) => (prev === idx ? null : idx));
-  };
+  const [openFaq, setOpenFaq] = useState(0);
 
   return (
-    <div className="space-y-24 py-8 lg:py-12">
-      
-      {/* 1. HERO SECTION */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-12 pt-4">
-        
-        {/* Kolom Kiri: Teks & CTA */}
-        <div className="flex-1 max-w-2xl">
-          <div className="inline-flex items-center gap-2 bg-purple-50 text-glowmatch-primary font-bold text-xs tracking-widest uppercase mb-6 px-4 py-2 rounded-full border border-purple-100">
-            <HiSparkles className="text-base" />
-            Personal Color Analysis AI Terdepan
-          </div>
-          
-          <div className="flex flex-col gap-2 mb-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-glowmatch-secondary tracking-tight leading-tight">
-              Temukan warna
-            </h1>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-glowmatch-secondary tracking-tight leading-tight">
-              yang membuatmu
-            </h1>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-500 to-orange-400">
-                lebih bercahaya.
-              </span>
-            </h1>
-          </div>
-          
-          <p className="text-base sm:text-lg text-gray-500 mb-8 leading-relaxed max-w-xl">
-            Kenali season warnamu lewat analisis AI yang membaca fitur wajah, warna kulit, dan undertone dari pergelangan tangan. Hasilnya personal dan bisa langsung kamu pakai.
+    <div className="pb-8">
+
+      {/* HERO */}
+      <section className="grid lg:grid-cols-[1.15fr_1fr] items-center gap-14 pt-10 lg:pt-16 lg:min-h-[min(calc(100svh-140px),760px)]">
+        <div>
+          <h1 className="gm-display gm-rise text-[56px] sm:text-[84px] lg:text-[112px]" style={{ '--d': '60ms' }}>
+            Warna yang<br />membuatmu<br /><em>bercahaya.</em>
+          </h1>
+          <p className="gm-lead gm-rise text-[15px] sm:text-[17px] max-w-md mt-8" style={{ '--d': '200ms' }}>
+            Season warnamu dibaca dari wajah, kulit, dan undertone pergelangan tangan. Hasilnya personal dan langsung bisa dipakai.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-12">
-            <Link 
-              to="/scan-wajah" 
-              className="inline-flex items-center gap-3 bg-glowmatch-primary hover:bg-purple-800 text-white px-8 py-4 rounded-2xl font-semibold transition-all shadow-lg shadow-purple-200 active:scale-95"
-            >
-              Mulai Analisis Sekarang
-              <FiArrowRight className="text-xl" />
+          <div className="gm-rise flex flex-wrap items-center gap-4 mt-10" style={{ '--d': '320ms' }}>
+            <Link to="/scan-wajah" className="gm-btn">
+              Mulai analisis <FiArrowRight />
             </Link>
-            <div className="text-xs text-gray-400 font-medium space-y-0.5">
-              <p className="flex items-center gap-1.5 text-gray-600 font-semibold">
-                <FiCheck className="text-emerald-500" /> Pengambilan kamera manual
-              </p>
-              <p>Hanya butuh waktu sekitar 2 menit</p>
-            </div>
-          </div>
-
-          {/* Indikator Langkah-langkah */}
-          <div className="flex flex-wrap items-center gap-3 md:gap-5 text-xs font-semibold text-gray-400">
-            <div className="flex items-center gap-2">
-              <span className="bg-purple-100 text-glowmatch-primary px-2.5 py-1 rounded-lg">01</span>
-              Pindai Wajah
-            </div>
-            <div className="hidden md:block w-8 h-[2px] bg-gray-200"></div>
-            <div className="flex items-center gap-2">
-              <span className="bg-purple-100 text-glowmatch-primary px-2.5 py-1 rounded-lg">02</span>
-              Cek Undertone
-            </div>
-            <div className="hidden md:block w-8 h-[2px] bg-gray-200"></div>
-            <div className="flex items-center gap-2">
-              <span className="bg-purple-100 text-glowmatch-primary px-2.5 py-1 rounded-lg">03</span>
-              Dapatkan Palet & PDF
-            </div>
+            <Link to="/penjelasan-analisis" className="gm-btn-ghost">
+              Pelajari teorinya
+            </Link>
           </div>
         </div>
 
-        {/* Kolom Kanan: Gambar Model dengan Frame Oval dan Efek Scanline */}
-        <div className="flex-1 flex justify-center w-full lg:justify-end">
-          <div className="relative w-full max-w-[380px] aspect-[3/4] rounded-t-full rounded-b-full overflow-hidden shadow-2xl ring-8 ring-purple-50 bg-orange-50 group">
-            
-            <img 
-              src={HeroModel} 
-              alt="Model GlowMatch" 
-              className="w-full h-full object-cover scale-95 object-top transition-transform duration-700 group-hover:scale-100"
-            />
-
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute w-full h-1 bg-glowmatch-primary opacity-50 blur-[1px] animate-[scan_3s_ease-in-out_infinite]" />
-              <div className="absolute w-full h-16 bg-gradient-to-b from-glowmatch-primary/0 via-glowmatch-primary/20 to-glowmatch-primary/0 animate-[scan_3s_ease-in-out_infinite] -translate-y-8" />
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      {/* 2. PENJELASAN: APA ITU PERSONAL COLOR ANALYSIS? */}
-      <section className="bg-white rounded-3xl p-8 sm:p-12 border border-gray-100 shadow-[0_4px_30px_rgb(0,0,0,0.02)] space-y-8">
-        <div className="max-w-3xl">
-          <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-2">Konsep & Teori Dasar</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-glowmatch-secondary mb-4">
-            Apa Itu Personal Color Analysis?
-          </h2>
-          <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-            Pernahkah Anda mengenakan pakaian tertentu dan tiba-tiba orang mengatakan Anda terlihat segar bersinar, namun di pakaian lain wajah Anda tampak lelah atau kusam? Itulah keajaiban <strong>Personal Color</strong>.
-          </p>
-          <p className="text-gray-600 leading-relaxed text-sm sm:text-base mt-3">
-            Warna personal ditentukan oleh interaksi antara rona dasar kulit (undertone), pigmen mata, warna rambut alami, dan tingkat kontras wajah. Sistem <strong>12 Seasonal Color</strong> mengelompokkannya ke dalam 4 keluarga season besar:
-          </p>
-        </div>
-
-        {/* Grid 4 Keluarga Season */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
-          {SEASONS_OVERVIEW.map((season) => (
-            <div key={season.name} className="bg-gray-50/70 border border-gray-100 rounded-2xl p-6 space-y-4 hover:shadow-md transition">
-              <div className={`w-12 h-2.5 rounded-full bg-gradient-to-r ${season.color}`} />
-              <div>
-                <h3 className="font-bold text-glowmatch-secondary text-base">{season.name}</h3>
-                <span className="text-xs font-semibold text-glowmatch-primary">{season.family}</span>
+        <div className="gm-rise relative flex justify-center lg:justify-end" style={{ '--d': '180ms' }}>
+          <div className="relative w-full max-w-[400px]">
+            {/* Empat titik warna logo mengorbit bingkai */}
+            {['#f69179', '#96a8e0', '#aa2870', '#7e8a59'].map((c, i) => (
+              <span
+                key={c}
+                className="absolute w-5 h-5 rounded-full shadow-md z-10 animate-[gm-drift-a_9s_ease-in-out_infinite]"
+                style={{
+                  background: c,
+                  animationDelay: `${i * -2.2}s`,
+                  ...[{ top: '6%', left: '-2%' }, { top: '18%', right: '-4%' }, { bottom: '20%', left: '-5%' }, { bottom: '4%', right: '8%' }][i],
+                }}
+              />
+            ))}
+            <div className="relative aspect-[3/4] rounded-[999px] overflow-hidden bg-[#f3e2d4] shadow-[0_40px_80px_-40px_rgba(90,40,100,.55)] group">
+              <img
+                src={HeroModel}
+                alt="Model GlowMatch"
+                className="w-full h-full object-cover object-top scale-105 transition-transform duration-[1.4s] ease-out group-hover:scale-100"
+              />
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute w-full h-px bg-paper/80 animate-scan" />
+                <div className="absolute w-full h-20 -translate-y-10 bg-gradient-to-b from-transparent via-paper/25 to-transparent animate-scan" />
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed">{season.desc}</p>
-              <div className="flex flex-wrap gap-1.5 pt-2">
-                {season.tags.map((tag) => (
-                  <span key={tag} className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-md font-medium">
-                    {tag}
-                  </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ALUR SINGKAT */}
+      <Reveal className="mt-20 border-y border-line py-6 flex flex-wrap justify-between gap-x-10 gap-y-3 text-[15px]">
+        {['Pindai wajah', 'Cek undertone', 'Palet season', 'Unduh PDF'].map((s, i) => (
+          <span key={s} className="flex items-baseline gap-3">
+            <span className="gm-index text-[22px]">0{i + 1}</span>{s}
+          </span>
+        ))}
+      </Reveal>
+
+      {/* APA ITU PERSONAL COLOR */}
+      <section className="mt-32 grid lg:grid-cols-[1fr_1.4fr] gap-12 lg:gap-20">
+        <Reveal>
+          <h2 className="gm-display text-[48px] sm:text-[64px]">
+            Empat keluarga,<br /><em>dua belas season.</em>
+          </h2>
+          <p className="gm-lead text-[15px] mt-6 max-w-md">
+            Warna personal ditentukan oleh undertone kulit, pigmen mata, warna rambut alami, dan kontras wajah.
+            Pernah merasa satu baju membuatmu segar, tapi baju lain membuatmu tampak lelah? Itulah alasannya.
+          </p>
+        </Reveal>
+
+        <div className="grid sm:grid-cols-2 gap-5">
+          {SEASONS.map((s, i) => (
+            <Reveal key={s.name} delay={i * 90} className="gm-card gm-card-hover p-7 group">
+              <div className="flex gap-1.5 mb-8">
+                {s.colors.map((c, j) => (
+                  <span
+                    key={c}
+                    className="w-9 h-9 rounded-full ring-2 ring-paper transition-transform duration-500 group-hover:-translate-y-1"
+                    style={{ background: c, transitionDelay: `${j * 50}ms` }}
+                  />
                 ))}
               </div>
-            </div>
+              <h3 className="gm-title text-[34px]">{s.name}</h3>
+              <p className="text-[14px] text-accent mt-1">{s.family}</p>
+              <p className="text-[14px] text-gray-500 leading-relaxed mt-4">{s.desc}</p>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* 3. MANFAAT MENGETAHUI WARNA PERSONAL */}
-      <section className="space-y-8">
-        <div className="text-center max-w-2xl mx-auto">
-          <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-2">Nilai Tambah</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-glowmatch-secondary mb-4">
-            Mengapa Mengetahui Warnamu Begitu Berharga?
+      {/* MANFAAT */}
+      <section className="mt-36">
+        <Reveal>
+          <h2 className="gm-display text-[48px] sm:text-[64px] max-w-3xl">
+            Warna yang harmonis mengubah caramu <em>melihat cermin.</em>
           </h2>
-          <p className="text-gray-500 text-sm">
-            Warna bukan sekadar tren sesaat—warna yang harmonis mengubah caramu melihat dirimu di cermin.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-7 rounded-3xl border border-gray-100 shadow-sm space-y-3">
-            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-xl">
-              <FiSmile />
-            </div>
-            <h3 className="font-bold text-glowmatch-secondary text-lg">Wajah Tampak Cerah Alami</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Warna yang tepat merefleksikan cahaya positif ke wajah, menyamarkan lingkaran hitam mata dan membuat kulit tampak glowing alami.
-            </p>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-gray-100 shadow-sm space-y-3">
-            <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl">
-              <FiShoppingBag />
-            </div>
-            <h3 className="font-bold text-glowmatch-secondary text-lg">Belanja Hemat & Tepat Sasaran</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Hindari membeli pakaian, jilbab, atau lipstik mahal yang akhirnya mengendap di lemari karena warnanya membuat wajah terlihat pucat.
-            </p>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-gray-100 shadow-sm space-y-3">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center text-xl">
-              <FiLayers />
-            </div>
-            <h3 className="font-bold text-glowmatch-secondary text-lg">Mix & Match Lebih Praktis</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Membangun capsule wardrobe menjadi sangat mudah karena seluruh palet warna utama dan netralmu saling menyatu tanpa tabrakan warna.
-            </p>
-          </div>
-
-          <div className="bg-white p-7 rounded-3xl border border-gray-100 shadow-sm space-y-3">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center text-xl">
-              <FiAward />
-            </div>
-            <h3 className="font-bold text-glowmatch-secondary text-lg">Pancaran Percaya Diri</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              Tampil memukau dan berkesan profesional dalam setiap momentum penting: presentasi kerja, wawancara, kencan, hingga foto formal.
-            </p>
-          </div>
+        </Reveal>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 mt-16">
+          {BENEFITS.map((b, i) => (
+            <Reveal key={b.title} delay={i * 90} className="border-t border-line pt-6">
+              <span className="block w-3 h-3 rounded-full mb-6" style={{ background: b.color }} />
+              <h3 className="gm-title text-[28px]">{b.title}</h3>
+              <p className="text-[14px] text-gray-500 leading-relaxed mt-3">{b.desc}</p>
+            </Reveal>
+          ))}
         </div>
       </section>
 
-      {/* 4. CARA KERJA GLOWMATCH AI */}
-      <section className="bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-3xl p-8 sm:p-14 shadow-xl space-y-10">
-        <div className="max-w-2xl">
-          <p className="text-amber-300 text-xs font-bold tracking-widest uppercase mb-2">Teknologi Mutakhir</p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Bagaimana GlowMatch AI Bekerja?
+      {/* CARA KERJA */}
+      <Reveal as="section" className="mt-36 rounded-[36px] bg-ink text-paper px-7 py-14 sm:px-14 sm:py-20 relative overflow-hidden">
+        <span className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-accent/40 blur-[90px] animate-[gm-drift-b_18s_ease-in-out_infinite]" aria-hidden="true" />
+        <span className="absolute -left-20 bottom-0 w-72 h-72 rounded-full bg-[#6b46c1]/40 blur-[90px] animate-[gm-drift-a_22s_ease-in-out_infinite]" aria-hidden="true" />
+        <h2 className="gm-display text-paper text-[44px] sm:text-[60px] relative">
+          Cara GlowMatch <em>membaca warnamu.</em>
+        </h2>
+        <div className="grid md:grid-cols-3 gap-10 mt-14 relative">
+          {STEPS.map((s, i) => (
+            <Reveal key={s.title} delay={i * 120} className="border-t border-white/15 pt-6">
+              <span className="gm-index text-[44px] text-[#d9b6d4]">0{i + 1}</span>
+              <h3 className="gm-title text-paper text-[26px] mt-4">{s.title}</h3>
+              <p className="text-[14px] text-[#cdbfdc] leading-relaxed mt-3">{s.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+      </Reveal>
+
+      {/* PERSIAPAN */}
+      <section className="mt-36 grid lg:grid-cols-[1fr_1.5fr] gap-12">
+        <Reveal>
+          <h2 className="gm-display text-[48px] sm:text-[60px]">
+            Sebelum <em>kamera menyala.</em>
           </h2>
-          <p className="text-purple-200 text-sm sm:text-base leading-relaxed">
-            Tidak seperti filter sederhana, GlowMatch mengombinasikan computer vision dan deep learning ensemble untuk hasil analisis objektif.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Langkah 01</span>
-            <h3 className="text-lg font-bold text-white">Deteksi Wajah & White Balance</h3>
-            <p className="text-xs text-purple-200 leading-relaxed">
-              Algoritma YuNet memetakan kontur wajah, sementara filter Gray-World menetralkan bias temperatur lampu ruangan agar warna kulit terbebas dari distorsi.
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Langkah 02</span>
-            <h3 className="text-lg font-bold text-white">Verifikasi Undertone Ganda</h3>
-            <p className="text-xs text-purple-200 leading-relaxed">
-              Sistem Gatekeeper menganalisis pergelangan tangan untuk mengonfirmasi rona darah dasar (Warm/Cool/Neutral), lalu mengunci season agar hasil tidak terkecoh kemerahan kulit sesaat.
-            </p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-3">
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wider block">Langkah 03</span>
-            <h3 className="text-lg font-bold text-white">Ensemble 12 Season & Swatch</h3>
-            <p className="text-xs text-purple-200 leading-relaxed">
-              Gabungan model klasifikasi menentukan season terbaikmu, menampilkan season mendekati untuk dicoba langsung lewat kamera, dan memberi rekomendasi warna serta busana yang bisa diunduh sebagai PDF.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. PANDUAN PERSIAPAN SEBELUM ANALISIS */}
-      <section className="bg-white rounded-3xl p-8 sm:p-12 border border-gray-100 shadow-sm space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-1">Tips Akurasi Maksimal</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-glowmatch-secondary">
-              Persiapan Sebelum Memulai Kamera
-            </h2>
-          </div>
-          <Link to="/scan-wajah" className="text-sm font-semibold text-glowmatch-primary hover:underline flex items-center gap-1.5 self-start md:self-auto">
-            Langsung ke Kamera <FiArrowRight />
+          <Link to="/scan-wajah" className="group mt-8 inline-flex items-center gap-3">
+            <span className="gm-orb"><FiArrowUpRight /></span>
+            <span className="text-[15px]">Langsung ke kamera</span>
           </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-          <div className="flex gap-4 items-start p-4 bg-purple-50/50 rounded-2xl border border-purple-100/50">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 text-lg">
-              <FiSun />
-            </div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-sm text-glowmatch-secondary">Pencahayaan Cukup</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Gunakan pencahayaan alami dekat jendela, bawa lighting sendiri (ring light), atau gunakan lampu HP agar wajah terang merata tanpa bayangan gelap.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4 items-start p-4 bg-purple-50/50 rounded-2xl border border-purple-100/50">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 text-lg">
-              <FiSmile />
-            </div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-sm text-glowmatch-secondary">Wajah Bersih Alami</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Sebaiknya tanpa foundation tebal agar warna asli pigmen kulit terlihat jelas oleh model kecerdasan buatan.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4 items-start p-4 bg-purple-50/50 rounded-2xl border border-purple-100/50">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 text-glowmatch-primary flex items-center justify-center shrink-0 text-lg">
-              <FiCamera />
-            </div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-sm text-glowmatch-secondary">Lepaskan Kacamata</h4>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Buka kacamata dan rapikan rambut dari area dahi agar sistem dapat membaca kontur dan proporsi wajah secara utuh.
-              </p>
-            </div>
-          </div>
+        </Reveal>
+        <div className="divide-y divide-line border-y border-line">
+          {TIPS.map((t, i) => (
+            <Reveal key={t.title} delay={i * 90} className="py-7 grid grid-cols-[56px_1fr] gap-4 group">
+              <span className="gm-index text-[34px] transition-colors group-hover:text-accent">0{i + 1}</span>
+              <div>
+                <h3 className="gm-title text-[26px]">{t.title}</h3>
+                <p className="text-[14px] text-gray-500 leading-relaxed mt-2">{t.desc}</p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
-      {/* 6. FAQ INTERAKTIF */}
-      <section className="max-w-3xl mx-auto space-y-6">
-        <div className="text-center">
-          <p className="text-glowmatch-primary text-xs font-bold tracking-widest uppercase mb-2">Tanya & Jawab</p>
-          <h2 className="text-3xl font-bold text-glowmatch-secondary">Pertanyaan yang Sering Diajukan</h2>
-        </div>
-
-        <div className="space-y-3 pt-4">
+      {/* FAQ */}
+      <section className="mt-36 max-w-3xl mx-auto">
+        <Reveal>
+          <h2 className="gm-display text-[48px] sm:text-[60px] text-center">
+            Yang sering <em>ditanyakan.</em>
+          </h2>
+        </Reveal>
+        <div className="mt-12 border-t border-line">
           {FAQS.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
-              <div 
-                key={idx} 
-                className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm transition"
-              >
+              <Reveal key={faq.q} delay={idx * 60} className="border-b border-line">
                 <button
                   type="button"
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full text-left px-6 py-5 flex items-center justify-between gap-4 font-semibold text-glowmatch-secondary text-sm hover:text-glowmatch-primary transition"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  aria-expanded={isOpen}
+                  className="w-full text-left py-6 flex items-center justify-between gap-6 text-[17px] sm:text-[19px] hover:text-accent transition-colors"
                 >
                   <span>{faq.q}</span>
-                  <FiChevronDown className={`text-base shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-glowmatch-primary' : 'text-gray-400'}`} />
+                  <FiPlus className={`shrink-0 text-xl transition-transform duration-500 ${isOpen ? 'rotate-45 text-accent' : 'text-gray-400'}`} />
                 </button>
-                {isOpen && (
-                  <div className="px-6 pb-5 pt-1 text-xs text-gray-500 leading-relaxed border-t border-gray-50">
-                    {faq.a}
+                <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className="overflow-hidden">
+                    <p className="pb-7 pr-10 text-[15px] text-gray-500 leading-relaxed">{faq.a}</p>
                   </div>
-                )}
-              </div>
+                </div>
+              </Reveal>
             );
           })}
         </div>
       </section>
 
-      {/* 7. BOTTOM BANNER CTA */}
-      <section className="bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white rounded-3xl p-10 sm:p-14 text-center space-y-6 shadow-xl">
-        <div className="max-w-xl mx-auto space-y-3">
-          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto text-2xl text-amber-300">
-            <HiSparkles />
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Siap Menemukan Warna Personalmu?
-          </h2>
-          <p className="text-purple-100 text-sm leading-relaxed">
-            Mulailah perjalanan gaya baru Anda hari ini. Ambil foto secara manual dengan kontrol penuh dan temukan palet yang memancarkan pesona terbaik Anda.
-          </p>
-        </div>
-
-        <div className="pt-2">
-          <Link
-            to="/scan-wajah"
-            className="inline-flex items-center gap-2.5 bg-white text-glowmatch-primary hover:bg-purple-50 px-8 py-4 rounded-xl font-bold transition shadow-lg text-sm sm:text-base active:scale-95"
-          >
-            Mulai Analisis Sekarang <FiArrowRight className="text-lg" />
-          </Link>
-        </div>
-      </section>
+      {/* CTA */}
+      <Reveal as="section" className="mt-36 text-center">
+        <h2 className="gm-display text-[52px] sm:text-[88px]">
+          Siap menemukan<br /><em>warnamu?</em>
+        </h2>
+        <Link to="/scan-wajah" className="gm-btn mt-10">
+          Mulai analisis sekarang <FiArrowRight />
+        </Link>
+      </Reveal>
 
     </div>
   );

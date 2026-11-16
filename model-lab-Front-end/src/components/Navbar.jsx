@@ -5,16 +5,17 @@ import { BsBookmarkFill } from 'react-icons/bs';
 import logoTile from '../assets/logo-tile.webp';
 import { useAnalysis } from '../context/AnalysisContext';
 
+// Label sentence case dan sama dengan navigasi di landing.
 const NAV_LINKS = [
-  { name: 'Beranda', path: '/beranda' },
-  { name: 'Hasil Warna', path: '/hasil' },
+  { name: 'Tentang', path: '/beranda' },
+  { name: 'Hasil warna', path: '/hasil' },
   { name: 'Riwayat', path: '/riwayat' },
-  { name: 'Teori Warna', path: '/penjelasan-analisis' },
+  { name: 'Teori warna', path: '/penjelasan-analisis' },
 ];
 
 const PROFILE_MENU = [
   { name: 'Profil', path: '/profil', icon: FiUser },
-  { name: 'Simpan Hasil', path: '/profil?tab=simpan', icon: BsBookmarkFill },
+  { name: 'Hasil tersimpan', path: '/profil?tab=simpan', icon: BsBookmarkFill },
 ];
 
 const Navbar = () => {
@@ -59,7 +60,7 @@ const Navbar = () => {
   return (
     <nav
       className={`sticky top-0 z-40 transition-[background-color,border-color,backdrop-filter] duration-300 border-b ${
-        scrolled ? 'bg-paper/80 backdrop-blur-xl border-line' : 'bg-transparent border-transparent'
+        scrolled ? 'bg-paper/95 backdrop-blur-xl border-line' : 'bg-transparent border-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
@@ -85,7 +86,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`relative text-[14px] py-2 transition-colors ${active ? 'text-ink' : 'text-gray-500 hover:text-ink'}`}
+                  className={`relative text-small font-medium py-2 transition-colors ${active ? 'text-ink' : 'text-gray-600 hover:text-ink'}`}
                 >
                   {link.name}
                   <span
@@ -105,10 +106,10 @@ const Navbar = () => {
                 aria-expanded={menuOpen}
                 className="flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full border border-[#d6c6d6] hover:bg-[#f0e5ef] transition"
               >
-                <span className="w-7 h-7 rounded-full bg-ink text-paper flex items-center justify-center text-[13px]">
+                <span className="w-7 h-7 rounded-full bg-ink text-paper flex items-center justify-center text-label">
                   {initial}
                 </span>
-                <span className="text-[13px] hidden sm:inline-block max-w-[120px] truncate">{displayName}</span>
+                <span className="text-small font-medium hidden sm:inline-block max-w-[120px] truncate">{displayName}</span>
                 <FiChevronDown className={`text-gray-500 text-sm transition-transform duration-300 ${menuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -123,9 +124,9 @@ const Navbar = () => {
                       to={path}
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[14px] hover:bg-chip transition"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-small hover:bg-chip transition"
                     >
-                      <Icon className="text-accent text-[13px]" />
+                      <Icon className="text-accent text-small" aria-hidden="true" />
                       {name}
                     </Link>
                   ))}
@@ -152,7 +153,7 @@ const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 onClick={() => setMobileOpen(false)}
-                className={`gm-rise py-3 border-b border-line font-serif text-[28px] tracking-tight ${isActive(link.path) ? 'text-ink' : 'text-gray-500'}`}
+                className={`gm-rise py-3 border-b border-line text-title ${isActive(link.path) ? 'text-ink' : 'text-gray-600'}`}
                 style={{ '--d': `${i * 50}ms` }}
               >
                 {link.name}

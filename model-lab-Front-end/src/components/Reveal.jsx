@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-/** Bagian yang naik perlahan saat pertama kali masuk layar. */
+// Jeda bertahap dibatasi agar daftar panjang tidak menunggu lama sebelum terbaca.
+const MAX_DELAY_MS = 180;
+
+/** Bagian yang muncul (fade singkat) saat pertama kali masuk layar. */
 export default function Reveal({ as: Tag = 'div', delay = 0, className = '', style, children, ...rest }) {
   const ref = useRef(null);
   // Tanpa IntersectionObserver (browser lama): langsung tampil.
@@ -26,7 +29,7 @@ export default function Reveal({ as: Tag = 'div', delay = 0, className = '', sty
     <Tag
       ref={ref}
       className={`gm-reveal${shown ? ' is-in' : ''} ${className}`}
-      style={{ '--d': `${delay}ms`, ...style }}
+      style={{ '--d': `${Math.min(delay, MAX_DELAY_MS)}ms`, ...style }}
       {...rest}
     >
       {children}

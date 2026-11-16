@@ -54,8 +54,23 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"DM Sans Variable"', '"DM Sans"', 'system-ui', 'sans-serif'],
         serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+      },
+      // Skala tipografi tunggal (9 langkah). Pakai HANYA token ini, bukan text-[NNpx].
+      // Serif (font-serif / gm-display) hanya untuk display-xl, display, headline (>= 32px);
+      // level di bawahnya memakai DM Sans dengan bobot 500 supaya hierarki tidak hanya dari ukuran.
+      // Satuan rem: ikut pengaturan ukuran huruf browser pengguna (WCAG 1.4.4).
+      fontSize: {
+        'display-xl': ['clamp(3.5rem, 6.4vw, 7rem)', { lineHeight: '1', letterSpacing: '-0.025em' }], // 56–112px, hero
+        display: ['clamp(2.75rem, 4.6vw, 4.5rem)', { lineHeight: '1.04', letterSpacing: '-0.02em' }], // 44–72px, judul halaman
+        headline: ['clamp(2rem, 3.2vw, 3rem)', { lineHeight: '1.1', letterSpacing: '-0.015em' }], // 32–48px, judul section
+        'title-lg': ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.01em', fontWeight: '500' }], // 24px, judul kartu
+        title: ['1.25rem', { lineHeight: '1.35', letterSpacing: '-0.005em', fontWeight: '500' }], // 20px, sub-judul
+        'body-lg': ['1.125rem', { lineHeight: '1.6' }], // 18px, lead
+        body: ['1rem', { lineHeight: '1.6' }], // 16px, paragraf
+        small: ['0.875rem', { lineHeight: '1.5' }], // 14px, nav, tombol, metadata
+        label: ['0.75rem', { lineHeight: '1.4', letterSpacing: '0.01em', fontWeight: '500' }], // 12px, batas minimum
       },
       keyframes: {
         scan: {

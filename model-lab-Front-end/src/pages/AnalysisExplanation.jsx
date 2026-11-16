@@ -7,34 +7,25 @@ const UNDERTONE_LABEL = { warm: 'hangat (warm)', cool: 'dingin (cool)', neutral:
 
 const FAMILIES = [
   {
-    name: 'Warm',
-    accent: 'hangat.',
+    name: 'Hangat',
+    en: 'Warm',
     colors: ['#f7b267', '#f69179', '#d4a24c', '#c0663f'],
-    desc: 'Rona dasar keemasan, persik, dan kuning. Kulit tampak paling hidup dengan warna berpigmen kuning atau oranye.',
-    seasons: [['Spring', 'cerah, jernih, ringan'], ['Autumn', 'hangat, pekat, membumi']],
+    desc: 'Rona dasar keemasan atau persik. Paling hidup dengan warna berpigmen kuning dan oranye.',
+    seasons: [['Spring', 'Cerah, jernih, ringan'], ['Autumn', 'Hangat, pekat, membumi']],
   },
   {
-    name: 'Cool',
-    accent: 'dingin.',
+    name: 'Dingin',
+    en: 'Cool',
     colors: ['#96a8e0', '#c3aed6', '#e6b8cf', '#1f3a93'],
-    desc: 'Rona dasar biru dan merah muda. Warna berpigmen biru atau ungu menetralkan kemerahan dan menonjolkan kejernihan kulit.',
-    seasons: [['Summer', 'sejuk, lembut, redup'], ['Winter', 'kontras, tegas, jernih']],
+    desc: 'Rona dasar merah muda atau kebiruan. Paling hidup dengan warna berpigmen biru dan ungu.',
+    seasons: [['Summer', 'Sejuk, lembut, redup'], ['Winter', 'Kontras, tegas, jernih']],
   },
 ];
 
-const GATEKEEPER = [
-  {
-    title: 'Menghindari bias kemerahan wajah',
-    desc: 'Sunburn, jerawat, rosacea, atau cuaca panas bisa membuat undertone Warm terbaca sebagai Cool bila AI hanya melihat wajah.',
-  },
-  {
-    title: 'Mengunci keluarga season',
-    desc: 'Pergelangan Warm membatasi hasil ke Spring & Autumn. Pergelangan Cool membatasinya ke Summer & Winter.',
-  },
-  {
-    title: 'Wajah menentukan season spesifik',
-    desc: 'Setelah keluarga terkunci, model wajah (DINOv3 + SegFormer) membaca mata, bibir, rambut, dan kontras untuk memilih season yang paling pas.',
-  },
+const WRIST_REASONS = [
+  { title: 'Wajah bisa menipu', desc: 'Kemerahan karena jerawat, sunburn, atau udara panas bisa membuat kulit hangat terbaca dingin.' },
+  { title: 'Mengunci keluarga season', desc: 'Hangat membatasi hasil ke Spring & Autumn, dingin ke Summer & Winter.' },
+  { title: 'Wajah memilih season', desc: 'Setelah itu, warna mata, bibir, rambut, dan kontras wajah menentukan season yang paling pas.' },
 ];
 
 export default function AnalysisExplanation() {
@@ -45,40 +36,39 @@ export default function AnalysisExplanation() {
   return (
     <div className="pt-8 pb-4 max-w-5xl mx-auto">
 
-      <Link to="/hasil" className="gm-link gm-rise text-[14px] text-gray-500">
-        <FiArrowLeft /> Kembali ke hasil
-      </Link>
+      {/* Satu tautan kembali, hanya bila memang ada hasil untuk dituju. */}
+      {result && (
+        <Link to="/hasil" className="gm-link gm-rise text-small text-gray-600">
+          <FiArrowLeft aria-hidden="true" /> Kembali ke hasil
+        </Link>
+      )}
 
-      <h1 className="gm-display gm-rise text-[56px] sm:text-[88px] mt-8 max-w-4xl" style={{ '--d': '80ms' }}>
-        Di balik <em>season warnamu.</em>
+      <h1 className="gm-display gm-rise text-display mt-8 max-w-4xl" style={{ '--d': '80ms' }}>
+        Di balik <em>season warnamu</em>
       </h1>
-      <p className="gm-lead gm-rise text-[16px] sm:text-[17px] max-w-xl mt-8" style={{ '--d': '180ms' }}>
-        Undertone kulit ditentukan oleh hemoglobin (merah kebiruan) dan karoten serta melanin (kuning keemasan) di bawah lapisan kulit.
-        Kombinasinya dengan fitur wajah menentukan satu dari dua belas season.
+      <p className="gm-lead gm-rise text-body-lg max-w-xl mt-6" style={{ '--d': '180ms' }}>
+        Undertone kulitmu, dipadukan dengan warna mata, rambut, dan kontras wajah, menentukan satu dari dua belas season.
       </p>
 
-      {/* WARM VS COOL */}
-      <section className="mt-28 grid md:grid-cols-2 gap-5">
+      {/* HANGAT VS DINGIN — subgrid menjaga baris season di kedua kartu tetap sejajar */}
+      <section className="mt-20 grid md:grid-cols-2 gap-5">
         {FAMILIES.map((f, i) => (
-          <Reveal key={f.name} delay={i * 120} className="gm-card gm-card-hover p-8 sm:p-10 group">
-            <div className="flex -space-x-2 mb-10">
-              {f.colors.map((c, j) => (
-                <span
-                  key={c}
-                  className="w-11 h-11 rounded-full ring-[3px] ring-paper transition-transform duration-500 group-hover:-translate-y-1.5"
-                  style={{ background: c, transitionDelay: `${j * 60}ms` }}
-                />
+          <Reveal key={f.name} delay={i * 60} className="gm-card p-8 sm:p-10 grid grid-rows-subgrid row-span-4 gap-0">
+            <div className="flex -space-x-2" aria-hidden="true">
+              {f.colors.map((c) => (
+                <span key={c} className="w-11 h-11 rounded-full ring-[3px] ring-paper" style={{ background: c }} />
               ))}
             </div>
-            <h2 className="gm-display text-[48px]">
-              {f.name}, <em>{f.accent}</em>
+            <h2 className="mt-8 flex items-baseline gap-3">
+              <span className="text-title-lg">{f.name}</span>
+              <span className="text-small text-gray-600">{f.en}</span>
             </h2>
-            <p className="text-[15px] text-gray-500 leading-relaxed mt-5">{f.desc}</p>
-            <dl className="mt-8 border-t border-line divide-y divide-line">
+            <p className="text-body text-gray-600 mt-3">{f.desc}</p>
+            <dl className="mt-6 border-t border-line divide-y divide-line">
               {f.seasons.map(([name, trait]) => (
-                <div key={name} className="flex items-baseline justify-between gap-4 py-4">
-                  <dt className="font-serif text-[26px]">{name}</dt>
-                  <dd className="text-[14px] text-gray-500 text-right">{trait}</dd>
+                <div key={name} className="py-4">
+                  <dt className="text-title">{name}</dt>
+                  <dd className="text-small text-gray-600 mt-0.5">{trait}</dd>
                 </div>
               ))}
             </dl>
@@ -87,45 +77,40 @@ export default function AnalysisExplanation() {
       </section>
 
       <Reveal className="mt-5 rounded-[28px] border border-dashed border-[#d6c6d6] p-8 sm:p-10">
-        <h2 className="gm-title text-[32px]">Bagaimana dengan undertone netral?</h2>
-        <p className="text-[15px] text-gray-500 leading-relaxed mt-4 max-w-3xl">
-          Kulit netral menyeimbangkan pigmen keemasan dan merah muda kebiruan. Kamu bebas menjelajah kedua keluarga,
-          dengan fokus pada tingkat kontras (terang atau gelap) dan kejernihan warna (jernih atau redup).
+        <h2 className="text-title-lg">Bagaimana dengan undertone netral?</h2>
+        <p className="text-body text-gray-600 mt-3 max-w-2xl">
+          Kulit netral seimbang di antara keduanya, jadi kamu bisa memakai warna dari dua keluarga. Fokus pada kontras dan kejernihannya.
         </p>
       </Reveal>
 
-      {/* GATEKEEPER */}
-      <section className="mt-32 grid lg:grid-cols-[1fr_1.4fr] gap-12">
+      {/* KENAPA PERGELANGAN TANGAN */}
+      <section className="mt-32 grid lg:grid-cols-[1fr_1.4fr] gap-10 lg:gap-12">
         <Reveal>
-          <h2 className="gm-display text-[48px] sm:text-[60px]">
-            Kenapa <em>pergelangan tangan?</em>
-          </h2>
+          <h2 className="gm-display text-headline">Kenapa pergelangan tangan?</h2>
         </Reveal>
-        <div className="border-t border-line">
-          {GATEKEEPER.map((g, i) => (
-            <Reveal key={g.title} delay={i * 100} className="border-b border-line py-8 grid grid-cols-[56px_1fr] gap-4 group">
-              <span className="gm-index text-[38px] transition-colors group-hover:text-accent">0{i + 1}</span>
+        <ol className="border-t border-line">
+          {WRIST_REASONS.map((g, i) => (
+            <li key={g.title} className="border-b border-line py-7 grid grid-cols-[48px_1fr] gap-4">
+              <span className="gm-index text-headline" aria-hidden="true">0{i + 1}</span>
               <div>
-                <h3 className="gm-title text-[28px]">{g.title}</h3>
-                <p className="text-[15px] text-gray-500 leading-relaxed mt-3">{g.desc}</p>
+                <h3 className="text-title">{g.title}</h3>
+                <p className="text-body text-gray-600 mt-2">{g.desc}</p>
               </div>
-            </Reveal>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
-      {/* CATATAN SESI */}
+      {/* CATATAN SESI — hanya bila ada hasil */}
       {result && gate && (
         <Reveal as="section" className="mt-32 rounded-[36px] bg-ink text-paper px-7 py-12 sm:px-12 sm:py-14 relative overflow-hidden">
           <span className="absolute -left-24 -bottom-28 w-80 h-80 rounded-full bg-[#6b46c1]/45 blur-[90px] animate-[gm-drift-a_20s_ease-in-out_infinite]" aria-hidden="true" />
-          <h2 className="gm-display text-paper text-[44px] sm:text-[56px] relative">
-            Catatan untuk <em>hasilmu.</em>
-          </h2>
+          <h2 className="gm-display text-paper text-headline relative">Catatan untuk hasilmu</h2>
 
           <div className="relative mt-10 grid md:grid-cols-2 gap-x-10 gap-y-8">
             <div className="border-t border-white/15 pt-6">
-              <h3 className="font-serif text-[26px]">Undertone</h3>
-              <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
+              <h3 className="text-title">Undertone</h3>
+              <p className="text-body text-[#cdbfdc] mt-2">
                 Terdeteksi {UNDERTONE_LABEL[gate.undertone] || gate.undertone}.
                 {gate.applied
                   ? ` Palet dikunci ke keluarga ${gate.allowed_families.join(' / ')}.`
@@ -135,40 +120,35 @@ export default function AnalysisExplanation() {
 
             {gate.conflict && (
               <div className="border-t border-coral/50 pt-6">
-                <h3 className="font-serif text-[26px] text-[#f5c2b4]">Wajah dan tangan berbeda</h3>
-                <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
-                  Rona wajah dan pergelangan sedikit berbeda, biasanya karena pantulan lampu atau bayangan ponsel.
-                  Coba ulangi di dekat jendela untuk hasil yang lebih presisi.
+                <h3 className="text-title text-[#f5c2b4]">Wajah dan tangan berbeda</h3>
+                <p className="text-body text-[#cdbfdc] mt-2">
+                  Biasanya karena pantulan lampu atau bayangan. Ulangi di dekat jendela untuk hasil yang lebih presisi.
                 </p>
               </div>
             )}
 
             {season?.confidence_status === 'perlu_konfirmasi' && !gate.conflict && (
               <div className="border-t border-coral/50 pt-6">
-                <h3 className="font-serif text-[26px] text-[#f5c2b4]">Coba season terdekat</h3>
-                <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
-                  Fitur wajahmu cukup fleksibel. Pakai &ldquo;Coba live&rdquo; di halaman hasil untuk membandingkan palet season terdekat langsung di wajahmu.
+                <h3 className="text-title text-[#f5c2b4]">Coba season terdekat</h3>
+                <p className="text-body text-[#cdbfdc] mt-2">
+                  Pakai mode Live di halaman hasil untuk membandingkan palet season terdekat di wajahmu.
                 </p>
               </div>
             )}
 
             <div className="border-t border-white/15 pt-6">
-              <h3 className="font-serif text-[26px]">Uji sendiri di cermin</h3>
-              <p className="text-[15px] text-[#cdbfdc] leading-relaxed mt-3">
-                Dekatkan kain emas dan perak (atau oranye dan fuchsia) ke bawah dagu di pagi hari.
-                Warna yang membuat kantung mata memudar dan bibir tampak segar adalah keluargamu.
+              <h3 className="text-title">Uji sendiri di cermin</h3>
+              <p className="text-body text-[#cdbfdc] mt-2">
+                Dekatkan kain emas dan perak ke bawah dagu. Warna yang membuat wajah tampak segar menunjukkan keluargamu.
               </p>
             </div>
           </div>
         </Reveal>
       )}
 
-      <Reveal className="mt-20 flex flex-wrap items-center justify-between gap-6 border-t border-line pt-10">
-        <Link to="/hasil" className="gm-btn">
-          <FiArrowLeft /> Kembali ke palet
-        </Link>
-        <Link to="/scan-wajah" className="gm-link text-[15px]">
-          Pindai foto baru <FiArrowRight />
+      <Reveal className="mt-20 border-t border-line pt-10">
+        <Link to="/scan-wajah" className="gm-btn">
+          {result ? 'Analisis ulang' : 'Mulai analisis'} <FiArrowRight aria-hidden="true" />
         </Link>
       </Reveal>
     </div>

@@ -10,11 +10,11 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Item | Value |
 |---|---:|
-| Total experiments | 15 |
-| topic-a | 9 |
+| Total experiments | 17 |
+| topic-a | 11 |
 | topic-b | 6 |
-| Latest experiment | `EXP-20261023-192230-45bf` |
-| README generated | 2026-11-16 12:28:29 UTC |
+| Latest experiment | `EXP-20261117-004154-09d5` |
+| README generated | 2026-11-17 00:59:53 SE Asia Standard Time |
 
 ---
 
@@ -22,6 +22,8 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 
 | Experiment ID | Topic | Model | Primary Metric | Value | Status |
 |---|---|---|---|---:|---|
+| `EXP-20261117-004154-09d5` | topic-a | Hierarchical Ensemble v3 (resnet50, effnetv2_s, convnext_t, unet_r34, patch_attn, lgb_flat, lgb_hier) -> Soft voting Optuna (family) + chromatic arbiter | f1 | 0.3350 | SUCCESS |
+| `EXP-20261115-155423-d1ca` | topic-a | Hierarchical Ensemble v3 (resnet50, effnetv2_s, convnext_t, unet_r34, patch_attn, lgb_flat, lgb_hier) -> Soft voting Optuna (family) | f1 | 0.3297 | SUCCESS |
 | `EXP-20261023-192230-45bf` | topic-a | DINOv3 ViT-S/16 Fusion + fitur tahan white balance | f1 | 0.3282 | SUCCESS |
 | `EXP-20261020-111752-4ace` | topic-a | Audit emb_color_lr (DINOv3 ViT-S frozen + Lab) | f1 | 0.3062 | SUCCESS |
 | `EXP-20261015-154748-c376` | topic-a | DINOv3 ViT-B/16 + ViT-S/16 Fusion | f1 | 0.3246 | SUCCESS |
@@ -30,19 +32,19 @@ Automated experiment tracking and modelling registry for Glowmatch Platform Mode
 | `EXP-20261008-163613-7e87` | topic-b | Ensemble(svm (tuned), convnext_finetune) on dinov2_vits14 + color | f1 | 68.9834 | SUCCESS |
 | `EXP-20261008-145741-57f4` | topic-b | ConvNeXt-Tiny + XGBoost | f1 | 60.6798 | SUCCESS |
 | `EXP-20261007-202830-6697` | topic-b | Enhanced Journal CNN | f1 | 50.5019 | SUCCESS |
-| `EXP-20261007-200149-7175` | topic-b | ResNet-50 | f1 | 53.4304 | SUCCESS |
-| `EXP-20261007-194428-8b7e` | topic-b | ConvNeXt V2 | f1 | 55.7011 | SUCCESS |
 
 ---
 
 ## topic-a
 
-**Experiments:** 9
+**Experiments:** 11
 
 **Owner:** Fatih Itsbatul Haq
 
 | Experiment ID | Model | Metric | Value | Date |
 |---|---|---|---:|---|
+| `EXP-20261117-004154-09d5` | Hierarchical Ensemble v3 (resnet50, effnetv2_s, convnext_t, unet_r34, patch_attn, lgb_flat, lgb_hier) -> Soft voting Optuna (family) + chromatic arbiter | f1 | 0.3350 | 2026-11-17T00:41:54.774940+07:00 |
+| `EXP-20261115-155423-d1ca` | Hierarchical Ensemble v3 (resnet50, effnetv2_s, convnext_t, unet_r34, patch_attn, lgb_flat, lgb_hier) -> Soft voting Optuna (family) | f1 | 0.3297 | 2026-11-15T15:54:23.822524+07:00 |
 | `EXP-20261023-192230-45bf` | DINOv3 ViT-S/16 Fusion + fitur tahan white balance | f1 | 0.3282 | 2026-10-23T19:22:30.803613+07:00 |
 | `EXP-20261020-111752-4ace` | Audit emb_color_lr (DINOv3 ViT-S frozen + Lab) | f1 | 0.3062 | 2026-10-20T11:17:52.304704+07:00 |
 | `EXP-20261015-154748-c376` | DINOv3 ViT-B/16 + ViT-S/16 Fusion | f1 | 0.3246 | 2026-10-15T15:47:48.912328+07:00 |

@@ -6,7 +6,7 @@ on:
       - model_history       # Hanya branch pencatatan; Master (pengembangan platform) tidak tersentuh
     paths:
       - 'registry/**/*.json'
-      - '*.ipynb'           # Trigger menyala jika file notebook masuk ke root (lokasi Kaggle)
+      - '*'                 # File apa pun di root: Kaggle bisa menyimpan notebook tanpa ekstensi .ipynb
       - 'experiments/**/*.ipynb'
       - 'scripts/**'
   workflow_dispatch:        # Bisa dijalankan manual dari tab Actions

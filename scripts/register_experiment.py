@@ -17,8 +17,13 @@ VALID_TOPICS = {"topic-a", "topic-b"}
 VALID_STATUSES = {"SUCCESS"}
 
 
-def generate_experiment_id() -> str:
-    now = datetime.now(ZoneInfo("Asia/Jakarta"))
+def generate_experiment_id(when: datetime | None = None) -> str:
+    """ID berformat EXP-YYYYMMDD-HHMMSS-XXXX (WIB).
+
+    `when` = waktu eksperimen sebenarnya (mis. selesai dijalankan di Kaggle).
+    Tanpa `when`, dipakai waktu sekarang.
+    """
+    now = (when or datetime.now(ZoneInfo("Asia/Jakarta"))).astimezone(ZoneInfo("Asia/Jakarta"))
     timestamp = now.strftime("%Y%m%d-%H%M%S")
     random_part = uuid.uuid4().hex[:4]
     return f"EXP-{timestamp}-{random_part}"

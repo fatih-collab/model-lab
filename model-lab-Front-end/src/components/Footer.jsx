@@ -48,7 +48,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link to="/hasil" className="hover:text-glowmatch-primary transition flex items-center gap-1.5">
-                  <HiSparkles className="text-xs text-gray-400" /> Palet Musim Saya
+                  <HiSparkles className="text-xs text-gray-400" /> Palet Season Saya
                 </Link>
               </li>
               <li>
@@ -65,7 +65,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/penjelasan-analisis" className="hover:text-glowmatch-primary transition flex items-center gap-1.5">
-                  <FiBookOpen className="text-xs text-gray-400" /> Teori 12 Musim Warna
+                  <FiBookOpen className="text-xs text-gray-400" /> Teori 12 Season Warna
                 </Link>
               </li>
               <li>

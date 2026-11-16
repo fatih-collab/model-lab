@@ -38,7 +38,7 @@ export default function AnalysisExplanation() {
           Penjelasan Lanjutan Teori Warna & Catatan Sistem
         </h1>
         <p className="text-gray-500 text-sm sm:text-base leading-relaxed">
-          Pahami bagaimana kombinasi rona dasar kulit (undertone) dan fitur wajahmu menentukan 12 musim warna secara presisi.
+          Pahami bagaimana kombinasi rona dasar kulit (undertone) dan fitur wajahmu menentukan season warnamu dari 12 pilihan.
         </p>
       </div>
 
@@ -76,9 +76,9 @@ export default function AnalysisExplanation() {
             </p>
 
             <div className="bg-white/80 p-4 rounded-xl border border-amber-100 text-xs space-y-1.5">
-              <strong className="text-amber-900 block font-bold">Mengunci ke 2 Musim:</strong>
-              <p className="text-gray-600">• <strong>Spring (Musim Semi):</strong> Karakter cerah, jernih, dan ringan.</p>
-              <p className="text-gray-600">• <strong>Autumn (Musim Gugur):</strong> Karakter hangat, pekat, dan membumi (earthy).</p>
+              <strong className="text-amber-900 block font-bold">Mengarah ke 2 Season:</strong>
+              <p className="text-gray-600">• <strong>Spring:</strong> Karakter cerah, jernih, dan ringan.</p>
+              <p className="text-gray-600">• <strong>Autumn:</strong> Karakter hangat, pekat, dan membumi (earthy).</p>
             </div>
           </div>
 
@@ -99,9 +99,9 @@ export default function AnalysisExplanation() {
             </p>
 
             <div className="bg-white/80 p-4 rounded-xl border border-blue-100 text-xs space-y-1.5">
-              <strong className="text-blue-900 block font-bold">Mengunci ke 2 Musim:</strong>
-              <p className="text-gray-600">• <strong>Summer (Musim Panas):</strong> Karakter sejuk, lembut, dan berdebu (muted).</p>
-              <p className="text-gray-600">• <strong>Winter (Musim Dingin):</strong> Karakter kontras tinggi, tegas, dan jernih.</p>
+              <strong className="text-blue-900 block font-bold">Mengarah ke 2 Season:</strong>
+              <p className="text-gray-600">• <strong>Summer:</strong> Karakter sejuk, lembut, dan berdebu (muted).</p>
+              <p className="text-gray-600">• <strong>Winter:</strong> Karakter kontras tinggi, tegas, dan jernih.</p>
             </div>
           </div>
 
@@ -148,7 +148,7 @@ export default function AnalysisExplanation() {
               2
             </div>
             <div>
-              <strong className="text-glowmatch-secondary block font-bold mb-1">Penguncian Keluarga Musim (Rule-based Gatekeeper)</strong>
+              <strong className="text-glowmatch-secondary block font-bold mb-1">Penguncian Keluarga Season (Rule-based Gatekeeper)</strong>
               Ketika pergelangan tangan terdeteksi <strong>Warm</strong>, Gatekeeper secara ketat membatasi hasil akhir hanya pada keluarga <strong>Spring & Autumn</strong>. Begitu pula jika <strong>Cool</strong>, hasil dikunci ke <strong>Summer & Winter</strong>.
             </div>
           </div>
@@ -158,8 +158,8 @@ export default function AnalysisExplanation() {
               3
             </div>
             <div>
-              <strong className="text-glowmatch-secondary block font-bold mb-1">Fitur Wajah Menentukan Subtipe & Musim Spesifik</strong>
-              Setelah keluarga musim terkunci oleh pergelangan tangan, model AI wajah (DINOv3 + SegFormer) menganalisis warna mata, bibir, rambut, dan kontras untuk memilih musim paling ideal di antara varian yang ada.
+              <strong className="text-glowmatch-secondary block font-bold mb-1">Fitur Wajah Menentukan Subtipe & Season Spesifik</strong>
+              Setelah keluarga season dikunci lewat pergelangan tangan, model AI wajah (DINOv3 + SegFormer) membaca warna mata, bibir, rambut, dan kontras wajah untuk memilih season yang paling pas.
             </div>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function AnalysisExplanation() {
                 <p className="text-gray-600 leading-relaxed">
                   Undertone Anda terdeteksi <strong>{UNDERTONE_LABEL[gate.undertone] || gate.undertone}</strong>.
                   {gate.applied ? (
-                    ` Hasil ini mengunci palet Anda ke keluarga musim ${gate.allowed_families.join(' / ')}.`
+                    ` Hasil ini mengunci palet Anda ke keluarga season ${gate.allowed_families.join(' / ')}.`
                   ) : (
                     ` Hasil mengikuti kecenderungan alami fitur wajah (${UNDERTONE_LABEL[gate.lean] || gate.lean}).`
                   )}
@@ -214,9 +214,9 @@ export default function AnalysisExplanation() {
               <div className="border border-amber-200 bg-amber-50/80 rounded-2xl p-5 flex items-start gap-3.5">
                 <FiAlertTriangle className="text-amber-600 text-xl shrink-0 mt-0.5" />
                 <div className="space-y-1 text-xs sm:text-sm">
-                  <strong className="text-amber-900 font-bold block">Eksplorasi Musim Tetangga</strong>
+                  <strong className="text-amber-900 font-bold block">Coba Season Mendekati</strong>
                   <p className="text-amber-800 leading-relaxed">
-                    Fitur wajah Anda memiliki karakteristik yang sangat fleksibel mendekati musim tetangga. Kami menyarankan untuk memanfaatkan fitur <strong>"Coba Live"</strong> di halaman hasil untuk membandingkan palet musim tetangga Anda di layar secara langsung.
+                    Fitur wajahmu cukup fleksibel dan juga cocok dengan season mendekati. Coba fitur <strong>"Coba Live"</strong> di halaman hasil untuk membandingkan palet season mendekati langsung di wajahmu.
                   </p>
                 </div>
               </div>

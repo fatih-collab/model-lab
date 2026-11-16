@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiClock, FiArrowRight, FiTrash2, FiUser, FiDatabase } from 'react-icons/fi';
+import { FiClock, FiArrowRight, FiTrash2, FiUser, FiDatabase, FiChevronDown } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
+import PaletteSection, { palettesFromHistory } from '../components/PaletteSection';
 import { loadHistory, deleteFromHistory, useAnalysis } from '../context/AnalysisContext';
 import { api } from '../lib/api';
 
@@ -9,6 +10,7 @@ const Riwayat = () => {
   const { result } = useAnalysis();
   const [historyList, setHistoryList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openId, setOpenId] = useState(null);
 
   const fmtDate = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
   const fmtTime = new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -25,11 +27,18 @@ const Riwayat = () => {
             return {
               ...item,
               season: item.season_name,
+              detected: item.detected_season,
+              palettes: palettesFromHistory({
+                ...item,
+                recommendations:
+                  item.recommendations || item.selected_season?.palette?.rekomendasi || null,
+              }),
               date: fmtDate.format(d),
               time: fmtTime.format(d),
             };
           })
         );
+        setLoading(false);
         return;
       }
     } catch {
@@ -67,7 +76,7 @@ const Riwayat = () => {
           </div>
           <h1 className="text-3xl font-bold text-glowmatch-secondary mb-1">Riwayat Analisis Tersimpan</h1>
           <p className="text-slate-500 font-normal text-sm">
-            Daftar hasil analisis warna personal dan profil pengguna yang tersimpan di database lokal Anda.
+            Semua hasil analisis, season, dan rekomendasi warnamu yang sudah tersimpan.
           </p>
         </div>
         <Link 
@@ -84,13 +93,17 @@ const Riwayat = () => {
         {/* Header Tabel (Desktop saja) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-8 py-4 bg-slate-50/70 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
           <div className="col-span-4">Tanggal & Profil</div>
-          <div className="col-span-4">Musim Warna</div>
+          <div className="col-span-4">Season</div>
           <div className="col-span-4 text-right">Palet & Aksi</div>
         </div>
 
         {/* Isi Riwayat */}
         <div className="divide-y divide-slate-100">
-          {historyList.length === 0 && (
+          {loading && historyList.length === 0 && (
+            <div className="px-8 py-16 text-center text-sm text-slate-400">Memuat riwayat...</div>
+          )}
+
+          {!loading && historyList.length === 0 && (
             <div className="px-8 py-16 text-center text-sm text-slate-400 space-y-3">
               <p>Belum ada riwayat tersimpan di database.</p>
               <Link to="/scan-wajah" className="inline-block text-glowmatch-primary font-bold hover:underline">
@@ -99,9 +112,12 @@ const Riwayat = () => {
             </div>
           )}
 
-          {historyList.map((item) => (
+          {historyList.map((item) => {
+            const rowId = item.id || item.request_id;
+            const isOpen = openId === rowId;
+            return (
+            <div key={rowId}>
             <div 
-              key={item.id || item.request_id} 
               className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center px-6 md:px-8 py-6 hover:bg-slate-50/60 transition-colors group"
             >
               
@@ -126,14 +142,14 @@ const Riwayat = () => {
                 </div>
               </div>
 
-              {/* Kolom 2: Musim Warna */}
+              {/* Kolom 2: Season */}
               <div className="col-span-4 font-bold text-glowmatch-secondary text-sm md:text-base">
-                <span className="md:hidden text-xs text-slate-400 uppercase font-normal mr-2">Musim:</span>
+                <span className="md:hidden text-xs text-slate-400 uppercase font-normal mr-2">Season:</span>
                 <span className="text-glowmatch-secondary">{item.season || item.season_name}</span>
                 <div className="text-xs font-normal text-slate-400 mt-0.5">
                   Undertone: <strong className="capitalize text-slate-600">{item.undertone}</strong>
                   {item.detected && item.detected !== item.season && (
-                    <span className="ml-2">(Terdeteksi: {item.detected})</span>
+                    <span className="ml-2">(hasil awal: {item.detected})</span>
                   )}
                 </div>
               </div>
@@ -163,6 +179,18 @@ const Riwayat = () => {
                     </Link>
                   ) : null}
 
+                  {/* Tombol Rekomendasi Warna */}
+                  {item.palettes && (
+                    <button
+                      type="button"
+                      onClick={() => setOpenId(isOpen ? null : rowId)}
+                      aria-expanded={isOpen}
+                      className="flex items-center gap-1 text-xs font-bold text-glowmatch-primary px-2.5 py-1.5 bg-purple-50 rounded-lg hover:bg-purple-100 transition"
+                    >
+                      Warna <FiChevronDown className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  )}
+
                   {/* Tombol Hapus Riwayat */}
                   <button
                     type="button"
@@ -176,7 +204,20 @@ const Riwayat = () => {
               </div>
               
             </div>
-          ))}
+
+            {isOpen && item.palettes && (
+              <div className="px-6 md:px-8 pb-8">
+                <div className="rounded-2xl bg-white border border-slate-100 p-6 space-y-8">
+                  <PaletteSection title="Warna Utama" colors={item.palettes.utama} />
+                  <PaletteSection title="Warna Netral" colors={item.palettes.netral} />
+                  <PaletteSection title={`Palet Lengkap ${item.season}`} colors={item.palettes.lengkap} />
+                  <PaletteSection title="Warna yang Sebaiknya Dihindari" colors={item.palettes.hindari} />
+                </div>
+              </div>
+            )}
+            </div>
+            );
+          })}
         </div>
 
       </div>

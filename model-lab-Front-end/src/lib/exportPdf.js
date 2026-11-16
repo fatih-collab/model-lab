@@ -95,7 +95,7 @@ export async function downloadColorReportPdf({ result, selectedSeason, profile }
 
   y += 29;
 
-  // === DESKRIPSI SINGKAT MUSIM ===
+  // === DESKRIPSI SINGKAT SEASON ===
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8);
   doc.setTextColor(80, 90, 105);

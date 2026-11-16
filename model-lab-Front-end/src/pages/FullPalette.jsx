@@ -5,11 +5,11 @@ import { resultData } from '../data/colorData';
 import { seasonOptions, useAnalysis } from '../context/AnalysisContext';
 
 const FullPalette = () => {
-  // Mengambil parameter 'type' dari URL (utama, netral, atau hindari)
+  // Mengambil parameter 'type' dari URL (utama, netral, lengkap, atau hindari)
   const { type } = useParams(); 
   const { result, selectedId } = useAnalysis();
 
-  // Palet musim yang sedang dipilih di halaman hasil (fallback: data contoh bila belum ada analisis)
+  // Palet season yang sedang dipilih di halaman hasil (fallback: data contoh bila belum ada analisis)
   const options = seasonOptions(result);
   const selected = options.find((o) => o.id === selectedId) ?? options[0];
   const palette = (selected ? selected.palette.palettes : resultData.palettes)[type] || [];
@@ -24,6 +24,9 @@ const FullPalette = () => {
   } else if (type === 'netral') {
     title = "Warna Netral";
     description = "Warna dasar yang elegan, aman, dan sangat mudah dipadukan dengan warna utamamu.";
+  } else if (type === 'lengkap') {
+    title = "Palet Lengkap";
+    description = "Semua warna season-mu, termasuk warna netralnya. Klik warna untuk menyalin kodenya.";
   } else if (type === 'hindari') {
     title = "Warna yang Dihindari";
     description = "Warna yang sebaiknya dihindari untuk atasan atau hijab agar kulitmu tidak terlihat kusam atau pucat.";
@@ -55,7 +58,7 @@ const FullPalette = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-4">
           {palette.length > 0 ? (
             palette.map((color, idx) => (
-              <ColorSwatch key={idx} name={color.name} hex={color.hex} />
+              <ColorSwatch key={idx} name={color.name} hex={color.hex} source={color.source} />
             ))
           ) : (
             <p className="text-slate-400 col-span-full text-center py-10">Data warna tidak ditemukan.</p>

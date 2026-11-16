@@ -11,7 +11,7 @@ const AUTO_CAPTURE_MS = 1250;
 const LOADING_STEPS = [
   'Membaca undertone pergelangan...',
   'Memetakan warna kulit, rambut, mata, dan bibir...',
-  'Mencocokkan dengan 12 musim warna...',
+  'Mencocokkan dengan 12 season warna...',
 ];
 
 /** Panduan area pergelangan (oval bawah) + progres auto-capture. */

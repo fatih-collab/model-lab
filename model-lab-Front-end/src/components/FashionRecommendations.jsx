@@ -21,7 +21,7 @@ export default function FashionRecommendations({ seasonId, userGender = 'wanita'
             Panduan Gaya & Rekomendasi Busana
           </h3>
           <p className="text-xs text-gray-400 mt-0.5">
-            Kombinasi pakaian, perhiasan, dan tata rias terbaik yang menyatu dengan rona musim warnamu.
+            Padanan pakaian, perhiasan, dan riasan yang paling cocok dengan season warnamu.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function FashionRecommendations({ seasonId, userGender = 'wanita'
                 <strong className="text-glowmatch-secondary">Tekstur & Serat Terbaik:</strong> {fashion.fabrics}
               </p>
               <p className="text-gray-500 leading-relaxed text-[11px] pt-1">
-                Pilihlah kemeja dan luaran dengan bobot bahan yang harmonis dengan intensitas warna musimmu untuk kesan rapi dan proporsional.
+                Pilih kemeja dan luaran dengan bahan yang seimbang dengan intensitas warna season-mu agar tampilan rapi dan proporsional.
               </p>
             </div>
           )}
